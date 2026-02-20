@@ -1,0 +1,194 @@
+{
+  "projectType": "general",
+  "projectName": "Vim",
+  "projectDescription": "A powerful, highly configurable text editor built to enable efficient text editing",
+  "theme": "linden",
+  "primaryColor": "#019833",
+  "lightColor": "#57A143",
+  "darkColor": "#016d24",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart",
+              "tutorial"
+            ]
+          },
+          {
+            "group": "User Guide",
+            "pages": [
+              "user-guide/basics",
+              "user-guide/moving-around",
+              "user-guide/editing-text",
+              "user-guide/working-with-files",
+              "user-guide/windows-and-tabs",
+              "user-guide/visual-mode",
+              "user-guide/search-and-replace"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/syntax-highlighting",
+              "features/folding",
+              "features/macros",
+              "features/registers",
+              "features/marks",
+              "features/diff-mode",
+              "features/spell-checking"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/gui",
+              "advanced/terminal-info",
+              "advanced/unicode",
+              "advanced/sessions",
+              "advanced/tags"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Vim Script",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "vimscript/introduction",
+              "vimscript/getting-started"
+            ]
+          },
+          {
+            "group": "Language Features",
+            "pages": [
+              "vimscript/variables-and-types",
+              "vimscript/expressions",
+              "vimscript/functions",
+              "vimscript/user-commands",
+              "vimscript/autocommands",
+              "vimscript/mappings"
+            ]
+          },
+          {
+            "group": "Vim9 Script",
+            "pages": [
+              "vim9/introduction",
+              "vim9/syntax",
+              "vim9/performance",
+              "vim9/migration"
+            ]
+          },
+          {
+            "group": "Plugin Development",
+            "pages": [
+              "plugins/creating-plugins",
+              "plugins/plugin-structure",
+              "plugins/filetype-plugins",
+              "plugins/best-practices"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "Commands",
+            "pages": [
+              "reference/ex-commands",
+              "reference/normal-mode-commands",
+              "reference/insert-mode-commands",
+              "reference/visual-mode-commands"
+            ]
+          },
+          {
+            "group": "Options",
+            "pages": [
+              "reference/options-overview",
+              "reference/editing-options",
+              "reference/display-options",
+              "reference/programming-options"
+            ]
+          },
+          {
+            "group": "Patterns & Search",
+            "pages": [
+              "reference/patterns",
+              "reference/regular-expressions",
+              "reference/search-commands"
+            ]
+          },
+          {
+            "group": "Built-in Functions",
+            "pages": [
+              "reference/functions-overview",
+              "reference/string-functions",
+              "reference/list-functions",
+              "reference/system-functions"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Development",
+        "groups": [
+          {
+            "group": "Building Vim",
+            "pages": [
+              "development/building-from-source",
+              "development/unix-build",
+              "development/windows-build",
+              "development/macos-build"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "development/contributing-guide",
+              "development/coding-style",
+              "development/testing"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "development/architecture-overview",
+              "development/source-structure",
+              "development/runtime-files"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Multi-level undo/redo with persistent undo history",
+    "Powerful syntax highlighting for hundreds of programming languages",
+    "Extensive plugin system with Vim Script and Vim9 script support",
+    "Advanced text manipulation with macros, registers, and visual modes",
+    "Split windows and tabbed interface for editing multiple files",
+    "Built-in diff mode for comparing and merging files",
+    "Cross-platform support (Windows, macOS, Linux, Unix, and more)",
+    "Highly customizable with configuration options and key mappings"
+  ],
+  "publicApiSurface": [
+    "vim (main executable)",
+    "gvim (GUI version)",
+    "vimdiff (diff mode)",
+    "vimtutor (interactive tutorial)",
+    "xxd (hex editor utility)",
+    ":help (built-in documentation system)",
+    "Vim Script API (functions, commands, autocommands)",
+    "Vim9 Script (compiled scripting language)",
+    "Channel and Job API (async communication)",
+    "Terminal API (embedded terminal)"
+  ]
+}
