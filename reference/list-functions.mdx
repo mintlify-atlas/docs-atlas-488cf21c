@@ -1,0 +1,622 @@
+---
+title: List functions
+description: Complete reference for Vim's list manipulation functions
+---
+
+Vim's lists are ordered sequences that can contain items of any type. This reference covers all functions for creating, modifying, and working with lists.
+
+## Creating and checking lists
+
+<AccordionGroup>
+  <Accordion title="List literals">
+    Create lists using square bracket notation:
+
+    ```vim
+    let empty = []
+    let numbers = [1, 2, 3, 4, 5]
+    let mixed = [1, 'two', 3.0, [4, 5]]
+    let nested = [[1, 2], [3, 4], [5, 6]]
+    ```
+  </Accordion>
+
+  <Accordion title="range() - Create number sequence">
+    Generate a list of numbers.
+
+    ```vim
+    range({end})
+    range({start}, {end} [, {stride}])
+    ```
+
+    <ParamField path="start" type="number">
+      Starting value (default: 0)
+    </ParamField>
+
+    <ParamField path="end" type="number" required>
+      Ending value (inclusive)
+    </ParamField>
+
+    <ParamField path="stride" type="number">
+      Step value (default: 1)
+    </ParamField>
+
+    <ResponseField name="return" type="list">
+      List of numbers from start to end
+    </ResponseField>
+
+    Examples:
+    ```vim
+    echo range(5)           " [0, 1, 2, 3, 4]
+    echo range(2, 5)        " [2, 3, 4, 5]
+    echo range(0, 10, 2)    " [0, 2, 4, 6, 8, 10]
+    echo range(5, 1, -1)    " [5, 4, 3, 2, 1]
+    ```
+  </Accordion>
+
+  <Accordion title="repeat() - Repeat items">
+    Create a list with repeated items.
+
+    ```vim
+    repeat({item}, {count})
+    ```
+
+    <ParamField path="item" type="any" required>
+      Item to repeat
+    </ParamField>
+
+    <ParamField path="count" type="number" required>
+      Number of repetitions
+    </ParamField>
+
+    Examples:
+    ```vim
+    echo repeat([0], 3)         " [0, 0, 0]
+    echo repeat(['x'], 4)       " ['x', 'x', 'x', 'x']
+    ```
+  </Accordion>
+
+  <Accordion title="type() - Check if list">
+    Check the type of a variable.
+
+    ```vim
+    type({expr})
+    ```
+
+    <ResponseField name="return" type="number">
+      Returns 3 for lists (v:t_list)
+    </ResponseField>
+
+    Examples:
+    ```vim
+    echo type([])           " 3
+    echo type([1, 2])       " 3
+    if type(var) == v:t_list
+      echo "It's a list"
+    endif
+    ```
+  </Accordion>
+
+  <Accordion title="empty() - Check if empty">
+    Check if a list is empty.
+
+    ```vim
+    empty({list})
+    ```
+
+    <ResponseField name="return" type="number">
+      1 if empty, 0 otherwise
+    </ResponseField>
+
+    Examples:
+    ```vim
+    echo empty([])          " 1
+    echo empty([1, 2])      " 0
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## List properties
+
+<AccordionGroup>
+  <Accordion title="len() - Get length">
+    Get the number of items in a list.
+
+    ```vim
+    len({list})
+    ```
+
+    <ResponseField name="return" type="number">
+      Number of items in the list
+    </ResponseField>
+
+    Examples:
+    ```vim
+    echo len([])            " 0
+    echo len([1, 2, 3])     " 3
+    echo len([[1], [2]])    " 2
+    ```
+  </Accordion>
+
+  <Accordion title="count() - Count occurrences">
+    Count how many times an item appears.
+
+    ```vim
+    count({list}, {item} [, {ic} [, {start}]])
+    ```
+
+    <ParamField path="list" type="list" required>
+      List to search
+    </ParamField>
+
+    <ParamField path="item" type="any" required>
+      Item to count
+    </ParamField>
+
+    <ParamField path="ic" type="boolean">
+      Ignore case for string comparison
+    </ParamField>
+
+    <ParamField path="start" type="number">
+      Starting index
+    </ParamField>
+
+    Examples:
+    ```vim
+    echo count([1, 2, 3, 2, 1], 2)      " 2
+    echo count(['a', 'b', 'a'], 'a')    " 2
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Accessing list items
+
+<AccordionGroup>
+  <Accordion title="get() - Get item safely">
+    Get an item with a default value if index is invalid.
+
+    ```vim
+    get({list}, {index} [, {default}])
+    ```
+
+    <ParamField path="list" type="list" required>
+      The list to access
+    </ParamField>
+
+    <ParamField path="index" type="number" required>
+      Index to access
+    </ParamField>
+
+    <ParamField path="default" type="any">
+      Value to return if index is invalid
+    </ParamField>
+
+    Examples:
+    ```vim
+    let list = [1, 2, 3]
+    echo get(list, 1)           " 2
+    echo get(list, 10, -1)      " -1 (out of bounds)
+    echo get(list, -1)          " 3 (negative index)
+    ```
+  </Accordion>
+
+  <Accordion title="index() - Find item">
+    Find the index of an item.
+
+    ```vim
+    index({list}, {item} [, {start} [, {ic}]])
+    ```
+
+    <ParamField path="item" type="any" required>
+      Item to find
+    </ParamField>
+
+    <ParamField path="start" type="number">
+      Starting index for search
+    </ParamField>
+
+    <ParamField path="ic" type="boolean">
+      Ignore case for strings
+    </ParamField>
+
+    <ResponseField name="return" type="number">
+      Index of item, or -1 if not found
+    </ResponseField>
+
+    Examples:
+    ```vim
+    echo index([1, 2, 3], 2)        " 1
+    echo index(['a', 'b', 'c'], 'b') " 1
+    echo index([1, 2, 3], 5)        " -1 (not found)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Modifying lists
+
+<AccordionGroup>
+  <Accordion title="add() - Append item">
+    Add an item to the end of a list.
+
+    ```vim
+    add({list}, {item})
+    ```
+
+    <ParamField path="list" type="list" required>
+      List to modify (modified in place)
+    </ParamField>
+
+    <ParamField path="item" type="any" required>
+      Item to add
+    </ParamField>
+
+    <ResponseField name="return" type="list">
+      The modified list
+    </ResponseField>
+
+    Examples:
+    ```vim
+    let list = [1, 2]
+    call add(list, 3)           " list is now [1, 2, 3]
+    call add(list, [4, 5])      " list is now [1, 2, 3, [4, 5]]
+    ```
+  </Accordion>
+
+  <Accordion title="insert() - Insert at position">
+    Insert an item at a specific position.
+
+    ```vim
+    insert({list}, {item} [, {index}])
+    ```
+
+    <ParamField path="item" type="any" required>
+      Item to insert
+    </ParamField>
+
+    <ParamField path="index" type="number">
+      Position to insert at (default: 0)
+    </ParamField>
+
+    Examples:
+    ```vim
+    let list = [1, 3]
+    call insert(list, 2, 1)     " list is now [1, 2, 3]
+    call insert(list, 0)        " list is now [0, 1, 2, 3]
+    ```
+  </Accordion>
+
+  <Accordion title="extend() - Concatenate lists">
+    Add items from one list to another.
+
+    ```vim
+    extend({list1}, {list2} [, {index}])
+    ```
+
+    <ParamField path="list1" type="list" required>
+      List to extend (modified in place)
+    </ParamField>
+
+    <ParamField path="list2" type="list" required>
+      List with items to add
+    </ParamField>
+
+    <ParamField path="index" type="number">
+      Position to insert at
+    </ParamField>
+
+    Examples:
+    ```vim
+    let list = [1, 2]
+    call extend(list, [3, 4])   " list is now [1, 2, 3, 4]
+    
+    let list = [1, 4]
+    call extend(list, [2, 3], 1) " list is now [1, 2, 3, 4]
+    ```
+  </Accordion>
+
+  <Accordion title="remove() - Remove items">
+    Remove one or more items from a list.
+
+    ```vim
+    remove({list}, {index})
+    remove({list}, {start}, {end})
+    ```
+
+    <ParamField path="index" type="number">
+      Index of item to remove
+    </ParamField>
+
+    <ParamField path="start" type="number">
+      Start of range to remove
+    </ParamField>
+
+    <ParamField path="end" type="number">
+      End of range to remove
+    </ParamField>
+
+    <ResponseField name="return" type="any">
+      The removed item(s)
+    </ResponseField>
+
+    Examples:
+    ```vim
+    let list = [1, 2, 3, 4]
+    echo remove(list, 1)        " Returns 2, list is now [1, 3, 4]
+    
+    let list = [1, 2, 3, 4, 5]
+    echo remove(list, 1, 3)     " Returns [2, 3, 4], list is now [1, 5]
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Sorting and ordering
+
+<AccordionGroup>
+  <Accordion title="sort() - Sort list">
+    Sort a list in place.
+
+    ```vim
+    sort({list} [, {how} [, {dict}]])
+    ```
+
+    <ParamField path="list" type="list" required>
+      List to sort (modified in place)
+    </ParamField>
+
+    <ParamField path="how" type="string/funcref">
+      - 'n' for numeric sort
+      - 'i' for case-insensitive
+      - 'f' for float sort
+      - Function for custom comparison
+    </ParamField>
+
+    Examples:
+    ```vim
+    let list = [3, 1, 4, 1, 5]
+    call sort(list)             " [1, 1, 3, 4, 5]
+    
+    let list = ['b', 'A', 'c']
+    call sort(list, 'i')        " ['A', 'b', 'c'] (case-insensitive)
+    
+    let list = [10, 2, 30]
+    call sort(list, 'n')        " [2, 10, 30] (numeric)
+    ```
+  </Accordion>
+
+  <Accordion title="reverse() - Reverse list">
+    Reverse the order of items.
+
+    ```vim
+    reverse({list})
+    ```
+
+    Examples:
+    ```vim
+    let list = [1, 2, 3]
+    call reverse(list)          " list is now [3, 2, 1]
+    ```
+  </Accordion>
+
+  <Accordion title="uniq() - Remove duplicates">
+    Remove adjacent duplicate items.
+
+    ```vim
+    uniq({list} [, {func} [, {dict}]])
+    ```
+
+    <Note>
+    Only removes adjacent duplicates. Sort the list first for best results.
+    </Note>
+
+    Examples:
+    ```vim
+    let list = [1, 2, 2, 3, 3, 3, 4]
+    call uniq(list)             " [1, 2, 3, 4]
+    
+    " Remove all duplicates
+    let list = [3, 1, 2, 1, 3]
+    call uniq(sort(list))       " [1, 2, 3]
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## List transformation
+
+<AccordionGroup>
+  <Accordion title="map() - Transform each item">
+    Apply an expression to each item.
+
+    ```vim
+    map({list}, {expr})
+    ```
+
+    <ParamField path="list" type="list" required>
+      List to transform (modified in place)
+    </ParamField>
+
+    <ParamField path="expr" type="string/funcref" required>
+      Expression or function to apply
+      - Use `v:val` for current item
+      - Use `v:key` for current index
+    </ParamField>
+
+    Examples:
+    ```vim
+    let list = [1, 2, 3]
+    call map(list, 'v:val * 2')     " [2, 4, 6]
+    
+    let list = ['a', 'b', 'c']
+    call map(list, 'toupper(v:val)') " ['A', 'B', 'C']
+    
+    let list = [1, 2, 3]
+    call map(list, {i, v -> v * v})  " [1, 4, 9] (lambda)
+    ```
+  </Accordion>
+
+  <Accordion title="filter() - Filter items">
+    Keep only items that match a condition.
+
+    ```vim
+    filter({list}, {expr})
+    ```
+
+    <ParamField path="expr" type="string/funcref" required>
+      Expression that returns true/false
+      - Use `v:val` for current item
+      - Use `v:key` for current index
+    </ParamField>
+
+    Examples:
+    ```vim
+    let list = [1, 2, 3, 4, 5]
+    call filter(list, 'v:val > 2')   " [3, 4, 5]
+    
+    let list = ['foo', 'bar', 'baz']
+    call filter(list, 'v:val =~ "^b"') " ['bar', 'baz']
+    
+    let list = [1, 2, 3, 4, 5]
+    call filter(list, {i, v -> v % 2 == 0}) " [2, 4]
+    ```
+  </Accordion>
+
+  <Accordion title="reduce() - Reduce to single value">
+    Reduce a list to a single value.
+
+    ```vim
+    reduce({list}, {func} [, {initial}])
+    ```
+
+    <ParamField path="func" type="funcref" required>
+      Function that takes accumulator and value
+    </ParamField>
+
+    <ParamField path="initial" type="any">
+      Initial accumulator value
+    </ParamField>
+
+    Examples:
+    ```vim
+    " Sum all numbers
+    let sum = reduce([1, 2, 3, 4], {acc, val -> acc + val}, 0)
+    echo sum                    " 10
+    
+    " Concatenate strings
+    let joined = reduce(['a', 'b', 'c'], {acc, val -> acc .. val}, '')
+    echo joined                 " "abc"
+    ```
+  </Accordion>
+
+  <Accordion title="flatten() - Flatten nested lists">
+    Flatten nested lists into a single level.
+
+    ```vim
+    flatten({list} [, {maxdepth}])
+    ```
+
+    <ParamField path="maxdepth" type="number">
+      Maximum depth to flatten (default: unlimited)
+    </ParamField>
+
+    Examples:
+    ```vim
+    echo flatten([[1, 2], [3, 4]])      " [1, 2, 3, 4]
+    echo flatten([1, [2, [3, 4]]])      " [1, 2, 3, 4]
+    echo flatten([1, [2, [3, 4]]], 1)   " [1, 2, [3, 4]]
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## List aggregation
+
+<AccordionGroup>
+  <Accordion title="max() - Maximum value">
+    Get the maximum value.
+
+    ```vim
+    max({list})
+    ```
+
+    Examples:
+    ```vim
+    echo max([1, 5, 3, 2])      " 5
+    echo max(['a', 'c', 'b'])   " 'c'
+    ```
+  </Accordion>
+
+  <Accordion title="min() - Minimum value">
+    Get the minimum value.
+
+    ```vim
+    min({list})
+    ```
+
+    Examples:
+    ```vim
+    echo min([5, 1, 3, 2])      " 1
+    echo min(['c', 'a', 'b'])   " 'a'
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## List copying
+
+<AccordionGroup>
+  <Accordion title="copy() - Shallow copy">
+    Create a shallow copy of a list.
+
+    ```vim
+    copy({list})
+    ```
+
+    <Note>
+    Nested lists are not copied. Use `deepcopy()` for a complete copy.
+    </Note>
+
+    Examples:
+    ```vim
+    let list1 = [1, 2, [3, 4]]
+    let list2 = copy(list1)
+    let list2[0] = 99           " list1[0] is still 1
+    let list2[2][0] = 99        " list1[2][0] is also 99!
+    ```
+  </Accordion>
+
+  <Accordion title="deepcopy() - Deep copy">
+    Create a deep copy of a list.
+
+    ```vim
+    deepcopy({list})
+    ```
+
+    Examples:
+    ```vim
+    let list1 = [1, 2, [3, 4]]
+    let list2 = deepcopy(list1)
+    let list2[2][0] = 99        " list1[2][0] is still 3
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Practical examples
+
+### Remove empty strings
+```vim
+let list = ['a', '', 'b', '', 'c']
+call filter(list, 'v:val != ""')   " ['a', 'b', 'c']
+```
+
+### Double all numbers
+```vim
+let numbers = [1, 2, 3, 4, 5]
+call map(numbers, 'v:val * 2')      " [2, 4, 6, 8, 10]
+```
+
+### Get unique sorted items
+```vim
+let list = [3, 1, 4, 1, 5, 9, 2, 6]
+call uniq(sort(list))               " [1, 2, 3, 4, 5, 6, 9]
+```
+
+### Split and filter lines
+```vim
+let lines = getline(1, '$')
+call filter(lines, 'v:val !~ "^\\s*$"')  " Remove empty lines
+```

@@ -1,0 +1,391 @@
+---
+title: Text editing operations
+description: Learn how to efficiently edit text using Vim's operators, motions, and text objects
+---
+
+# Text editing operations
+
+Vim's editing power comes from combining operators with motions and text objects. This creates a language for text manipulation.
+
+## Operators and motions
+
+An operator performs an action on text. A motion defines the text to operate on.
+
+### The operator-motion pattern
+
+```
+operator + motion = action
+```
+
+Examples:
+```vim
+dw    " delete word
+d$    " delete to end of line
+c2w   " change two words
+y5j   " yank 5 lines down
+```
+
+<Note>
+  This composability is what makes Vim so powerful. Learn a few operators and motions, and you can combine them in countless ways.
+</Note>
+
+## Delete operator
+
+The `d` operator deletes text:
+
+<Tabs>
+  <Tab title="With motions">
+    | Command | Action |
+    |---------|--------|
+    | `dw` | Delete word |
+    | `d2w` | Delete 2 words |
+    | `d$` | Delete to end of line |
+    | `d0` | Delete to start of line |
+    | `dG` | Delete to end of file |
+    | `dgg` | Delete to start of file |
+  </Tab>
+  
+  <Tab title="Shortcuts">
+    | Command | Equivalent | Action |
+    |---------|------------|--------|
+    | `dd` | `d_` | Delete line |
+    | `D` | `d$` | Delete to end of line |
+    | `x` | `dl` | Delete character |
+    | `X` | `dh` | Delete character before cursor |
+  </Tab>
+</Tabs>
+
+<Tip>
+  Doubling an operator makes it act on the whole line. So `dd` deletes a line, `yy` yanks a line, etc.
+</Tip>
+
+## Change operator
+
+The `c` operator deletes and enters Insert mode:
+
+<Tabs>
+  <Tab title="Basic changes">
+    ```vim
+    cw    " Change word
+    c$    " Change to end of line
+    c2w   " Change two words
+    cG    " Change to end of file
+    ```
+  </Tab>
+  
+  <Tab title="Shortcuts">
+    | Command | Equivalent | Action |
+    |---------|------------|--------|
+    | `cc` | `c_` | Change entire line |
+    | `C` | `c$` | Change to end of line |
+    | `s` | `cl` | Substitute character |
+    | `S` | `cc` | Substitute line |
+  </Tab>
+</Tabs>
+
+### Change example
+
+<Steps>
+  <Step title="Position cursor">
+    Place cursor at start of word to change:
+    ```
+    To err is human
+       ↑
+    ```
+  </Step>
+  
+  <Step title="Change text">
+    Type `c2w` to change two words:
+    ```
+    To err is human
+       ----
+    ```
+  </Step>
+  
+  <Step title="Type new text">
+    Type replacement text:
+    ```
+    To be human
+    ```
+  </Step>
+</Steps>
+
+## Replace
+
+<Tabs>
+  <Tab title="Single character">
+    Replace character under cursor:
+    ```vim
+    rx    " Replace with 'x'
+    5rx   " Replace 5 characters with 'x'
+    ```
+  </Tab>
+  
+  <Tab title="Replace mode">
+    Enter Replace mode:
+    ```vim
+    R     " Replace mode (like overwrite)
+    ```
+    Type new text and it replaces existing characters.
+  </Tab>
+</Tabs>
+
+## Yank (copy) operator
+
+The `y` operator copies text:
+
+<Tabs>
+  <Tab title="Basic yank">
+    ```vim
+    yw    " Yank word
+    y$    " Yank to end of line
+    yy    " Yank entire line
+    Y     " Yank line (same as yy)
+    y2w   " Yank two words
+    ```
+  </Tab>
+  
+  <Tab title="Put (paste)">
+    ```vim
+    p     " Put after cursor/below line
+    P     " Put before cursor/above line
+    3p    " Put 3 times
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  What you yank goes into a register. By default, it's also copied when you delete or change text.
+</Note>
+
+## Text objects
+
+Text objects represent semantic chunks of text:
+
+<Tabs>
+  <Tab title="Word objects">
+    | Command | Selection |
+    |---------|----------|
+    | `iw` | Inner word |
+    | `aw` | A word (includes surrounding space) |
+    | `iW` | Inner WORD |
+    | `aW` | A WORD |
+  </Tab>
+  
+  <Tab title="Sentence objects">
+    | Command | Selection |
+    |---------|----------|
+    | `is` | Inner sentence |
+    | `as` | A sentence (includes trailing space) |
+  </Tab>
+  
+  <Tab title="Paragraph objects">
+    | Command | Selection |
+    |---------|----------|
+    | `ip` | Inner paragraph |
+    | `ap` | A paragraph (includes trailing newline) |
+  </Tab>
+  
+  <Tab title="Bracket objects">
+    | Command | Selection |
+    |---------|----------|
+    | `i(` or `i)` or `ib` | Inside parentheses |
+    | `a(` or `a)` or `ab` | Around parentheses |
+    | `i{` or `i}` or `iB` | Inside braces |
+    | `a{` or `a}` or `aB` | Around braces |
+    | `i[` or `i]` | Inside brackets |
+    | `a[` or `a]` | Around brackets |
+    | `i<` or `i>` | Inside angle brackets |
+    | `a<` or `a>` | Around angle brackets |
+    | `it` | Inside tag (HTML/XML) |
+    | `at` | Around tag |
+  </Tab>
+  
+  <Tab title="Quote objects">
+    | Command | Selection |
+    |---------|----------|
+    | `i'` | Inside single quotes |
+    | `a'` | Around single quotes |
+    | `i"` | Inside double quotes |
+    | `a"` | Around double quotes |
+    | `i\`` | Inside backticks |
+    | `a\`` | Around backticks |
+  </Tab>
+</Tabs>
+
+### Text object examples
+
+```vim
+diw   " Delete inner word (cursor can be anywhere in word)
+daw   " Delete a word (includes space)
+ci(   " Change inside parentheses
+da{   " Delete around braces (including braces)
+yis   " Yank inner sentence
+vi"   " Visually select inside quotes
+```
+
+<Tip>
+  Use `i` (inner) to work on content without delimiters. Use `a` (around) to include delimiters.
+</Tip>
+
+## The dot command
+
+Repeat the last change:
+
+```vim
+.    " Repeat last change
+```
+
+Example workflow:
+<Steps>
+  <Step title="Make a change">
+    ```vim
+    ciwHello<Esc>    " Change word to "Hello"
+    ```
+  </Step>
+  
+  <Step title="Move to next location">
+    ```vim
+    w    " Move to next word
+    ```
+  </Step>
+  
+  <Step title="Repeat">
+    ```vim
+    .    " Repeat the change
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  The dot command is incredibly powerful. Structure your edits to be repeatable with `.`
+</Note>
+
+## Case changes
+
+<Tabs>
+  <Tab title="Visual mode">
+    Select text, then:
+    ```vim
+    ~     " Toggle case
+    U     " Make uppercase
+    u     " Make lowercase
+    ```
+  </Tab>
+  
+  <Tab title="Operator mode">
+    | Command | Action |
+    |---------|--------|
+    | `gU{motion}` | Uppercase |
+    | `gu{motion}` | Lowercase |
+    | `g~{motion}` | Toggle case |
+    | `gUU` or `gUgU` | Uppercase line |
+    | `guu` or `gugu` | Lowercase line |
+    | `g~~` or `g~g~` | Toggle case line |
+  </Tab>
+</Tabs>
+
+Examples:
+```vim
+gUw        " Uppercase word
+guu        " Lowercase line
+g~iw       " Toggle case of inner word
+viwU       " Visually select word and uppercase
+```
+
+## Formatting
+
+<Tabs>
+  <Tab title="Format operator">
+    ```vim
+    gq{motion}    " Format text
+    gqq           " Format current line
+    gqap          " Format paragraph
+    ```
+  </Tab>
+  
+  <Tab title="Join lines">
+    ```vim
+    J     " Join current line with next
+    3J    " Join 3 lines
+    gJ    " Join without adding space
+    ```
+  </Tab>
+  
+  <Tab title="Indent">
+    ```vim
+    >>    " Indent line
+    <<    " Unindent line
+    ==    " Auto-indent line
+    >ap   " Indent paragraph
+    ```
+  </Tab>
+</Tabs>
+
+## Swapping text
+
+<Tabs>
+  <Tab title="Characters">
+    Swap two characters:
+    ```vim
+    xp    " Delete and put after
+    ```
+    Example: `teh` → `the`
+  </Tab>
+  
+  <Tab title="Lines">
+    Swap two lines:
+    ```vim
+    ddp   " Delete line and put below
+    ddkP  " Delete line and put above
+    ```
+  </Tab>
+</Tabs>
+
+## Registers
+
+Vim stores deleted and yanked text in registers:
+
+<Tabs>
+  <Tab title="Named registers">
+    Use a-z for named storage:
+    ```vim
+    "ayy     " Yank line to register a
+    "ap      " Put from register a
+    "bdiw    " Delete word to register b
+    ```
+  </Tab>
+  
+  <Tab title="Special registers">
+    | Register | Content |
+    |----------|----------|
+    | `""` | Unnamed (last delete/yank) |
+    | `"0` | Last yank |
+    | `"1-9` | Last deletes (1=most recent) |
+    | `"-` | Last small delete |
+    | `"+` | System clipboard |
+    | `"*` | Selection clipboard |
+    | `".` | Last inserted text |
+    | `"%` | Current file name |
+    | `":` | Last command |
+  </Tab>
+  
+  <Tab title="View registers">
+    ```vim
+    :registers    " Show all registers
+    :reg a b c    " Show specific registers
+    ```
+  </Tab>
+</Tabs>
+
+## Increment/decrement numbers
+
+```vim
+Ctrl-A    " Increment number under cursor
+Ctrl-X    " Decrement number under cursor
+5Ctrl-A   " Add 5 to number
+```
+
+<Tip>
+  Use visual block mode with `Ctrl-A` to create sequences of numbers.
+</Tip>

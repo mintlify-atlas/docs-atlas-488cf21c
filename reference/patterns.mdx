@@ -1,0 +1,356 @@
+---
+title: Pattern syntax
+description: Complete reference for Vim pattern and regular expression syntax
+---
+
+Vim's patterns are used for searching, substitution, and other text operations. They support a rich regular expression syntax with several modes.
+
+## Pattern basics
+
+A pattern is used to match text. In Vim, patterns are used with:
+- Search commands (`/` and `?`)
+- Substitute command (`:s`)
+- Global command (`:g`)
+- Various functions like `match()` and `substitute()`
+
+## Magic modes
+
+Vim has different "magic" modes that affect which characters have special meaning:
+
+| Mode | Prefix | Description |
+|------|--------|-------------|
+| Very magic | `\v` | Most characters have special meaning |
+| Magic | `\m` | Default mode, balanced special characters |
+| Nomagic | `\M` | Most characters literal |
+| Very nomagic | `\V` | Almost all characters literal |
+
+### Magic mode comparison
+
+<AccordionGroup>
+  <Accordion title="\v - Very magic mode">
+    In very magic mode, all ASCII characters except `0-9`, `a-z`, `A-Z`, and `_` have special meaning.
+
+    ```vim
+    /\v(foo|bar)           " Alternation without escaping
+    /\v\d+                 " Match digits
+    /\vword.+end          " Dot matches any character
+    ```
+
+    Use this mode when you want regular expressions similar to Perl or Python.
+  </Accordion>
+
+  <Accordion title="\m - Magic mode (default)">
+    Magic mode is the default. Some characters are special, others need escaping.
+
+    ```vim
+    /fo*                  " * is special
+    /\(foo\|bar\)          " Need to escape ( | )
+    /foo\+                " Need to escape +
+    ```
+
+    This is Vim's traditional mode, compatible with Vi.
+  </Accordion>
+
+  <Accordion title="\M - Nomagic mode">
+    In nomagic mode, most special characters must be escaped with backslash.
+
+    ```vim
+    /\Mfo*                " * is literal
+    /\Mfo\*               " \* matches zero or more
+    /\M\.                 " Literal dot
+    ```
+  </Accordion>
+
+  <Accordion title="\V - Very nomagic mode">
+    Only backslash and the terminating character have special meaning.
+
+    ```vim
+    /\Vfoo.bar            " Literal string "foo.bar"
+    /\Vpath\\to\\file     " Literal backslashes
+    ```
+
+    Useful for searching literal strings.
+  </Accordion>
+</AccordionGroup>
+
+## Character classes
+
+<AccordionGroup>
+  <Accordion title="Predefined character classes">
+    Vim provides several predefined character classes:
+
+    | Pattern | Description |
+    |---------|-------------|
+    | `\d` | Digit: [0-9] |
+    | `\D` | Non-digit: [^0-9] |
+    | `\w` | Word character: [0-9A-Za-z_] |
+    | `\W` | Non-word character |
+    | `\s` | Whitespace: space and tab |
+    | `\S` | Non-whitespace |
+    | `\h` | Head of word: [A-Za-z_] |
+    | `\H` | Non-head of word |
+    | `\a` | Alphabetic: [A-Za-z] |
+    | `\A` | Non-alphabetic |
+    | `\l` | Lowercase: [a-z] |
+    | `\L` | Non-lowercase |
+    | `\u` | Uppercase: [A-Z] |
+    | `\U` | Non-uppercase |
+
+    Examples:
+    ```vim
+    /\d\+                 " Match one or more digits
+    /\w\+                 " Match one or more word characters
+    /\s*                  " Match zero or more whitespace
+    ```
+  </Accordion>
+
+  <Accordion title="Character ranges">
+    Define custom character sets using square brackets:
+
+    ```vim
+    /[abc]                " Match a, b, or c
+    /[a-z]                " Match any lowercase letter
+    /[0-9]                " Match any digit
+    /[^abc]               " Match any character except a, b, c
+    /[a-zA-Z0-9]          " Match alphanumeric
+    ```
+
+    Special characters in brackets:
+    ```vim
+    /[\]\-]               " Match ] or -
+    /[a-z.]               " Match lowercase or dot
+    ```
+  </Accordion>
+
+  <Accordion title="POSIX character classes">
+    Use POSIX-style character classes within brackets:
+
+    | Class | Description |
+    |-------|-------------|
+    | `[:alnum:]` | Alphanumeric characters |
+    | `[:alpha:]` | Alphabetic characters |
+    | `[:digit:]` | Digits |
+    | `[:lower:]` | Lowercase letters |
+    | `[:upper:]` | Uppercase letters |
+    | `[:space:]` | Whitespace |
+    | `[:punct:]` | Punctuation |
+
+    Example:
+    ```vim
+    /[[:alpha:]]\+        " Match alphabetic words
+    /[[:digit:][:space:]] " Match digit or space
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Quantifiers
+
+Quantifiers specify how many times a pattern should match:
+
+| Pattern | Magic | Description |
+|---------|-------|-------------|
+| `*` | `*` | Match 0 or more (greedy) |
+| `\+` | `+` | Match 1 or more (greedy) |
+| `\=` | `=` | Match 0 or 1 (greedy) |
+| `\?` | `?` | Match 0 or 1 (greedy) |
+| `\{n,m}` | `{n,m}` | Match n to m times |
+| `\{n}` | `{n}` | Match exactly n times |
+| `\{n,}` | `{n,}` | Match at least n times |
+| `\{,m}` | `{,m}` | Match at most m times |
+| `\{-}` | `{-}` | Match 0 or more (non-greedy) |
+| `\{-n,m}` | `{-n,m}` | Match n to m times (non-greedy) |
+
+### Greedy vs non-greedy
+
+<AccordionGroup>
+  <Accordion title="Greedy matching">
+    Greedy quantifiers match as much as possible:
+
+    ```vim
+    /a.*b                 " Matches longest string from 'a' to 'b'
+    ```
+
+    Example with text `"a123b456b"`:
+    - `a.*b` matches `"a123b456b"` (entire string)
+  </Accordion>
+
+  <Accordion title="Non-greedy matching">
+    Non-greedy quantifiers match as little as possible:
+
+    ```vim
+    /a.\{-}b              " Matches shortest string from 'a' to 'b'
+    ```
+
+    Example with text `"a123b456b"`:
+    - `a.\{-}b` matches `"a123b"` (shortest match)
+  </Accordion>
+</AccordionGroup>
+
+## Anchors and boundaries
+
+| Pattern | Description |
+|---------|-------------|
+| `^` | Start of line |
+| `$` | End of line |
+| `\<` | Start of word |
+| `\>` | End of word |
+| `\%^` | Start of file |
+| `\%$` | End of file |
+| `\_^` | Start of line (anywhere) |
+| `\_$` | End of line (anywhere) |
+
+Examples:
+```vim
+/^def                 " Match 'def' at line start
+/end$                 " Match 'end' at line end
+/\<word\>             " Match whole word 'word'
+/\%^#!/               " Match shebang at file start
+```
+
+## Grouping and alternation
+
+<AccordionGroup>
+  <Accordion title="Grouping with \\( \\)">
+    Group patterns together and capture them:
+
+    ```vim
+    /\(foo\)              " Group and capture 'foo'
+    /\(foo\|bar\)         " Match 'foo' or 'bar'
+    /\(foo\)\+            " Match 'foo' one or more times
+    ```
+
+    Use captured groups in replacements:
+    ```vim
+    :%s/\(\w\+\) \(\w\+\)/\2 \1/   " Swap two words
+    ```
+  </Accordion>
+
+  <Accordion title="Non-capturing groups with \\%( \\)">
+    Group without capturing:
+
+    ```vim
+    /\%(foo\|bar\)\+      " Match 'foo' or 'bar' repeatedly
+    ```
+
+    Use when you don't need backreferences.
+  </Accordion>
+
+  <Accordion title="Backreferences">
+    Reference captured groups:
+
+    ```vim
+    /\(\w\+\) \1          " Match repeated word
+    /\(foo\).\{-}\1       " Match 'foo' and same text later
+    ```
+
+    Groups are numbered \1 through \9:
+    ```vim
+    /\(\w\+\) \(\w\+\) \2 \1   " Match pattern like "a b b a"
+    ```
+  </Accordion>
+
+  <Accordion title="Alternation with \\|">
+    Match one pattern or another:
+
+    ```vim
+    /foo\|bar             " Match 'foo' or 'bar'
+    /\(foo\|bar\)baz      " Match 'foobaz' or 'barbaz'
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Special atoms
+
+| Pattern | Description |
+|---------|-------------|
+| `.` | Any character except newline |
+| `\_. ` | Any character including newline |
+| `\n` | Newline |
+| `\t` | Tab |
+| `\r` | Carriage return |
+| `\e` | Escape |
+| `\b` | Backspace |
+
+## Zero-width assertions
+
+<AccordionGroup>
+  <Accordion title="Lookahead assertions">
+    Match a position without consuming characters:
+
+    <ParamField path="\@=" type="pattern">
+      Positive lookahead - matches if pattern matches ahead
+    </ParamField>
+
+    <ParamField path="\@!" type="pattern">
+      Negative lookahead - matches if pattern doesn't match ahead
+    </ParamField>
+
+    Examples:
+    ```vim
+    /foo\(bar\)\@=        " Match 'foo' only if followed by 'bar'
+    /foo\(bar\)\@!        " Match 'foo' only if not followed by 'bar'
+    ```
+  </Accordion>
+
+  <Accordion title="Lookbehind assertions">
+    Look behind the current position:
+
+    <ParamField path="\@<=" type="pattern">
+      Positive lookbehind - matches if pattern matches behind
+    </ParamField>
+
+    <ParamField path="\@<!" type="pattern">
+      Negative lookbehind - matches if pattern doesn't match behind
+    </ParamField>
+
+    Examples:
+    ```vim
+    /\(foo\)\@<=bar       " Match 'bar' only if preceded by 'foo'
+    /\(foo\)\@<!bar       " Match 'bar' only if not preceded by 'foo'
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Case sensitivity
+
+| Pattern | Description |
+|---------|-------------|
+| `\c` | Ignore case for the pattern |
+| `\C` | Match case for the pattern |
+
+Examples:
+```vim
+/foo\c                " Match 'foo', 'Foo', 'FOO', etc.
+/foo\C                " Match only 'foo' exactly
+```
+
+<Note>
+The case modifier affects the entire pattern from that point forward.
+</Note>
+
+## Common pattern examples
+
+### Match email addresses
+```vim
+/\v[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}
+```
+
+### Match URLs
+```vim
+/\vhttps?://[^[:space:]]+
+```
+
+### Match IP addresses
+```vim
+/\v(\d{1,3}\.){3}\d{1,3}
+```
+
+### Match hex colors
+```vim
+/\v#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})
+```
+
+### Match function definitions
+```vim
+/\v^\s*def\s+\w+\(.*\):
+```

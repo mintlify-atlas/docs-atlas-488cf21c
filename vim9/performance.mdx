@@ -1,0 +1,257 @@
+---
+title: Performance benefits
+description: Explore the performance improvements in Vim9 script with real-world benchmarks showing 10-100x speed improvements over legacy Vim script.
+---
+
+Vim9 script provides dramatic performance improvements over legacy Vim script. Through compilation and optimized execution, you can expect speed increases of 10 to 100 times for many operations.
+
+## Why is Vim9 faster?
+
+Legacy Vim script is slow because:
+
+- Each line is parsed every time it's executed
+- Function arguments are stored in dictionaries (`a:` dict, `a:000` list)
+- Local variables are stored in dictionaries (`l:` dict)
+- Exception handling adds overhead
+
+Vim9 script eliminates these bottlenecks by:
+
+- Compiling functions once into instruction sequences
+- Storing arguments and variables on a stack, not in dictionaries
+- Using typed values for more efficient operations
+- Optimizing common patterns at compile time
+
+## Benchmark: Simple loop
+
+This benchmark measures a simple counting loop—a common operation in scripts:
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    def VimNew(): number
+      var sum = 0
+      for i in range(1, 2999999)
+        sum += i
+      endfor
+      return sum
+    enddef
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    func VimOld()
+      let sum = 0
+      for i in range(1, 2999999)
+        let sum += i
+      endfor
+      return sum
+    endfunc
+    ```
+  </Tab>
+</Tabs>
+
+### Results
+
+| Implementation | Time (seconds) | vs Vim9 |
+|----------------|----------------|----------|
+| Vim old        | 5.018541       | 68x slower |
+| Python         | 0.369598       | 5x slower |
+| Lua            | 0.078817       | ~same |
+| LuaJit         | 0.004245       | 17x faster |
+| **Vim new**    | **0.073595**   | **baseline** |
+
+<Note>
+Vim9 script is **68 times faster** than legacy Vim script for this operation. It's comparable to Lua and faster than Python, despite being interpreted.
+</Note>
+
+## Benchmark: Text manipulation
+
+A more realistic benchmark that actually modifies buffer text—reindenting lines:
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    def VimNew(): number
+      var totallen = 0
+      for i in range(1, 100000)
+        setline(i, '    ' .. getline(i))
+        totallen += len(getline(i))
+      endfor
+      return totallen
+    enddef
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    func VimOld()
+      let totallen = 0
+      for i in range(1, 100000)
+        call setline(i, '    ' .. getline(i))
+        let totallen += len(getline(i))
+      endfor
+      return totallen
+    endfunc
+    ```
+  </Tab>
+</Tabs>
+
+### Results
+
+| Implementation | Time (seconds) | vs Vim9 |
+|----------------|----------------|----------|
+| Vim old        | 0.578598       | 7.3x slower |
+| Python         | 0.152040       | 1.9x slower |
+| Lua            | 0.164917       | 2.1x slower |
+| LuaJit         | 0.128400       | 1.6x slower |
+| **Vim new**    | **0.079692**   | **baseline** |
+
+<Note>
+When calling back to Vim code (like `setline()` and `getline()`), Vim9 script is **the fastest option**. It's 7.3x faster than legacy Vim script and beats all built-in language interfaces.
+</Note>
+
+## Why Vim9 beats built-in interfaces
+
+When scripts need to interact with Vim functionality, Vim9 has a significant advantage:
+
+- **No language boundary**: Vim9 is native to Vim, so there's no overhead crossing between languages
+- **Optimized built-in functions**: Functions like `setline()` and `getline()` execute at native speed
+- **No serialization**: Data doesn't need to be converted between Vim and another language
+- **Direct stack access**: Variables and function calls use direct memory access
+
+LuaJIT is much faster than Vim9 for pure Lua operations, but once you start calling Vim functions, the callback overhead eliminates that advantage.
+
+## Performance characteristics
+
+Vim9 script provides the best performance for:
+
+- **Loops with many iterations**: Compilation overhead is amortized across iterations
+- **Buffer manipulation**: Direct access to Vim's internal buffer operations
+- **Function calls**: No dictionary lookups for arguments or local variables
+- **Type-checked operations**: When types are known at compile time
+
+You may not see significant improvements for:
+
+- **One-time operations**: Compilation overhead may outweigh execution savings
+- **I/O-bound operations**: When waiting for files, network, or user input
+- **Single-line commands**: Simple operations execute quickly even in legacy script
+
+## Measuring performance
+
+To measure performance in your own scripts:
+
+```vim
+# Time a function call
+var start = reltime()
+MyFunction()
+echo 'Time: ' .. reltimestr(reltime(start))
+```
+
+<Tabs>
+  <Tab title="Full benchmark code (loop)">
+    ```vim
+    # Legacy function
+    func VimOld()
+      let sum = 0
+      for i in range(1, 2999999)
+        let sum += i
+      endfor
+      return sum
+    endfunc
+    
+    # Vim9 function
+    def VimNew(): number
+      var sum = 0
+      for i in range(1, 2999999)
+        sum += i
+      endfor
+      return sum
+    enddef
+    
+    # Measure legacy
+    let start = reltime()
+    echo VimOld()
+    echo 'Vim old: ' .. reltimestr(reltime(start))
+    
+    # Measure Vim9
+    let start = reltime()
+    echo VimNew()
+    echo 'Vim new: ' .. reltimestr(reltime(start))
+    ```
+  </Tab>
+  <Tab title="Full benchmark code (text)">
+    ```vim
+    # Legacy function
+    func VimOld()
+      let totallen = 0
+      for i in range(1, 100000)
+        call setline(i, '    ' .. getline(i))
+        let totallen += len(getline(i))
+      endfor
+      return totallen
+    endfunc
+    
+    # Vim9 function
+    def VimNew(): number
+      var totallen = 0
+      for i in range(1, 100000)
+        setline(i, '    ' .. getline(i))
+        totallen += len(getline(i))
+      endfor
+      return totallen
+    enddef
+    
+    # Measure legacy
+    new
+    call setline(1, range(100000))
+    let start = reltime()
+    echo VimOld()
+    echo 'Vim old: ' .. reltimestr(reltime(start))
+    bwipe!
+    
+    # Measure Vim9
+    new
+    call setline(1, range(100000))
+    let start = reltime()
+    echo VimNew()
+    echo 'Vim new: ' .. reltimestr(reltime(start))
+    bwipe!
+    ```
+  </Tab>
+</Tabs>
+
+## Best practices for performance
+
+To get the best performance from Vim9 script:
+
+1. **Use type annotations**: Help the compiler generate optimized code
+   ```vim
+   def Fast(count: number, items: list<string>): number
+   ```
+
+2. **Avoid `:execute` for known commands**: Direct calls are faster
+   ```vim
+   # Fast
+   echo 'hello'
+   
+   # Slow
+   execute 'echo "hello"'
+   ```
+
+3. **Use `:def` for performance-critical code**: Keep `:function` for compatibility
+
+4. **Let variables be typed**: Declare types or let Vim infer them
+   ```vim
+   var count: number = 0    # explicitly typed
+   var items = [1, 2, 3]    # inferred as list<number>
+   ```
+
+5. **Minimize cross-context calls**: Keep Vim9 functions calling Vim9 functions
+
+## Real-world impact
+
+The performance improvements mean:
+
+- **Plugins can be more responsive**: Complex operations complete faster
+- **Less need for external tools**: Vim9 can handle tasks that previously needed Python/Lua
+- **Better user experience**: Reduced lag during editing operations
+- **Simpler dependencies**: Pure Vim script without requiring language interpreters

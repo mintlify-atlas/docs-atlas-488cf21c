@@ -1,0 +1,423 @@
+---
+title: Terminal configuration
+description: Configure Vim for optimal terminal performance including terminal types, capabilities, and color support
+---
+
+Vim uses terminal information to communicate with your terminal emulator. Proper terminal configuration ensures that keys, colors, and special features work correctly.
+
+## Terminal basics
+
+### Setting the terminal type
+
+Vim determines your terminal type from the `$TERM` environment variable:
+
+```bash
+# Check current terminal type
+echo $TERM
+
+# Common terminal types
+xterm
+xterm-256color
+screen-256color
+tmux-256color
+```
+
+You can override it when starting Vim:
+
+```bash
+# Use specific terminal type
+vim -T xterm-256color
+```
+
+<Note>
+In most modern systems, the terminal type is automatically detected correctly. Only change it if you're experiencing issues.
+</Note>
+
+## Terminal options (termcap)
+
+Vim uses terminal capabilities (termcap/terminfo) to control your terminal. You can view and modify these:
+
+```vim
+" View all terminal options
+:set termcap
+
+" View specific terminal option
+:set t_Co?  " Number of colors
+:set t_AB?  " Background color code
+```
+
+### Important terminal codes
+
+| Option | Description |
+|--------|-------------|
+| `t_Co` | Number of colors (8, 16, 256, or 16777216) |
+| `t_cm` | Cursor motion (required) |
+| `t_cl` | Clear screen |
+| `t_ce` | Clear to end of line |
+| `t_AF` | Set foreground color (ANSI) |
+| `t_AB` | Set background color (ANSI) |
+| `t_SI` | Start insert mode (cursor shape) |
+| `t_EI` | End insert mode (cursor shape) |
+| `t_ke` | Exit keypad mode |
+| `t_ks` | Enter keypad mode |
+
+<Tip>
+You rarely need to set these manually. Vim gets them from your system's termcap/terminfo database.
+</Tip>
+
+## Color support
+
+### Checking color capabilities
+
+```vim
+" Check number of colors
+:echo &t_Co
+
+" Should be 256 for modern terminals
+" Or 16777216 for true color
+```
+
+### Enabling 256 colors
+
+Most modern terminals support 256 colors:
+
+```vim
+" In your vimrc
+if &term =~# '256color' && ( &term =~# '^screen'  || &term =~# '^tmux' )
+    set termguicolors
+endif
+
+" Force 256 colors if needed
+set t_Co=256
+```
+
+<Warning>
+Setting `t_Co` incorrectly can cause display problems. Only set it if you're certain your terminal supports that many colors.
+</Warning>
+
+### True color support (24-bit)
+
+Enable true colors for modern terminals:
+
+```vim
+" Enable true color support
+if has('termguicolors')
+    set termguicolors
+endif
+
+" Set the terminal color sequences
+let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+```
+
+<Tip>
+True color support allows your colorscheme to use exact RGB colors instead of approximating with 256 colors.
+</Tip>
+
+## Cursor shape
+
+Change cursor shape for different modes:
+
+```vim
+" Standard cursor shapes
+let &t_SI = "\e[6 q"  " Insert mode: vertical bar
+let &t_SR = "\e[4 q"  " Replace mode: underline
+let &t_EI = "\e[2 q"  " Normal mode: block
+
+" Alternative sequences for some terminals
+let &t_SI = "\e[5 q"  " Blinking vertical bar
+let &t_EI = "\e[1 q"  " Blinking block
+```
+
+### Cursor shape codes
+
+| Code | Shape |
+|------|-------|
+| `\e[0 q` | Default (terminal-dependent) |
+| `\e[1 q` | Blinking block |
+| `\e[2 q` | Steady block |
+| `\e[3 q` | Blinking underline |
+| `\e[4 q` | Steady underline |
+| `\e[5 q` | Blinking bar |
+| `\e[6 q` | Steady bar |
+
+<Note>
+Cursor shape support depends on your terminal emulator. Not all terminals support all shapes.
+</Note>
+
+## Special keys
+
+### Function keys
+
+Vim maps terminal key codes to Vim key names:
+
+```vim
+" Check what code a key sends
+:set <F1>?
+:set <S-F1>?
+
+" Manually set a key code if needed
+set <F13>=^[[25~
+```
+
+### Modified arrow keys
+
+For terminals that support Ctrl/Alt/Shift with arrow keys:
+
+```vim
+" Enable modified arrow keys
+if &term =~ 'xterm' || &term =~ 'screen'
+    execute "set <xUp>=\<Esc>[@;*A"
+    execute "set <xDown>=\<Esc>[@;*B"
+    execute "set <xRight>=\<Esc>[@;*C"
+    execute "set <xLeft>=\<Esc>[@;*D"
+endif
+```
+
+<Tip>
+Use `:set` to see the current key mappings, or test keys with `:help terminal-key-codes`.
+</Tip>
+
+## Mouse support
+
+### Enabling mouse
+
+```vim
+" Enable mouse in all modes
+set mouse=a
+
+" Set mouse protocol
+set ttymouse=sgr  " Recommended for most terminals
+```
+
+### Mouse protocols
+
+| Protocol | Description |
+|----------|-------------|
+| `xterm` | Basic xterm mouse (limited to 223 columns) |
+| `xterm2` | Extended xterm mouse |
+| `sgr` | SGR mouse protocol (recommended, no column limit) |
+| `urxvt` | For urxvt terminal |
+
+<Note>
+The `sgr` protocol is recommended as it supports clicking beyond column 223 and handles mouse release events properly.
+</Note>
+
+## Bracketed paste mode
+
+Prevent unwanted formatting when pasting:
+
+```vim
+" Check if bracketed paste is enabled
+:set t_BE?
+:set t_BD?
+
+" Manually enable if needed
+if &term =~ "screen" || &term =~ "tmux"
+    let &t_BE = "\e[?2004h"
+    let &t_BD = "\e[?2004l"
+    exec "set t_PS=\e[200~"
+    exec "set t_PE=\e[201~"
+endif
+```
+
+<Tip>
+Bracketed paste mode prevents Vim from interpreting pasted text as if you typed it, avoiding auto-indent and other issues.
+</Tip>
+
+### Disabling bracketed paste
+
+If it causes problems:
+
+```vim
+set t_BE=
+```
+
+## tmux integration
+
+### Recommended tmux configuration
+
+For optimal Vim experience in tmux:
+
+```vim
+if !has('gui_running') && &term =~ '^\%(screen\|tmux\)'
+    " Better mouse support
+    set ttymouse=sgr
+    
+    " Enable true colors
+    let &termguicolors = v:true
+    let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+    let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+    
+    " Enable bracketed paste
+    let &t_BE = "\<Esc>[?2004h"
+    let &t_BD = "\<Esc>[?2004l"
+    let &t_PS = "\<Esc>[200~"
+    let &t_PE = "\<Esc>[201~"
+    
+    " Enable focus events
+    let &t_fe = "\<Esc>[?1004h"
+    let &t_fd = "\<Esc>[?1004l"
+    execute "set <FocusGained>=\<Esc>[I"
+    execute "set <FocusLost>=\<Esc>[O"
+    
+    " Modified arrow keys
+    execute "silent! set <xUp>=\<Esc>[@;*A"
+    execute "silent! set <xDown>=\<Esc>[@;*B"
+    execute "silent! set <xRight>=\<Esc>[@;*C"
+    execute "silent! set <xLeft>=\<Esc>[@;*D"
+endif
+```
+
+<Note>
+This configuration enables most modern terminal features when running Vim inside tmux.
+</Note>
+
+## xterm-specific features
+
+### Querying terminal capabilities
+
+Vim can query xterm for its capabilities:
+
+```vim
+" Enable automatic terminal capability detection
+set xtermcodes
+
+" Disable if it causes problems
+set noxtermcodes
+```
+
+### Window title
+
+```vim
+" Enable setting window title
+set title
+
+" Customize title string
+set titlestring=%t%(\ %M%)%(\ (%{expand(\"%:~:.:h\")})%)%(\ %a%)
+```
+
+## Performance optimization
+
+### Slow terminals
+
+For slow terminal connections:
+
+```vim
+" Reduce screen redrawing
+set lazyredraw
+
+" Limit scrolling
+set scrolljump=5
+
+" Disable expensive features
+set nocursorline
+set nocursorcolumn
+```
+
+### Fast terminals
+
+For fast connections:
+
+```vim
+" Enable all visual features
+set ttyfast
+
+" Faster redrawing
+set ttyscroll=3
+```
+
+<Tip>
+The `'ttyfast'` option tells Vim it can send more characters to the terminal for faster updates.
+</Tip>
+
+## Troubleshooting
+
+### Colors look wrong
+
+```vim
+" Check color support
+:echo &t_Co
+
+" Try setting explicitly
+set t_Co=256
+
+" Check if termguicolors is causing issues
+set notermguicolors
+```
+
+### Keys don't work
+
+```vim
+" Check what code a key sends
+" Press Ctrl-V then the key in insert mode
+" Or use this command:
+:set <F1>?
+
+" View all key mappings
+:set termcap
+```
+
+<Warning>
+If you're using an old terminal type in `$TERM`, some keys may not work. Update to a modern terminal type like `xterm-256color`.
+</Warning>
+
+### Escape key delay
+
+```vim
+" Reduce timeout for escape sequences
+set ttimeout
+set ttimeoutlen=50
+
+" Or disable timeout completely (may cause issues)
+set notimeout
+```
+
+### Terminal corrupted after exit
+
+```vim
+" Ensure proper terminal reset
+set t_te=^[[?1049l
+set t_ti=^[[?1049h
+```
+
+## Terminal emulator recommendations
+
+Modern terminal emulators with good Vim support:
+
+- **Alacritty**: Fast, GPU-accelerated, true color
+- **Kitty**: Feature-rich, true color, custom protocols
+- **iTerm2** (macOS): Excellent integration, many features
+- **Windows Terminal**: Modern Windows terminal with true color
+- **tmux/screen**: Terminal multiplexers with Vim support
+
+<Tip>
+For the best experience, use a terminal emulator that supports true color (24-bit) and the SGR mouse protocol.
+</Tip>
+
+## Testing your terminal
+
+Check terminal capabilities:
+
+```bash
+# Check terminfo database
+infocmp $TERM
+
+# Test colors
+curl -s https://gist.githubusercontent.com/lilydjwg/fdeaf79e921c2f413f44b6f613f6ad53/raw/94d8b2be62657e96488038b0e547e3009ed87d40/colors.py | python
+
+# Test true colors
+awk 'BEGIN{
+    s="/\\/\\/\\/\\/\"
+    for (colnum = 0; colnum<77; colnum++) {
+        r = 255-(colnum*255/76)
+        g = (colnum*510/76)
+        b = (colnum*255/76)
+        if (g>255) g = 510-g
+        printf "\033[48;2;%d;%d;%dm", r,g,b
+        printf "\033[38;2;%d;%d;%dm", 255-r,255-g,255-b
+        printf "%s\033[0m", substr(s,colnum+1,1)
+    }
+    printf "\n"
+}'
+```

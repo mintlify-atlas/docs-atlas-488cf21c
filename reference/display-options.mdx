@@ -1,0 +1,514 @@
+---
+title: Display and UI options
+description: Options that control how Vim displays text and the user interface
+---
+
+These options control how Vim displays text and presents its user interface.
+
+## Line numbers
+
+Control how line numbers are displayed in the editor.
+
+### number
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'number'` `'nu'` | boolean | off | window-local |
+
+Show line numbers in front of each line:
+
+```vim
+set number
+```
+
+### relativenumber
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'relativenumber'` `'rnu'` | boolean | off | window-local |
+
+Show relative line numbers:
+
+```vim
+set relativenumber
+```
+
+Displays the line number relative to the cursor position, making it easier to use motion commands like `5j` or `3k`.
+
+### numberwidth
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'numberwidth'` `'nuw'` | number | 4 | window-local |
+
+Minimum number of columns to use for line numbers:
+
+```vim
+set numberwidth=5
+```
+
+### Combined line numbers
+
+```vim
+" Show absolute number on current line, relative on others
+set number relativenumber
+```
+
+## Text wrapping
+
+Control how long lines are displayed.
+
+### wrap
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'wrap'` | boolean | on | window-local |
+
+Wrap long lines:
+
+```vim
+set wrap      " Enable wrapping
+set nowrap    " Disable wrapping
+```
+
+### linebreak
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'linebreak'` `'lbr'` | boolean | off | window-local |
+
+Wrap long lines at word boundaries:
+
+```vim
+set linebreak
+```
+
+Only takes effect when `wrap` is on. Lines break at characters in `breakat` instead of at the last character that fits on screen.
+
+### breakindent
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'breakindent'` `'bri'` | boolean | off | window-local |
+
+Preserve indentation of wrapped lines:
+
+```vim
+set breakindent
+```
+
+Wrapped lines continue visually indented (same amount of space as the beginning of that line).
+
+### showbreak
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'showbreak'` `'sbr'` | string | `""` | global |
+
+String to put at the start of wrapped lines:
+
+```vim
+set showbreak=↪\ 
+```
+
+## Whitespace visibility
+
+Control how whitespace characters are displayed.
+
+### list
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'list'` | boolean | off | window-local |
+
+Show invisible characters like tabs and spaces:
+
+```vim
+set list
+```
+
+### listchars
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'listchars'` `'lcs'` | string | `"tab:> ,trail:-"` | global or window-local |
+
+Specify which characters to show for invisible characters:
+
+```vim
+set listchars=tab:→\ ,trail:·,nbsp:␣,extends:⟩,precedes:⟨
+```
+
+Common settings:
+- `tab:xy` - Show tabs as `xy` (two characters)
+- `space:c` - Show spaces as `c`
+- `trail:c` - Show trailing spaces as `c`
+- `nbsp:c` - Show non-breakable spaces as `c`
+- `extends:c` - Show `c` when line continues to the right
+- `precedes:c` - Show `c` when line continues to the left
+- `eol:c` - Show `c` at end of each line
+
+## Cursor and current line
+
+Highlight the cursor position and current line.
+
+### cursorline
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'cursorline'` `'cul'` | boolean | off | window-local |
+
+Highlight the screen line of the cursor:
+
+```vim
+set cursorline
+```
+
+### cursorcolumn
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'cursorcolumn'` `'cuc'` | boolean | off | window-local |
+
+Highlight the screen column of the cursor:
+
+```vim
+set cursorcolumn
+```
+
+### colorcolumn
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'colorcolumn'` `'cc'` | string | `""` | window-local |
+
+Highlight specific columns:
+
+```vim
+set colorcolumn=80      " Highlight column 80
+set colorcolumn=+1      " Highlight one column after textwidth
+set colorcolumn=80,120  " Highlight columns 80 and 120
+```
+
+## Status line
+
+Control the status line at the bottom of windows.
+
+### laststatus
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'laststatus'` `'ls'` | number | 1 | global |
+
+When to show the status line:
+
+```vim
+set laststatus=2  " Always show
+```
+
+Values:
+- `0` - Never
+- `1` - Only if there are at least two windows
+- `2` - Always
+- `3` - Always and global statusline
+
+### statusline
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'statusline'` `'stl'` | string | empty | global or window-local |
+
+Custom format for the status line:
+
+```vim
+set statusline=%f\ %h%m%r%=%-14.(%l,%c%V%)\ %P
+```
+
+Common format codes:
+- `%f` - File name
+- `%m` - Modified flag
+- `%r` - Readonly flag
+- `%l` - Line number
+- `%c` - Column number
+- `%p` - Percentage through file
+- `%P` - Percentage through file (detailed)
+
+### ruler
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'ruler'` `'ru'` | boolean | off | global |
+
+Show cursor position in the status line:
+
+```vim
+set ruler
+```
+
+Displays line and column numbers in the bottom right.
+
+### showcmd
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'showcmd'` `'sc'` | boolean | on | global |
+
+Show (partial) command in the last line:
+
+```vim
+set showcmd
+```
+
+### showmode
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'showmode'` `'smd'` | boolean | on | global |
+
+Show current mode in the command line:
+
+```vim
+set showmode
+```
+
+Displays `-- INSERT --`, `-- VISUAL --`, etc.
+
+## Tab pages
+
+Control how tab pages are displayed.
+
+### showtabline
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'showtabline'` `'stal'` | number | 1 | global |
+
+When to show the tab page line:
+
+```vim
+set showtabline=2  " Always show tabs
+```
+
+Values:
+- `0` - Never
+- `1` - Only if there are at least two tab pages
+- `2` - Always
+
+### tabline
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'tabline'` `'tal'` | string | empty | global |
+
+Custom format for the tab page line:
+
+```vim
+set tabline=%!MyTabLine()
+```
+
+## Command line
+
+Control the command line area.
+
+### cmdheight
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'cmdheight'` `'ch'` | number | 1 | global |
+
+Number of screen lines for the command line:
+
+```vim
+set cmdheight=2  " Avoid hit-enter prompts
+```
+
+### wildmenu
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'wildmenu'` `'wmnu'` | boolean | on | global |
+
+Enhanced command-line completion:
+
+```vim
+set wildmenu
+```
+
+Shows possible completions above the command line.
+
+### wildmode
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'wildmode'` `'wim'` | string | `"full"` | global |
+
+How command-line completion works:
+
+```vim
+set wildmode=longest:full,full
+```
+
+Values:
+- `full` - Complete next full match
+- `longest` - Complete to longest common string
+- `list` - List all matches
+- `list:full` - List all matches and complete first
+- `longest:full` - Complete to longest string, use wildmenu
+
+## Colors and syntax
+
+Control color and syntax highlighting.
+
+### background
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'background'` `'bg'` | string | `"dark"` or `"light"` | global |
+
+Tell Vim whether the background is dark or light:
+
+```vim
+set background=dark
+```
+
+This helps Vim choose appropriate colors for syntax highlighting.
+
+### syntax
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'syntax'` | string | empty | buffer-local |
+
+Syntax highlighting to use for the current buffer:
+
+```vim
+set syntax=python
+```
+
+Usually set automatically based on filetype. Use `:syntax on` to enable syntax highlighting globally.
+
+### termguicolors
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'termguicolors'` `'tgc'` | boolean | off | global |
+
+Use GUI colors in the terminal:
+
+```vim
+set termguicolors
+```
+
+Enables 24-bit RGB color in the terminal, if supported.
+
+## Scrolling
+
+Control scrolling behavior.
+
+### scrolloff
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'scrolloff'` `'so'` | number | 0 | global or window-local |
+
+Minimum number of lines to keep above and below cursor:
+
+```vim
+set scrolloff=5
+```
+
+Keeps context visible when scrolling.
+
+### sidescrolloff
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'sidescrolloff'` `'siso'` | number | 0 | global or window-local |
+
+Minimum number of columns to keep left and right of cursor:
+
+```vim
+set sidescrolloff=5
+```
+
+### smoothscroll
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'smoothscroll'` `'sms'` | boolean | off | window-local |
+
+Scroll by screen lines when `wrap` is set:
+
+```vim
+set smoothscroll
+```
+
+## Folding display
+
+Control how folds are displayed.
+
+### foldcolumn
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'foldcolumn'` `'fdc'` | number | 0 | window-local |
+
+Width of column to indicate folds:
+
+```vim
+set foldcolumn=4
+```
+
+### fillchars
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'fillchars'` `'fcs'` | string | varies | global or window-local |
+
+Characters to use for displaying special items:
+
+```vim
+set fillchars=vert:│,fold:·,diff:-
+```
+
+Common settings:
+- `vert:c` - Vertical separator between windows
+- `fold:c` - Filling in fold line
+- `diff:c` - Deleted lines in diff mode
+
+## Practical examples
+
+### Minimal distraction writing
+
+```vim
+set nonumber
+set norelativenumber
+set laststatus=0
+set noshowmode
+set noshowcmd
+set wrap
+set linebreak
+```
+
+### Development setup
+
+```vim
+set number relativenumber
+set cursorline
+set colorcolumn=80,120
+set list
+set listchars=tab:→\ ,trail:·,nbsp:␣
+set laststatus=2
+set showcmd
+set wildmenu
+```
+
+### Terminal with true colors
+
+```vim
+if has('termguicolors')
+  set termguicolors
+endif
+set background=dark
+colorscheme gruvbox
+```

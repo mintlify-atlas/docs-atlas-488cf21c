@@ -1,0 +1,336 @@
+---
+title: Code folding
+description: Use Vim's folding features to hide and show sections of your code
+---
+
+Folding allows you to hide sections of text in your buffer, making it easier to navigate large files by focusing on relevant portions of code.
+
+## Fold methods
+
+Vim offers six folding methods set with the `foldmethod` option:
+
+<Tabs>
+  <Tab title="Manual">
+    Create folds manually using commands:
+
+    ```vim
+    set foldmethod=manual
+    ```
+
+    Create folds by selecting text in Visual mode and typing `zf`.
+  </Tab>
+  <Tab title="Indent">
+    Automatically create folds based on indentation:
+
+    ```vim
+    set foldmethod=indent
+    ```
+
+    Lines with the same or higher indent level form a fold.
+  </Tab>
+  <Tab title="Syntax">
+    Use syntax highlighting to define folds:
+
+    ```vim
+    set foldmethod=syntax
+    ```
+
+    Folds are defined by syntax items with the "fold" argument.
+  </Tab>
+  <Tab title="Marker">
+    Use markers in your text to define folds:
+
+    ```vim
+    set foldmethod=marker
+    set foldmarker={{{,}}}
+    ```
+
+    Place `{{{` to start a fold and `}}}` to end it.
+  </Tab>
+  <Tab title="Expr">
+    Define folds using an expression:
+
+    ```vim
+    set foldmethod=expr
+    set foldexpr=MyFoldLevel()
+    ```
+
+    Create custom folding logic with a function.
+  </Tab>
+  <Tab title="Diff">
+    Automatically fold unchanged text in diff mode:
+
+    ```vim
+    set foldmethod=diff
+    ```
+
+    Only works when `diff` option is set.
+  </Tab>
+</Tabs>
+
+## Basic fold commands
+
+<CodeGroup>
+
+```vim Creating folds
+" Create fold for motion
+zf{motion}
+
+" Create fold for N lines
+zFN
+
+" Create fold for visual selection
+{Visual}zf
+
+" Create fold for range
+:10,50fold
+```
+
+```vim Opening folds
+" Open one fold under cursor
+zo
+
+" Open all folds under cursor
+zO
+
+" Open all folds in buffer
+zR
+
+" View cursor line (open just enough)
+zv
+```
+
+```vim Closing folds
+" Close one fold under cursor
+zc
+
+" Close all folds under cursor
+zC
+
+" Close all folds in buffer
+zM
+```
+
+```vim Toggling folds
+" Toggle fold under cursor
+za
+
+" Toggle all folds under cursor
+zA
+```
+
+</CodeGroup>
+
+## Navigation
+
+Move between folds efficiently:
+
+```vim
+" Move to start of current fold
+[z
+
+" Move to end of current fold
+]z
+
+" Move to next fold
+zj
+
+" Move to previous fold
+zk
+```
+
+## Fold levels
+
+Control how many fold levels are visible:
+
+<Accordion title="Working with fold levels">
+
+```vim
+" Set fold level (higher = more open)
+set foldlevel=1
+
+" Increase fold level
+zr
+
+" Decrease fold level
+zm
+
+" Disable folding temporarily
+zi
+
+" Enable folding
+set foldenable
+
+" Disable folding
+set nofoldenable
+```
+
+The `foldlevel` option determines which folds are automatically closed. A value of 0 closes all folds, while higher values open more folds.
+
+</Accordion>
+
+## Customizing fold appearance
+
+<Tabs>
+  <Tab title="Fold column">
+    Display a column showing fold structure:
+
+    ```vim
+    " Show fold column (width 4)
+    set foldcolumn=4
+    
+    " Hide fold column
+    set foldcolumn=0
+    ```
+
+    The fold column shows:
+    - `-` for open folds
+    - `+` for closed folds
+    - `|` for fold depth
+  </Tab>
+  <Tab title="Fold text">
+    Customize what's displayed for closed folds:
+
+    ```vim
+    " Set custom fold text
+    set foldtext=MyFoldText()
+    
+    function! MyFoldText()
+      let line = getline(v:foldstart)
+      let sub = substitute(line, '/\*\|\*/\|{{{\d\=', '', 'g')
+      return v:folddashes . sub
+    endfunction
+    ```
+
+    Available variables:
+    - `v:foldstart` - first line number
+    - `v:foldend` - last line number
+    - `v:folddashes` - dashes representing fold level
+    - `v:foldlevel` - the fold level
+  </Tab>
+  <Tab title="Colors">
+    Customize fold colors:
+
+    ```vim
+    " Set folded text colors
+    highlight Folded guibg=grey guifg=blue
+    
+    " Set fold column colors
+    highlight FoldColumn guibg=darkgrey guifg=white
+    ```
+  </Tab>
+</Tabs>
+
+## Saving and restoring folds
+
+Preserve manual folds between sessions:
+
+<Accordion title="Using views to save folds">
+
+```vim
+" Save folds
+:mkview
+
+" Restore folds
+:loadview
+```
+
+Automate with autocommands:
+
+```vim
+" In your vimrc
+autocmd BufWinLeave *.* mkview
+autocmd BufWinEnter *.* silent loadview
+```
+
+</Accordion>
+
+## Practical examples
+
+<Tabs>
+  <Tab title="Code blocks">
+    For programming, indent folding works well:
+
+    ```vim
+    set foldmethod=indent
+    set foldnestmax=3
+    set foldlevel=1
+    ```
+
+    Or use syntax folding:
+
+    ```vim
+    set foldmethod=syntax
+    let c_no_comment_fold=1  " Don't fold comments in C
+    ```
+  </Tab>
+  <Tab title="Markers">
+    Use markers for manual organization:
+
+    ```vim
+    set foldmethod=marker
+    
+    " Add markers in your code:
+    " Section 1 {{{
+    " ... code ...
+    " }}}
+    
+    " Or with level numbers:
+    " Section 1 {{{1
+    " Subsection 1.1 {{{2
+    " ... code ...
+    ```
+  </Tab>
+  <Tab title="Expression">
+    Create custom folding logic:
+
+    ```vim
+    set foldmethod=expr
+    set foldexpr=GetPythonFold(v:lnum)
+    
+    function! GetPythonFold(lnum)
+      " Fold Python classes and functions
+      let line = getline(a:lnum)
+      if line =~? '^class '
+        return '>1'
+      elseif line =~? '^\s*def '
+        return '>2'
+      else
+        return '='
+      endif
+    endfunction
+    ```
+  </Tab>
+</Tabs>
+
+## Options reference
+
+<Accordion title="Folding options">
+
+```vim
+" Enable folding
+set foldenable
+
+" Set fold method
+set foldmethod=indent
+
+" Maximum fold nesting
+set foldnestmax=10
+
+" Start with all folds open
+set foldlevelstart=99
+
+" Minimum lines for a fold
+set foldminlines=1
+
+" Characters to ignore in indent folding
+set foldignore=#
+
+" Which commands open folds
+set foldopen=block,hor,mark,percent,quickfix,search,tag,undo
+
+" Auto-close folds when cursor leaves
+set foldclose=all
+```
+
+</Accordion>

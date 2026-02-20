@@ -1,0 +1,172 @@
+---
+title: Architecture overview
+description: Understand Vim's high-level architecture and design principles
+---
+
+Vim is a sophisticated text editor built on a modular architecture that separates concerns between the user interface, text manipulation, and file management. This page provides an overview of Vim's architectural design and key subsystems.
+
+## Core design principles
+
+Vim's architecture follows several key principles:
+
+- **Modularity**: Functionality is organized into separate source files, each handling a specific domain (buffer management, syntax highlighting, etc.)
+- **Event-driven processing**: Vim operates on a main loop that processes user input and updates the screen
+- **Deferred rendering**: Screen updates are postponed until commands complete for optimal performance
+- **Extensibility**: Plugin system and scripting support (Vim9script, Vimscript, Python, Lua, etc.)
+
+## Main loop architecture
+
+The core of Vim's operation is the `main_loop()` function, which follows this flow:
+
+```
+main_loop()
+  ↓
+normal_cmd() — Process Normal mode commands
+  ↓
+vgetc() — Wait for and handle user input
+  ↓
+update_screen() — Refresh display when needed
+  ↓
+win_update() — Update each window
+  ↓
+win_line() — Draw individual lines
+```
+
+You can find the main loop implementation in `src/main.c:main_loop()` and screen update logic in `src/screen.c:update_screen()`.
+
+## Key subsystems
+
+### Buffer management
+
+Buffers store file content in memory and manage text operations. Key components:
+
+- **buffer.c**: Buffer manipulation and lifecycle management (src/buffer.c:1)
+- **memline.c**: Stores buffer lines in memory (src/memline.c:1)
+- **memfile.c**: Manages swap files for buffers (src/memfile.c:1)
+- **bufwrite.c**: Handles writing buffers to disk (src/bufwrite.c:1)
+
+The current buffer is accessed via the global `curbuf` variable defined in `src/globals.h`.
+
+### Window and screen management
+
+Vim supports multiple windows viewing different buffers:
+
+- **window.c**: Split window management (src/window.c:1)
+- **screen.c**: Low-level screen drawing functions (src/screen.c:1)
+- **drawscreen.c**: High-level screen drawing coordination (src/drawscreen.c:1)
+- **drawline.c**: Window line rendering (src/drawline.c:1)
+
+The current window is accessed via `curwin` in `src/globals.h`.
+
+### Syntax highlighting
+
+Syntax highlighting provides visual feedback for different code elements:
+
+- **syntax.c**: Syntax highlighting engine and pattern matching (src/syntax.c:1)
+- **highlight.c**: Highlight group management and color handling (src/highlight.c:1)
+- **Runtime files**: Language-specific syntax definitions in `runtime/syntax/`
+
+### Text manipulation
+
+Core text editing operations:
+
+- **ops.c**: Operator implementation (delete "d", yank "y", put "p") (src/ops.c:1)
+- **change.c**: Text change operations (src/change.c:1)
+- **edit.c**: Insert mode processing (src/edit.c:1)
+- **normal.c**: Normal mode command handling (src/normal.c:1)
+- **register.c**: Register management for yanking and putting (src/register.c:1)
+
+### Command execution
+
+Vim processes both Ex commands (`:`) and Normal mode commands:
+
+- **ex_docmd.c**: Ex command parsing and execution (src/ex_docmd.c:1)
+- **ex_cmds.h**: Ex command definitions and dispatch table (src/ex_cmds.h:1)
+- **normal.c**: Normal mode command table `nv_cmds` (src/normal.c:1)
+- **usercmd.c**: User-defined command handling (src/usercmd.c:1)
+
+### Scripting and evaluation
+
+Vim includes a powerful scripting engine:
+
+- **eval.c**: Expression evaluation engine (src/eval.c:1)
+- **evalfunc.c**: Built-in function implementations (src/evalfunc.c:1)
+- **userfunc.c**: User-defined functions (src/userfunc.c:1)
+- **vim9*.c**: Vim9script compiler and runtime (src/vim9compile.c:1)
+- **scriptfile.c**: Script sourcing and runtime path handling (src/scriptfile.c:1)
+
+### Pattern matching and search
+
+Regular expression support and search functionality:
+
+- **regexp.c**: Regular expression engine interface (src/regexp.c:1)
+- **regexp_bt.c**: Backtracking regexp implementation (src/regexp_bt.c:1)
+- **regexp_nfa.c**: NFA regexp implementation (src/regexp_nfa.c:1)
+- **search.c**: Search operations and pattern matching (src/search.c:1)
+
+### File I/O
+
+File reading and writing operations:
+
+- **fileio.c**: File reading and writing (src/fileio.c:1)
+- **filepath.c**: File path manipulation (src/filepath.c:1)
+- **findfile.c**: File search in 'path' option (src/findfile.c:1)
+
+### Options system
+
+Vim's extensive option system:
+
+- **option.c**: Option handling and validation (src/option.c:1)
+- **optionstr.c**: String option processing (src/optionstr.c:1)
+- **optiondefs.h**: Option definitions and default values (src/optiondefs.h:1)
+
+All options are defined in the `options[]` array in `src/option.c`.
+
+## Mode architecture
+
+Vim operates in different modes, tracked by the `State` global variable:
+
+- **NORMAL**: Default mode for navigation and commands
+- **INSERT**: Text insertion mode (handled by `edit()` in src/edit.c:1)
+- **CMDLINE**: Command-line mode (handled by `getcmdline()` in src/ex_getln.c:1)
+- **VISUAL**: Visual selection mode
+
+Mode transitions are managed throughout the codebase, with each mode having dedicated handler functions.
+
+## GUI architecture
+
+The GUI implementation treats the interface as an intelligent terminal:
+
+- **gui.c**: Core GUI functionality and event translation (src/gui.c:1)
+- **gui_*.c**: Platform-specific implementations (GTK, Windows, etc.)
+- Mouse clicks, scrollbar moves, and key presses are translated into input buffer events
+- Screen updates use the same terminal-like code path
+
+## Important data structures
+
+Key structures defined in `src/structs.h`:
+
+- **buf_T**: Buffer structure (file content, options, marks)
+- **win_T**: Window structure (cursor position, display state)
+- **tabpage_T**: Tab page structure
+- **exarg_T**: Ex command arguments
+- **cmdarg_T**: Normal mode command arguments
+
+## Memory management
+
+Vim uses custom memory management:
+
+- **alloc.c**: Memory allocation wrappers and tracking (src/alloc.c:1)
+- **gc.c**: Garbage collection for Vim script objects (src/gc.c:1)
+
+All memory allocations go through wrapper functions that provide debugging and tracking capabilities.
+
+## Next steps
+
+- Explore the [source code organization](./source-structure) to understand file layout
+- Learn about [runtime files structure](./runtime-files) for plugins and syntax files
+- Read the [contributing guide](https://github.com/vim/vim/blob/master/CONTRIBUTING.md) to start developing
+
+<Info>
+For detailed implementation information, see `:help development` in Vim or read the [online documentation](http://vimdoc.sourceforge.net/htmldoc/develop.html).
+</Info>

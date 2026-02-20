@@ -1,0 +1,207 @@
+---
+title: How to contribute
+description: Learn how to contribute patches, bug fixes, and new features to the Vim project
+---
+
+Patches are welcome in whatever form. You can contribute to Vim by submitting patches, reporting issues, translating messages and documentation, or maintaining runtime files.
+
+## Getting started
+
+Before you start contributing, familiarize yourself with:
+
+- The [vim-dev mailing list](http://www.vim.org/maillist.php#vim-dev) where patch discussions happen
+- The [GitHub repository](https://github.com/vim/vim) where you can create pull requests
+- The design goals and coding style described in `runtime/doc/develop.txt`
+
+## Contribution workflow
+
+<Steps>
+  <Step title="Get the source code">
+    Clone the Vim repository from GitHub. This makes it easier to keep your changes in sync with the main codebase:
+
+    ```bash
+    git clone https://github.com/vim/vim.git
+    cd vim
+    ```
+  </Step>
+
+  <Step title="Update the documentation">
+    Start by adjusting the documentation first. This gives you an impression of how your changes affect users. Documentation files are located in `runtime/doc/`.
+  </Step>
+
+  <Step title="Make your changes">
+    Implement your changes to the source code. Follow the [coding style guidelines](/development/coding-style) to keep the code consistent and maintainable.
+  </Step>
+
+  <Step title="Check the todo list">
+    Review `runtime/doc/todo.txt` to see if your change affects any listed items:
+
+    ```vim
+    :help todo
+    ```
+  </Step>
+
+  <Step title="Add tests">
+    Add a test in `src/testdir/` to verify your changes work correctly and won't regress in the future. All new functionality should be tested, and bug fixes should include tests that fail before the fix and pass after.
+
+    Look at recent patches for examples or check:
+
+    ```vim
+    :help testing
+    ```
+  </Step>
+
+  <Step title="Create a patch">
+    Generate a unified diff of your changes:
+
+    ```bash
+    git diff > my-changes.patch
+    ```
+  </Step>
+
+  <Step title="Submit your contribution">
+    You have two options:
+
+    **Option 1: Create a pull request (recommended)**
+
+    Pull requests trigger Continuous Integration tests that will warn you of problems:
+
+    ```bash
+    git checkout -b my-feature-branch
+    git add .
+    git commit -s
+    git push origin my-feature-branch
+    ```
+
+    Then create a pull request on GitHub. Your pull request will be forwarded to the vim-dev mailing list.
+
+    **Option 2: Email the vim-dev mailing list**
+
+    Send your patch directly to the [vim-dev mailing list](http://www.vim.org/maillist.php#vim-dev). Use a unified diff format as an attachment. Note that initial postings are subject to moderation.
+  </Step>
+</Steps>
+
+## Pull request guidelines
+
+For any non-trivial change, create a pull request on GitHub since this triggers the test suite.
+
+### Commit structure
+
+A pull request should ideally contain a single commit for a single logical change. However, you can include several commits if you want to group multiple logical, atomic changes in one PR. This makes longer PRs easier to review.
+
+Be sure to describe the reasoning for your changes in each commit message, as this greatly helps with the review process. In cases where each commit handles different logical changes, they will also be applied as separate patches in Vim's repository.
+
+### Signed-off commits
+
+While not required, it's recommended to use signed-off commits to ensure transparency and accountability. Signed-off commits follow the [Developer Certificate of Origin (DCO)](https://en.wikipedia.org/wiki/Developer_Certificate_of_Origin):
+
+```bash
+git commit -s
+```
+
+This adds a `Signed-off-by` line to your commit message, verifying that you agree to the project's licensing terms. The maintainer @chrisbra usually adds missing `Signed-off-by` trailers when merging PRs.
+
+### Using AI for contributions
+
+When using AI for contributions, please disclose this. Any AI-generated code must follow the Vim code style. In particular, `src/testdir/test_codestyle.vim` must not report any failures. Check the CI output for any test failures.
+
+Ensure that changes are properly tested. Do not submit a single PR that addresses multiple unrelated issues.
+
+## Licensing
+
+Contributions will be distributed with Vim under the Vim license. Providing a change to be included implies that you agree with this and your contribution does not cause trouble with trademarks or patents. There is no CLA to sign.
+
+## Reporting issues
+
+We use [GitHub issues](https://github.com/vim/vim/issues), but that's not a requirement. Writing to the Vim mailing list is also fine.
+
+Please use GitHub issues only for actual issues. If you're not 100% sure that your problem is a Vim issue, discuss it first on the [vim-use mailing list](http://www.vim.org/maillist.php#vim-use).
+
+### Before reporting
+
+Try reproducing the problem without any plugins or settings:
+
+```bash
+vim --clean
+```
+
+### How to report
+
+When reporting an issue, describe exactly how to reproduce it. For example, don't say "insert some text" but say what you did exactly: `ahere is some text<Esc>`.
+
+Ideally, the steps you list can be used to write a test to verify the problem is fixed.
+
+Feel free to report even the smallest problem, including typos in documentation.
+
+### Known issues
+
+You can find known issues in the todo file:
+
+```vim
+:help todo
+```
+
+Or view the [latest version on GitHub](https://github.com/vim/vim/blob/master/runtime/doc/todo.txt).
+
+## Contributing runtime files
+
+### Maintaining existing runtime files
+
+The latest version of syntax, indent, and other runtime files can be obtained from the repository. They are usually not updated with numbered patches.
+
+If you find a problem with one of these files or have a suggestion for improvement:
+
+1. Try to contact the maintainer directly (check the header of the file for contact info)
+2. Check the [MAINTAINERS file](https://github.com/vim/vim/blob/master/.github/MAINTAINERS)
+3. The maintainer will send updates to the Vim project for distribution
+
+If the maintainer doesn't respond, contact the [vim-dev mailing list](http://www.vim.org/maillist.php#vim-dev) or open an issue.
+
+### Vim9 script compatibility
+
+Whether or not to use Vim9 script is up to the maintainer. For runtime files maintained in the Vim repository, we aim to preserve compatibility with Neovim if possible. Wrap Vim9 script with a guard:
+
+```vim
+if has('vim9script')
+   " use Vim9 script implementation
+   " ...
+endif
+```
+
+### Contributing new runtime files
+
+To contribute new runtime files for Vim or Neovim, create a PR with your changes. For new filetypes, don't forget:
+
+- Add a new [filetype test](https://github.com/vim/vim/blob/master/src/testdir/test_filetype.vim) (keep it similar to other filetype tests)
+- Document all configuration switches (check [filetype.txt](https://github.com/vim/vim/blob/master/runtime/doc/filetype.txt) and [syntax.txt](https://github.com/vim/vim/blob/master/runtime/doc/syntax.txt))
+- Add yourself as Maintainer to the top of the file
+- Add yourself to the [MAINTAINERS file](https://github.com/vim/vim/blob/master/.github/MAINTAINERS)
+- Add a `if has('vim9script')` guard if you want to maintain Neovim compatibility
+
+## Translations
+
+Translating messages and runtime files is very much appreciated:
+
+- **Messages in Vim**: See `src/po/README.txt` (also used for desktop icons)
+- **Menus**: See `runtime/lang/README.txt`
+- **Vim tutor**: See `runtime/tutor/README.txt`
+- **Manual pages**: See `runtime/doc/*.1` for examples
+- **Installer**: See `nsis/lang/README.txt`
+
+The help files can be translated and made available separately. See [vim.org/translations.php](https://www.vim.org/translations.php) for examples.
+
+## Getting help
+
+If you have questions:
+
+- **Style guide questions**: Contact the [vim-dev mailing list](http://www.vim.org/maillist.php#vim-dev)
+- **General questions**: Use [Vi Stack Exchange](https://vi.stackexchange.com), the [vim-use mailing list](http://www.vim.org/maillist.php#vim-use), or [GitHub discussions](https://github.com/vim/vim/discussions)
+- **Contributing guidance**: Check the [discussion on how to contribute](https://github.com/vim/vim/discussions/13087)
+
+## Useful resources
+
+- [vim-dev mailing list](http://www.vim.org/maillist.php#vim-dev): Patch discussions
+- [GitHub repository](https://github.com/vim/vim): Source code and issues
+- [develop.txt](https://github.com/vim/vim/blob/master/runtime/doc/develop.txt): Coding style guide
+- [helphelp.txt](https://github.com/vim/vim/blob/master/runtime/doc/helphelp.txt): Documentation style guide
+- [How to make and submit a patch](http://vim.wikia.com/wiki/How_to_make_and_submit_a_patch): Community guide

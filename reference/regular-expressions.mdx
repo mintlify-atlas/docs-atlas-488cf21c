@@ -1,0 +1,560 @@
+---
+title: Regular expressions
+description: Complete guide to Vim's regular expression engine and syntax
+---
+
+Vim uses a powerful regular expression engine for pattern matching. This guide covers the complete regular expression syntax and features.
+
+## Regular expression engines
+
+Vim includes two regular expression engines:
+
+| Engine | Description |
+|--------|-------------|
+| Old engine (backtracking) | Traditional engine, supports all features |
+| New engine (NFA) | Faster on some patterns, may be slower on others |
+
+Select an engine explicitly with:
+
+```vim
+/\%#=0pattern         " Automatic selection (default)
+/\%#=1pattern         " Force old engine
+/\%#=2pattern         " Force new NFA engine
+```
+
+Or set the default:
+```vim
+:set regexpengine=0   " Automatic (default)
+:set regexpengine=1   " Old engine
+:set regexpengine=2   " NFA engine
+```
+
+## Pattern structure
+
+A complete pattern consists of:
+
+1. **Branches** - Separated by `\|` (alternation)
+2. **Concats** - Atoms joined together
+3. **Pieces** - Atom with optional multi (quantifier)
+4. **Atoms** - Basic matching units
+
+### Pattern hierarchy
+
+```
+pattern
+└─ branch \| branch \| branch
+   └─ concat & concat
+      └─ piece piece piece
+         └─ atom multi
+```
+
+## Atoms
+
+Atoms are the basic building blocks of patterns:
+
+### Literal characters
+
+| Pattern | Description |
+|---------|-------------|
+| `a` | Literal character 'a' |
+| `\n` | Newline |
+| `\t` | Tab |
+| `\r` | Carriage return |
+| `\e` | Escape |
+| `\b` | Backspace |
+
+### Character classes
+
+<AccordionGroup>
+  <Accordion title="Basic character classes">
+    <ParamField path="\d" type="character class">
+      Digit: matches [0-9]
+    </ParamField>
+
+    <ParamField path="\D" type="character class">
+      Non-digit: matches [^0-9]
+    </ParamField>
+
+    <ParamField path="\w" type="character class">
+      Word character: matches [0-9A-Za-z_]
+    </ParamField>
+
+    <ParamField path="\W" type="character class">
+      Non-word character
+    </ParamField>
+
+    <ParamField path="\s" type="character class">
+      Whitespace: matches space and tab
+    </ParamField>
+
+    <ParamField path="\S" type="character class">
+      Non-whitespace
+    </ParamField>
+
+    Examples:
+    ```vim
+    /\d\+                 " One or more digits
+    /\w\+                 " One or more word characters  
+    /\s*                  " Zero or more whitespace
+    ```
+  </Accordion>
+
+  <Accordion title="Extended character classes">
+    <ParamField path="\i" type="character class">
+      Identifier character (see 'isident' option)
+    </ParamField>
+
+    <ParamField path="\k" type="character class">
+      Keyword character (see 'iskeyword' option)
+    </ParamField>
+
+    <ParamField path="\f" type="character class">
+      Filename character (see 'isfname' option)
+    </ParamField>
+
+    <ParamField path="\p" type="character class">
+      Printable character (see 'isprint' option)
+    </ParamField>
+
+    <ParamField path="\h" type="character class">
+      Head of word: matches [A-Za-z_]
+    </ParamField>
+
+    <ParamField path="\a" type="character class">
+      Alphabetic: matches [A-Za-z]
+    </ParamField>
+
+    <ParamField path="\l" type="character class">
+      Lowercase: matches [a-z]
+    </ParamField>
+
+    <ParamField path="\u" type="character class">
+      Uppercase: matches [A-Z]
+    </ParamField>
+
+    <ParamField path="\x" type="character class">
+      Hexadecimal digit: matches [0-9A-Fa-f]
+    </ParamField>
+
+    <ParamField path="\o" type="character class">
+      Octal digit: matches [0-7]
+    </ParamField>
+  </Accordion>
+
+  <Accordion title="Character class with newline">
+    Add `_` before any character class to include newline:
+
+    ```vim
+    /\_s                  " Whitespace including newline
+    /\_d                  " Digit including newline
+    /\_w                  " Word character including newline
+    /\_. " Any character including newline
+    ```
+
+    Example:
+    ```vim
+    /\_.*END              " Match everything up to 'END', including newlines
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Anchors and position matching
+
+<AccordionGroup>
+  <Accordion title="Line anchors">
+    <ParamField path="^" type="anchor">
+      Start of line (at pattern start or after `\|`)
+    </ParamField>
+
+    <ParamField path="$" type="anchor">
+      End of line (at pattern end or before `\|`)
+    </ParamField>
+
+    <ParamField path="\_^" type="anchor">
+      Start of line (anywhere in pattern)
+    </ParamField>
+
+    <ParamField path="\_$" type="anchor">
+      End of line (anywhere in pattern)
+    </ParamField>
+
+    Examples:
+    ```vim
+    /^function            " 'function' at line start
+    /};$                  " '};' at line end
+    /\_^\s*def            " 'def' at start of line with leading whitespace
+    ```
+  </Accordion>
+
+  <Accordion title="Word boundaries">
+    <ParamField path="\<" type="anchor">
+      Start of word boundary
+    </ParamField>
+
+    <ParamField path="\>" type="anchor">
+      End of word boundary
+    </ParamField>
+
+    Examples:
+    ```vim
+    /\<word\>             " Match whole word 'word'
+    /\<the\>              " Match 'the' but not 'other'
+    ```
+  </Accordion>
+
+  <Accordion title="File position">
+    <ParamField path="\%^" type="anchor">
+      Start of file
+    </ParamField>
+
+    <ParamField path="\%$" type="anchor">
+      End of file
+    </ParamField>
+
+    Examples:
+    ```vim
+    /\%^#!/               " Shebang at file start
+    /\%$                  " End of file
+    ```
+  </Accordion>
+
+  <Accordion title="Line and column position">
+    <ParamField path="\%23l" type="anchor">
+      Line 23
+    </ParamField>
+
+    <ParamField path="\%<23l" type="anchor">
+      Before line 23
+    </ParamField>
+
+    <ParamField path="\%>23l" type="anchor">
+      After line 23
+    </ParamField>
+
+    <ParamField path="\%23c" type="anchor">
+      Column 23
+    </ParamField>
+
+    <ParamField path="\%<23c" type="anchor">
+      Before column 23
+    </ParamField>
+
+    <ParamField path="\%>23c" type="anchor">
+      After column 23
+    </ParamField>
+
+    <ParamField path="\%23v" type="anchor">
+      Virtual column 23
+    </ParamField>
+
+    Examples:
+    ```vim
+    /\%5lfoo              " 'foo' on line 5
+    /\%>10l\%<20lfoo      " 'foo' between lines 10 and 20
+    /\%>50c.*             " Everything after column 50
+    ```
+  </Accordion>
+
+  <Accordion title="Special positions">
+    <ParamField path="\%#" type="anchor">
+      Cursor position
+    </ParamField>
+
+    <ParamField path="\%'m" type="anchor">
+      Mark m position
+    </ParamField>
+
+    <ParamField path="\%V" type="anchor">
+      Inside visual area
+    </ParamField>
+
+    Examples:
+    ```vim
+    /\%#foo               " 'foo' at cursor position
+    /\%'a.*\%'b           " Text between marks a and b
+    /\%Vpattern           " Match only in visual selection
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Quantifiers (multi)
+
+Quantifiers specify how many times the preceding atom should match:
+
+### Basic quantifiers
+
+| Magic | Very Magic | Description |
+|-------|------------|-------------|
+| `*` | `*` | 0 or more (greedy) |
+| `\+` | `+` | 1 or more (greedy) |
+| `\=` | `=` or `?` | 0 or 1 (greedy) |
+| `\?` | `?` | 0 or 1 (greedy) |
+
+### Counted quantifiers
+
+<AccordionGroup>
+  <Accordion title="Exact and range counts">
+    <ParamField path="\{n}" type="quantifier">
+      Exactly n times
+    </ParamField>
+
+    <ParamField path="\{n,m}" type="quantifier">
+      From n to m times (greedy)
+    </ParamField>
+
+    <ParamField path="\{n,}" type="quantifier">
+      At least n times (greedy)
+    </ParamField>
+
+    <ParamField path="\{,m}" type="quantifier">
+      At most m times (greedy)
+    </ParamField>
+
+    <ParamField path="\{}" type="quantifier">
+      0 or more (like *)
+    </ParamField>
+
+    Examples:
+    ```vim
+    /\d\{3}               " Exactly 3 digits
+    /\d\{2,4}             " 2 to 4 digits
+    /a\{5,}               " 5 or more 'a's
+    /x\{,3}               " Up to 3 'x's
+    ```
+  </Accordion>
+
+  <Accordion title="Non-greedy quantifiers">
+    Add `-` after `{` for non-greedy (lazy) matching:
+
+    <ParamField path="\{-}" type="quantifier">
+      0 or more (non-greedy)
+    </ParamField>
+
+    <ParamField path="\{-n,m}" type="quantifier">
+      From n to m times (non-greedy)
+    </ParamField>
+
+    <ParamField path="\{-n,}" type="quantifier">
+      At least n times (non-greedy)
+    </ParamField>
+
+    <ParamField path="\{-,m}" type="quantifier">
+      At most m times (non-greedy)
+    </ParamField>
+
+    Examples:
+    ```vim
+    /a.\{-}b              " Shortest match from 'a' to 'b'
+    /<.\{-}>              " Shortest match between < and >
+    ```
+
+    Comparison:
+    ```vim
+    " Text: "a123b456b"
+    /a.*b                 " Matches "a123b456b" (greedy)
+    /a.\{-}b              " Matches "a123b" (non-greedy)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Grouping and capturing
+
+<AccordionGroup>
+  <Accordion title="Capturing groups">
+    Use `\(` and `\)` to create capturing groups:
+
+    ```vim
+    /\(foo\)              " Capture 'foo'
+    /\(\w\+\) \(\w\+\)    " Capture two words
+    ```
+
+    Use in substitution:
+    ```vim
+    :%s/\(\w\+\) \(\w\+\)/\2 \1/   " Swap two words
+    ```
+
+    Backreferences:
+    ```vim
+    /\(\w\+\) \1          " Match repeated word (e.g., "the the")
+    ```
+  </Accordion>
+
+  <Accordion title="Non-capturing groups">
+    Use `\%(` and `\)` for groups without capturing:
+
+    ```vim
+    /\%(foo\|bar\)\+      " Match 'foo' or 'bar' repeatedly, don't capture
+    ```
+
+    Benefits:
+    - Doesn't create a backreference
+    - Slightly faster
+    - Doesn't count toward the 9-group limit
+  </Accordion>
+</AccordionGroup>
+
+## Alternation
+
+Use `\|` to match one pattern or another:
+
+```vim
+/foo\|bar             " Match 'foo' OR 'bar'
+/\(foo\|bar\)baz      " Match 'foobaz' OR 'barbaz'
+/red\|green\|blue     " Match any color
+```
+
+<Note>
+Alternation has low precedence. Use grouping to control it:
+- `/ab\|cd` matches "ab" or "cd"
+- `/a\(b\|c\)d` matches "abd" or "acd"
+</Note>
+
+## Lookaround assertions
+
+Lookaround assertions match positions without consuming characters:
+
+### Lookahead
+
+<AccordionGroup>
+  <Accordion title="\@= Positive lookahead">
+    Match if the pattern matches ahead, but don't consume it:
+
+    ```vim
+    /foo\(bar\)\@=        " Match 'foo' if followed by 'bar'
+    /\w\+\(.txt\)\@=      " Match filename before .txt
+    ```
+
+    Example:
+    ```
+    Text: "foobar"
+    /foo\(bar\)\@=       " Matches 'foo' (bar is ahead but not consumed)
+    ```
+  </Accordion>
+
+  <Accordion title="\@! Negative lookahead">
+    Match if the pattern does NOT match ahead:
+
+    ```vim
+    /foo\(bar\)\@!        " Match 'foo' if NOT followed by 'bar'
+    /\d\+\(\s\)\@!        " Match digits not followed by space
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Lookbehind
+
+<AccordionGroup>
+  <Accordion title="\@<= Positive lookbehind">
+    Match if the pattern matches behind:
+
+    ```vim
+    /\(foo\)\@<=bar       " Match 'bar' if preceded by 'foo'
+    /\(\$\)\@<=\d\+       " Match numbers after $
+    ```
+
+    With width limit:
+    ```vim
+    /\(foo\)\@3<=bar      " Look back at most 3 bytes
+    /<\@1<=span          " Match 'span' if '<' is 1 byte before
+    ```
+  </Accordion>
+
+  <Accordion title="\@<! Negative lookbehind">
+    Match if the pattern does NOT match behind:
+
+    ```vim
+    /\(foo\)\@<!bar       " Match 'bar' if NOT preceded by 'foo'
+    /\(#\)\@<!\w\+        " Match words not preceded by #
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Match control
+
+### Match boundaries
+
+<AccordionGroup>
+  <Accordion title="\zs and \ze - Match start and end">
+    Control which part of the match is highlighted/replaced:
+
+    <ParamField path="\zs" type="atom">
+      Sets the start of the match
+    </ParamField>
+
+    <ParamField path="\ze" type="atom">
+      Sets the end of the match
+    </ParamField>
+
+    Examples:
+    ```vim
+    /foo\zsbar            " Match 'bar', but only after 'foo'
+    /foo\zebar            " Match 'foo', but stop before 'bar'
+    /foo\zsbar\zequx      " Match only 'bar'
+    ```
+
+    In substitution:
+    ```vim
+    :%s/foo\zsbar/BAR/    " Replace 'bar' to 'BAR', leave 'foo'
+    ```
+  </Accordion>
+
+  <Accordion title="\@> - Atomic grouping">
+    Match as a whole pattern, no backtracking:
+
+    ```vim
+    /\(a*\)\@>a           " Never matches (a* takes all a's)
+    ```
+
+    Similar to Perl's `(?>...)` atomic group.
+  </Accordion>
+</AccordionGroup>
+
+## Case control
+
+| Pattern | Description |
+|---------|-------------|
+| `\c` | Ignore case for entire pattern |
+| `\C` | Match case for entire pattern |
+| `\Z` | Ignore differences in Unicode combining characters |
+
+Examples:
+```vim
+/foo\c                " Case-insensitive
+/foo\C                " Case-sensitive
+```
+
+<Note>
+The case modifier applies from that point forward in the pattern.
+</Note>
+
+## Common regex patterns
+
+### Email address
+```vim
+/\v[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}
+```
+
+### URL
+```vim
+/\vhttps?://[^[:space:]]+
+```
+
+### IP address
+```vim
+/\v(\d{1,3}\.){3}\d{1,3}
+```
+
+### Phone number (US)
+```vim
+/\v\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})
+```
+
+### Hex color
+```vim
+/\v#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})
+```
+
+### Markdown heading
+```vim
+/^#{1,6}\s.\+$
+```

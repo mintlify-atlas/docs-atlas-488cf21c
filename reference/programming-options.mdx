@@ -1,0 +1,545 @@
+---
+title: Programming-related options
+description: Options specifically designed for coding and development in Vim
+---
+
+These options are particularly useful when writing code in Vim.
+
+## C-style indentation
+
+Options for automatic indentation in C-like languages.
+
+### cindent
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'cindent'` `'cin'` | boolean | off | buffer-local |
+
+Enables automatic C program indenting:
+
+```vim
+set cindent
+```
+
+Provides smart indentation for C, C++, Java, and similar languages.
+
+### cinoptions
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'cinoptions'` `'cino'` | string | `""` | buffer-local |
+
+Controls how `cindent` indents code:
+
+```vim
+set cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1
+```
+
+Common options:
+- `>N` - Amount to indent after `{`
+- `nN` - Amount to indent inside namespace
+- `{N` - Place `{` N chars from indent
+- `:N` - Indent case labels N chars
+- `=N` - Indent statements after case label
+- `(N` - Indent inside unclosed parentheses
+- `uN` - Amount to indent function declarations
+
+### cinkeys
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'cinkeys'` `'cink'` | string | `"0{,0},0),0],:,0#,!^F,o,O,e"` | buffer-local |
+
+Keys that trigger reindenting when `cindent` is on:
+
+```vim
+set cinkeys=0{,0},0),0],:,0#,!^F,o,O,e
+```
+
+### cinwords
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'cinwords'` `'cinw'` | string | `"if,else,while,do,for,switch"` | buffer-local |
+
+Keywords that start an extra indent:
+
+```vim
+set cinwords=if,else,while,do,for,switch,case
+```
+
+### cinscopedecls
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'cinscopedecls'` `'cinsd'` | string | `"public,protected,private"` | buffer-local |
+
+Keywords recognized as C++ scope declarations:
+
+```vim
+set cinscopedecls=public,protected,private,signals,slots
+```
+
+## Comments
+
+Control how comments are handled.
+
+### comments
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'comments'` `'com'` | string | varies | buffer-local |
+
+Strings that can start a comment line:
+
+```vim
+set comments=s1:/*,mb:*,ex:*/,://,b:#,:%,:XCOMM,n:>,fb:-
+```
+
+Format:
+- `s:text` - Start of three-piece comment
+- `m:text` - Middle of three-piece comment
+- `e:text` - End of three-piece comment
+- `b:text` - Blank required after text
+- `f:text` - Only first line has text
+- `n:text` - Nested comment
+
+### commentstring
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'commentstring'` `'cms'` | string | `"/* %s */"` | buffer-local |
+
+Template for comments:
+
+```vim
+set commentstring=//\ %s    " For C++/JavaScript
+set commentstring=#\ %s     " For Python/Shell
+set commentstring="\ %s     " For Vim script
+```
+
+The `%s` is replaced with the comment text.
+
+## Pattern matching
+
+Options for searching and pattern matching.
+
+### define
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'define'` `'def'` | string | `"^\\s*#\\s*define"` | global or buffer-local |
+
+Pattern to find macro definitions:
+
+```vim
+set define=^\s*#\s*define
+```
+
+Used by commands like `[d` and `]d`.
+
+### include
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'include'` `'inc'` | string | `"^\\s*#\\s*include"` | global or buffer-local |
+
+Pattern to find include directives:
+
+```vim
+set include=^\s*#\s*include
+```
+
+Used by commands like `[i` and `]i`.
+
+### includeexpr
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'includeexpr'` `'inex'` | string | empty | buffer-local |
+
+Expression to transform include file name:
+
+```vim
+set includeexpr=substitute(v:fname,'\.','/','g')
+```
+
+Useful for languages where include syntax doesn't match file paths.
+
+## Tags
+
+Options for working with tags files.
+
+### tags
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'tags'` `'tag'` | string | `"./tags,tags"` | global or buffer-local |
+
+List of file names used by the tag command:
+
+```vim
+set tags=./tags,tags,/usr/include/tags
+```
+
+### tagcase
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'tagcase'` `'tc'` | string | `"followic"` | global or buffer-local |
+
+How to handle case when searching tags:
+
+```vim
+set tagcase=match        " Case-sensitive
+set tagcase=ignore       " Case-insensitive
+set tagcase=smart        " Smart case
+set tagcase=followic     " Follow ignorecase option
+set tagcase=followscs    " Follow smartcase option
+```
+
+### tagbsearch
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'tagbsearch'` `'tbs'` | boolean | on | global |
+
+Use binary searching in tags files:
+
+```vim
+set tagbsearch
+```
+
+### tagfunc
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'tagfunc'` `'tfu'` | string | empty | buffer-local |
+
+Function to get list of tag matches:
+
+```vim
+set tagfunc=MyTagFunc
+```
+
+Allows custom tag lookup, useful for LSP integration.
+
+## Make and grep
+
+Options for compiling and searching.
+
+### makeprg
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'makeprg'` `'mp'` | string | `"make"` | global or buffer-local |
+
+Program to use for the `:make` command:
+
+```vim
+set makeprg=make
+set makeprg=cmake\ --build\ build
+set makeprg=cargo\ build
+set makeprg=go\ build
+```
+
+### errorformat
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'errorformat'` `'efm'` | string | varies | global or buffer-local |
+
+Format of compiler error messages:
+
+```vim
+set errorformat=%f:%l:%c:\ %m
+```
+
+Format codes:
+- `%f` - File name
+- `%l` - Line number
+- `%c` - Column number
+- `%m` - Error message
+- `%t` - Error type
+
+### grepprg
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'grepprg'` `'gp'` | string | `"grep -n $* /dev/null"` | global or buffer-local |
+
+Program to use for the `:grep` command:
+
+```vim
+set grepprg=grep\ -n\ $*
+set grepprg=rg\ --vimgrep
+set grepprg=ag\ --vimgrep
+```
+
+### grepformat
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'grepformat'` `'gfm'` | string | `"%f:%l:%m,%f:%l%m,%f  %l%m"` | global |
+
+Format of `grepprg` output:
+
+```vim
+set grepformat=%f:%l:%c:%m
+```
+
+## Completion functions
+
+Options for code completion.
+
+### completefunc
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'completefunc'` `'cfu'` | string | empty | buffer-local |
+
+Function for user-defined completion (CTRL-X CTRL-U):
+
+```vim
+set completefunc=MyCompleteFunc
+```
+
+### omnifunc
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'omnifunc'` `'ofu'` | string | empty | buffer-local |
+
+Function for omni completion (CTRL-X CTRL-O):
+
+```vim
+set omnifunc=syntaxcomplete#Complete
+```
+
+Many filetype plugins set this automatically.
+
+## Expression evaluation
+
+Options for dynamic behavior.
+
+### indentexpr
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'indentexpr'` `'inde'` | string | empty | buffer-local |
+
+Expression to obtain the indent of a line:
+
+```vim
+set indentexpr=GetPythonIndent()
+```
+
+Used instead of `cindent` when set. Many filetype plugins set this.
+
+### indentkeys
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'indentkeys'` `'indk'` | string | `"0{,0},0),0],:,0#,!^F,o,O,e"` | buffer-local |
+
+Keys that trigger indenting when `indentexpr` is set:
+
+```vim
+set indentkeys=0{,0},0),0],:,0#,!^F,o,O,e,<:>,=elif
+```
+
+### formatexpr
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'formatexpr'` `'fex'` | string | empty | buffer-local |
+
+Expression for formatting lines with `gq`:
+
+```vim
+set formatexpr=MyFormatExpr()
+```
+
+## Path and file searching
+
+Options for finding files.
+
+### path
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'path'` `'pa'` | string | `".,/usr/include,,"` | global or buffer-local |
+
+List of directories to search with `gf` and similar:
+
+```vim
+set path=.,/usr/include,,
+set path+=src/include
+set path+=/usr/local/include
+```
+
+Special values:
+- `.` - Current file's directory
+- `,,` - Current directory
+- `**` - Search recursively
+
+### suffixesadd
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'suffixesadd'` `'sua'` | string | empty | buffer-local |
+
+Suffixes added when searching for files:
+
+```vim
+set suffixesadd=.java    " For Java
+set suffixesadd=.py      " For Python
+set suffixesadd=.js,.ts  " For JavaScript/TypeScript
+```
+
+## Dictionary and thesaurus
+
+Options for word completion.
+
+### dictionary
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'dictionary'` `'dict'` | string | empty | global or buffer-local |
+
+Files used for keyword completion (CTRL-X CTRL-K):
+
+```vim
+set dictionary=/usr/share/dict/words
+set dictionary+=~/.vim/dictionary/terms.txt
+```
+
+### thesaurus
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'thesaurus'` `'tsr'` | string | empty | global or buffer-local |
+
+Files used for thesaurus completion (CTRL-X CTRL-T):
+
+```vim
+set thesaurus=~/.vim/thesaurus/english.txt
+```
+
+### thesaurusfunc
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'thesaurusfunc'` `'tsrfu'` | string | empty | global or buffer-local |
+
+Function for thesaurus completion:
+
+```vim
+set thesaurusfunc=MyThesaurusFunc
+```
+
+## Spell checking
+
+Options for spell checking while coding.
+
+### spell
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'spell'` | boolean | off | window-local |
+
+Enable spell checking:
+
+```vim
+set spell
+```
+
+### spelllang
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'spelllang'` `'spl'` | string | `"en"` | buffer-local |
+
+Language(s) for spell checking:
+
+```vim
+set spelllang=en_us
+set spelllang=en_us,es  " Multiple languages
+```
+
+### spellfile
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'spellfile'` `'spf'` | string | empty | buffer-local |
+
+Files where `zg` and `zw` store words:
+
+```vim
+set spellfile=~/.vim/spell/en.utf-8.add
+```
+
+### spelloptions
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'spelloptions'` `'spo'` | string | empty | buffer-local |
+
+Options for spell checking:
+
+```vim
+set spelloptions=camel  " Recognize camelCase words
+```
+
+Values:
+- `camel` - Treat camelCase as separate words
+- `noplainbuffer` - Don't use spell file for plain buffers
+
+## Practical examples
+
+### C/C++ development
+
+```vim
+autocmd FileType c,cpp setlocal
+    \ cindent
+    \ cinoptions=>4,n-2,{2,^-2,:0,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1
+    \ commentstring=//\ %s
+    \ tags=./tags,tags,/usr/include/tags
+    \ path=.,/usr/include,/usr/local/include
+```
+
+### Python development
+
+```vim
+autocmd FileType python setlocal
+    \ define=^\s*\(def\\|class\)
+    \ include=^\s*\(from\\|import\)
+    \ includeexpr=substitute(v:fname,'^\.','.','g')
+    \ suffixesadd=.py
+    \ path=.,src,**
+    \ makeprg=python\ %
+    \ commentstring=#\ %s
+```
+
+### JavaScript/TypeScript development
+
+```vim
+autocmd FileType javascript,typescript setlocal
+    \ suffixesadd=.js,.jsx,.ts,.tsx
+    \ include=^\s*[^/]\+\(from\\\'\\|require(\)
+    \ includeexpr=substitute(v:fname,'^[\'\"]\\\|[\'\"]$','','g')
+    \ path=.,src,node_modules
+    \ makeprg=npm\ run\ build
+    \ commentstring=//\ %s
+```
+
+### LSP-style completion
+
+```vim
+" Set omnifunc for LSP completion
+autocmd FileType * setlocal omnifunc=v:lua.vim.lsp.omnifunc
+
+" Use omnifunc in completion
+set complete+=o
+set completeopt=menu,menuone,noselect
+```

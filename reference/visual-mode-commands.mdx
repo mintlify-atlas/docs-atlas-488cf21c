@@ -1,0 +1,359 @@
+---
+title: Visual mode commands
+description: Complete reference for Vim visual mode commands
+---
+
+Visual mode allows you to select text and operate on it. There are three types of visual mode: characterwise, linewise, and blockwise.
+
+## Entering visual mode
+
+| Command | Description |
+|---------|-------------|
+| `v` | Start characterwise visual mode |
+| `V` | Start linewise visual mode |
+| `<C-v>` | Start blockwise (column) visual mode |
+| `gv` | Reselect last visual selection |
+
+## Visual mode types
+
+### Characterwise visual mode
+
+Characterwise selection selects individual characters:
+
+```vim
+v              " Start characterwise selection
+```
+
+Use motion commands to extend the selection. The selection includes all characters from the starting position to the cursor.
+
+### Linewise visual mode
+
+Linewise selection selects entire lines:
+
+```vim
+V              " Start linewise selection
+```
+
+The selection always includes complete lines, regardless of cursor column position.
+
+### Blockwise visual mode
+
+Blockwise (column) selection selects rectangular blocks of text:
+
+```vim
+<C-v>          " Start blockwise selection
+```
+
+This is useful for editing columns in tabular data or code.
+
+## Moving in visual mode
+
+Once in visual mode, use any motion command to extend the selection:
+
+| Command | Description |
+|---------|-------------|
+| `h`, `j`, `k`, `l` | Move by character/line |
+| `w`, `b`, `e` | Move by word |
+| `$`, `^`, `0` | Move to line positions |
+| `gg`, `G` | Move to file positions |
+| `f{char}`, `t{char}` | Find character in line |
+| `%` | Jump to matching bracket |
+| `/pattern` | Search forward |
+| `?pattern` | Search backward |
+
+## Changing visual selection
+
+<AccordionGroup>
+  <Accordion title="o - Move to other end of selection">
+    Move the cursor to the opposite end of the visual selection.
+
+    ```vim
+    o              " Toggle cursor to other end
+    ```
+
+    This is useful for adjusting the selection from either end.
+  </Accordion>
+
+  <Accordion title="O - Move to other corner (blockwise)">
+    In blockwise visual mode, move to the other corner of the selection.
+
+    ```vim
+    O              " Toggle to other corner (blockwise only)
+    ```
+  </Accordion>
+
+  <Accordion title="gv - Reselect last selection">
+    Reselect the last visual selection.
+
+    ```vim
+    gv             " Reselect last visual area
+    ```
+
+    <Note>
+    After pasting text with `p` or `P` in visual mode, `gv` will select the pasted text.
+    </Note>
+  </Accordion>
+</AccordionGroup>
+
+## Switching visual mode types
+
+You can switch between visual mode types:
+
+| Command | Effect |
+|---------|--------|
+| `v` | Switch to/from characterwise mode |
+| `V` | Switch to/from linewise mode |
+| `<C-v>` | Switch to/from blockwise mode |
+
+Example:
+```vim
+v              " Start characterwise
+V              " Switch to linewise
+<C-v>          " Switch to blockwise
+```
+
+## Text object selection
+
+In visual mode, you can extend the selection using text objects:
+
+### Inner objects (exclude delimiters)
+
+| Command | Description |
+|---------|-------------|
+| `iw` | Inner word |
+| `iW` | Inner WORD |
+| `is` | Inner sentence |
+| `ip` | Inner paragraph |
+| `i"` | Inner double quoted string |
+| `i'` | Inner single quoted string |
+| `i(` or `ib` | Inner parentheses |
+| `i{` or `iB` | Inner curly braces |
+| `i[` | Inner square brackets |
+| `it` | Inner tag block |
+
+### Outer objects (include delimiters)
+
+| Command | Description |
+|---------|-------------|
+| `aw` | A word (with space) |
+| `aW` | A WORD (with space) |
+| `as` | A sentence (with space) |
+| `ap` | A paragraph (with space) |
+| `a"` | A double quoted string (with quotes) |
+| `a'` | A single quoted string (with quotes) |
+| `a(` or `ab` | A parentheses block (with parens) |
+| `a{` or `aB` | A curly braces block (with braces) |
+| `a[` | A square brackets block (with brackets) |
+| `at` | A tag block (with tags) |
+
+Examples:
+```vim
+viw            " Select inner word
+va"            " Select around double quotes
+vi{            " Select inside curly braces
+vap            " Select paragraph
+```
+
+## Operating on visual selections
+
+Once you have a visual selection, you can operate on it:
+
+### Basic operations
+
+| Command | Description |
+|---------|-------------|
+| `d` | Delete selection |
+| `c` | Change selection (delete and enter insert mode) |
+| `y` | Yank (copy) selection |
+| `p` | Replace selection with register contents |
+| `P` | Replace without overwriting unnamed register |
+| `~` | Switch case |
+| `u` | Make lowercase |
+| `U` | Make uppercase |
+| `x` | Delete selection |
+| `s` | Substitute selection |
+
+### Advanced operations
+
+<AccordionGroup>
+  <Accordion title="> and < - Indent/outdent">
+    Indent or outdent the selected lines.
+
+    ```vim
+    >              " Indent right
+    <              " Indent left
+    ```
+
+    Use `.` to repeat the indentation.
+  </Accordion>
+
+  <Accordion title="= - Format/auto-indent">
+    Auto-indent the selected lines.
+
+    ```vim
+    =              " Auto-indent selection
+    ```
+  </Accordion>
+
+  <Accordion title="gq - Format text">
+    Format the selected text according to 'textwidth'.
+
+    ```vim
+    gq             " Format selection
+    ```
+  </Accordion>
+
+  <Accordion title="J - Join lines">
+    Join the selected lines.
+
+    ```vim
+    J              " Join lines
+    gJ             " Join without spaces
+    ```
+  </Accordion>
+
+  <Accordion title="r{char} - Replace with character">
+    Replace every character in the selection with {char}.
+
+    ```vim
+    rx             " Replace all with 'x'
+    ```
+  </Accordion>
+
+  <Accordion title=": - Command-line">
+    Execute a command-line command on the selection.
+
+    ```vim
+    :              " Opens with :'<,'> range
+    ```
+
+    The marks `'<` and `'>` are automatically set to the start and end of the selection.
+  </Accordion>
+</AccordionGroup>
+
+## Blockwise operations
+
+Blockwise visual mode has special operations:
+
+<AccordionGroup>
+  <Accordion title="I - Insert at start of block">
+    Insert text at the start of each line in the block.
+
+    ```vim
+    <C-v>          " Select block
+    I              " Insert at block start
+    text<Esc>      " Text appears on all lines
+    ```
+
+    Example: Add `//` comment to multiple lines:
+    ```vim
+    <C-v>jjj       " Select 4 lines
+    I//<Esc>       " Insert '//' at start
+    ```
+  </Accordion>
+
+  <Accordion title="A - Append at end of block">
+    Append text at the end of each line in the block.
+
+    ```vim
+    <C-v>          " Select block
+    A              " Append at block end
+    text<Esc>      " Text appears on all lines
+    ```
+  </Accordion>
+
+  <Accordion title="c - Change block">
+    Change the selected block of text.
+
+    ```vim
+    <C-v>          " Select block
+    c              " Change block
+    text<Esc>      " New text on all lines
+    ```
+  </Accordion>
+
+  <Accordion title="r{char} - Replace block characters">
+    Replace every character in the block with {char}.
+
+    ```vim
+    <C-v>          " Select block
+    rx             " Replace all with 'x'
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Visual mode with counts
+
+Start visual mode with a count to select that many items:
+
+```vim
+v3w            " Select 3 words
+V2j            " Select 3 lines (current + 2 down)
+<C-v>3j2l      " Select 4x3 character block
+```
+
+## Searching in visual mode
+
+You can search within a visual selection:
+
+```vim
+v              " Start visual mode
+/pattern       " Search within selection
+```
+
+Or use the very magic `\%V` atom in patterns:
+```vim
+:'<,'>s/\%Vpattern/replace/g    " Replace only in visual area
+```
+
+## Visual mode mappings
+
+Create visual mode mappings with `:vmap`:
+
+```vim
+vnoremap <leader>y "+y    " Yank to system clipboard
+vnoremap <leader>p "+p    " Paste from system clipboard
+```
+
+## Useful visual mode patterns
+
+### Sort lines
+```vim
+V              " Select lines
+:sort          " Sort selection
+```
+
+### Increment numbers
+```vim
+<C-v>          " Select column of numbers
+g<C-a>         " Increment sequentially
+```
+
+### Align text
+```vim
+V              " Select lines
+:center        " Center text
+:right         " Right-align text
+:left          " Left-align text
+```
+
+### Execute macro on selection
+```vim
+V              " Select lines
+:normal @a     " Execute macro 'a' on each line
+```
+
+## Exiting visual mode
+
+| Command | Description |
+|---------|-------------|
+| `<Esc>` | Exit visual mode |
+| `<C-c>` | Exit visual mode |
+| `v`, `V`, or `<C-v>` | Exit visual mode (toggle) |
+
+## Visual selection info
+
+While in visual mode, `<C-g>` toggles between displaying:
+- Line and column numbers
+- Number of lines and characters selected
+- Percentage through the file

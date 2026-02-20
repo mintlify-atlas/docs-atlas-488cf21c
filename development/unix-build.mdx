@@ -1,0 +1,458 @@
+---
+title: Building on Unix/Linux
+description: Complete guide to building Vim from source on Unix and Linux systems
+---
+
+Building Vim on Unix and Linux systems uses the standard GNU autoconf and make tools. This guide covers everything from installing prerequisites to advanced configuration options.
+
+## Prerequisites
+
+Before building Vim on Unix/Linux, you need to install the required development tools and libraries.
+
+### Installing build tools
+
+<CodeGroup>
+
+```bash Ubuntu/Debian
+# Essential build tools
+sudo apt install git make clang libtool-bin
+
+# For X11 clipboard support
+sudo apt install libxt-dev
+
+# For GTK3 GUI
+sudo apt install libgtk-3-dev
+
+# For Python 3 support
+sudo apt install libpython3-dev
+
+# For ncurses (terminal) support
+sudo apt install libncurses5-dev
+```
+
+```bash Fedora/RHEL/CentOS
+# Essential build tools
+sudo dnf install git make gcc libtool
+
+# For X11 clipboard support
+sudo dnf install libXt-devel
+
+# For GTK3 GUI
+sudo dnf install gtk3-devel
+
+# For Python 3 support
+sudo dnf install python3-devel
+
+# For ncurses support
+sudo dnf install ncurses-devel
+```
+
+```bash Arch Linux
+# Essential build tools
+sudo pacman -S git make gcc libtool
+
+# For GUI support
+sudo pacman -S gtk3
+
+# For Python 3 support
+sudo pacman -S python
+
+# For ncurses support
+sudo pacman -S ncurses
+```
+
+</CodeGroup>
+
+## Basic build process
+
+The standard build process on Unix is straightforward:
+
+<Steps>
+
+<Step title="Get the source code">
+Clone the Vim repository:
+
+```bash
+git clone https://github.com/vim/vim.git
+cd vim/src
+```
+</Step>
+
+<Step title="Build Vim">
+Run make, which automatically runs configure:
+
+```bash
+make
+```
+
+This will detect your system configuration and build Vim with appropriate defaults.
+</Step>
+
+<Step title="Test the build">
+Run the test suite to verify everything works:
+
+```bash
+make test
+```
+
+You should see `ALL DONE` if all tests pass.
+</Step>
+
+<Step title="Install Vim">
+Install to `/usr/local` (requires root privileges):
+
+```bash
+sudo make install
+```
+</Step>
+
+</Steps>
+
+## Configuration options
+
+For more control over the build, you can run configure manually with specific options.
+
+### Using the Makefile
+
+The easiest way to customize your build is to edit the `Makefile` before running make. Look for the `CONFIGURE` section and uncomment the options you want:
+
+```makefile src/Makefile
+# GUI - For creating Vim with GUI (gvim)
+CONF_OPT_GUI = --enable-gui=gtk3
+
+# Python 3 support
+CONF_OPT_PYTHON3 = --enable-python3interp
+
+# Large feature set
+CONF_OPT_FEAT = --with-features=huge
+```
+
+Then run:
+
+```bash
+make reconfig
+```
+
+### Running configure directly
+
+You can also run configure directly with your desired options:
+
+```bash
+./configure --with-features=huge \
+            --enable-python3interp \
+            --enable-gui=gtk3 \
+            --enable-cscope \
+            --prefix=/usr/local
+make
+```
+
+<Warning>
+If the configure script changes, running `make` will execute it again without your custom arguments. Always use `make reconfig` after modifying configuration options.
+</Warning>
+
+## GUI support
+
+You can build Vim with various GUI toolkits. GTK+ is the most commonly used on Linux.
+
+### GTK+ 3 (recommended)
+
+```bash
+# Install GTK+ 3 development files
+sudo apt install libgtk-3-dev  # Ubuntu/Debian
+sudo dnf install gtk3-devel     # Fedora/RHEL
+
+# Configure and build
+./configure --enable-gui=gtk3
+make
+```
+
+### GTK+ 2
+
+```bash
+# Install GTK+ 2 development files
+sudo apt install libgtk2.0-dev  # Ubuntu/Debian
+sudo dnf install gtk2-devel      # Fedora/RHEL
+
+# Configure and build
+./configure --enable-gui=gtk2
+make
+```
+
+### Motif
+
+```bash
+# Install Motif development files
+sudo apt install libmotif-dev    # Ubuntu/Debian
+sudo dnf install motif-devel     # Fedora/RHEL
+
+# Configure and build
+./configure --enable-gui=motif
+make
+```
+
+### Terminal only (no GUI)
+
+```bash
+./configure --disable-gui --without-x
+make
+```
+
+## Language interface support
+
+Vim can be extended with various scripting languages. Here's how to enable support for each:
+
+### Python 3
+
+```bash
+# Install Python 3 development files
+sudo apt install libpython3-dev
+
+# Build with Python 3 support
+./configure --enable-python3interp
+make
+```
+
+You can also specify a particular Python version:
+
+```bash
+./configure --enable-python3interp --with-python3-command=python3.11
+```
+
+### Ruby
+
+```bash
+# Install Ruby development files
+sudo apt install ruby-dev
+
+# Build with Ruby support
+./configure --enable-rubyinterp
+make
+```
+
+### Perl
+
+```bash
+# Install Perl development files
+sudo apt install libperl-dev
+
+# Build with Perl support
+./configure --enable-perlinterp
+make
+```
+
+### Lua
+
+```bash
+# Install Lua development files
+sudo apt install liblua5.4-dev  # or liblua5.3-dev
+
+# Build with Lua support
+./configure --enable-luainterp
+make
+```
+
+### Tcl
+
+```bash
+# Install Tcl development files
+sudo apt install tcl-dev
+
+# Build with Tcl support
+./configure --enable-tclinterp
+make
+```
+
+## Advanced options
+
+### Setting compiler flags
+
+You can set custom compiler and linker flags:
+
+```bash
+# Set compiler flags
+export CFLAGS="-O3 -march=native"
+export LDFLAGS="-L/usr/local/lib"
+
+# Or pass directly
+env CFLAGS="-O3" LIBS="-lm" make
+```
+
+### Installation prefix
+
+By default, Vim installs to `/usr/local`. To change this:
+
+```bash
+./configure --prefix=/usr
+make
+sudo make install
+```
+
+This will install:
+- Binaries to `/usr/bin`
+- Runtime files to `/usr/share/vim`
+- Man pages to `/usr/share/man`
+
+### Custom runtime location
+
+To put the global vimrc in `/etc`:
+
+```bash
+./configure --prefix=/usr
+make VIMRCLOC=/etc VIMRUNTIMEDIR=/usr/share/vim MAKE="make -e"
+sudo make install
+```
+
+### Local library directories
+
+If you have libraries in non-standard locations:
+
+```bash
+# Search /opt/local for locally installed headers and libraries
+./configure --with-local-dir=/opt/local
+
+# Or disable searching for local libraries
+./configure --without-local-dir
+```
+
+## Building for multiple architectures
+
+If you need to build Vim for several machines:
+
+<Steps>
+
+<Step title="Create shadow directory">
+```bash
+make shadow
+mv shadow machine_name
+```
+</Step>
+
+<Step title="Build for each machine">
+```bash
+cd machine_name
+make
+sudo make install
+```
+</Step>
+
+</Steps>
+
+<Note>
+Don't use a path for machine_name, just a directory name, otherwise the links that `make shadow` creates won't work.
+</Note>
+
+## Debugging build
+
+For development and debugging:
+
+### Enable debugging symbols
+
+```bash
+# Install valgrind for memory debugging
+sudo apt install valgrind
+
+# Edit Makefile and uncomment:
+# CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes
+
+make reconfig
+```
+
+### Run specific test with debugging
+
+```bash
+make test_<test-name>
+# Check output in testdir/valgrind.test_<test-name>
+```
+
+## Troubleshooting
+
+### Configure can't find X11
+
+If configure can't find X11 or reports the wrong directory:
+
+```bash
+./configure --x-include=/usr/X11R6/include --x-libraries=/usr/X11R6/lib
+```
+
+### Configure can't find GUI libraries
+
+If you have GTK+ or Motif but configure can't find them:
+
+```bash
+# Edit Makefile and set:
+GUI_INC_LOC = -I/usr/include/gtk-3.0
+GUI_LIB_LOC = -L/usr/lib/x86_64-linux-gnu
+
+make reconfig
+```
+
+### Missing perl.exp file
+
+If you get an error about missing `perl.exp`:
+
+```bash
+touch perl.exp
+make
+```
+
+### Termcap library doesn't work
+
+On some systems (especially SCO Unix), the termcap library doesn't work correctly. Use curses instead:
+
+```bash
+./configure --with-tlib=curses
+make
+```
+
+### Compilation with warnings
+
+If you want to compile with strict warnings to check for issues:
+
+```bash
+export CFLAGS="-g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code"
+./configure
+make
+```
+
+## Installation targets
+
+You don't have to install everything. Here are selective install targets:
+
+```bash
+make installvimbin      # Only the Vim executable
+make installruntime     # Runtime files only
+make installtools       # Only tools (xxd)
+make installlinks       # Only binary links (ex, view, etc.)
+make installmanlinks    # Only man page links
+make installtutorbin    # Only tutor program
+make installspell       # Only spell files
+```
+
+## Uninstalling
+
+To remove runtime files for the current version:
+
+```bash
+sudo make uninstall_runtime
+```
+
+To remove everything:
+
+```bash
+sudo make uninstall
+```
+
+<Warning>
+`make uninstall` will delete files with the same name for any version. Make sure you're not removing a version still in use.
+</Warning>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Running tests" icon="flask">
+    Learn how to run and debug Vim's test suite.
+  </Card>
+  <Card title="Contributing patches" icon="code-pull-request">
+    Submit your changes to the Vim project.
+  </Card>
+</CardGroup>

@@ -1,0 +1,361 @@
+---
+title: Text editing options
+description: Options that control how you edit and manipulate text in Vim
+---
+
+These options control the fundamental text editing behavior in Vim.
+
+## Indentation
+
+Control how Vim handles indentation when editing text.
+
+### autoindent
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'autoindent'` `'ai'` | boolean | off | buffer-local |
+
+Copy indent from the current line when starting a new line:
+
+```vim
+set autoindent
+```
+
+When you press `<CR>` in Insert mode or use `o`/`O`, the new line starts with the same indentation as the current line. If you only type `<BS>` or `CTRL-D` and then `<Esc>`, the indent is removed.
+
+### smartindent
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'smartindent'` `'si'` | boolean | off | buffer-local |
+
+Smart autoindenting for C programs:
+
+```vim
+set smartindent
+```
+
+Adds extra indentation in certain cases, such as after lines ending with `{` or before lines starting with `}`.
+
+### cindent
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'cindent'` `'cin'` | boolean | off | buffer-local |
+
+Enables automatic C program indenting:
+
+```vim
+set cindent
+```
+
+More sophisticated than `smartindent`, it understands C syntax better. Configure with `cinoptions`, `cinkeys`, and `cinwords`.
+
+### expandtab
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'expandtab'` `'et'` | boolean | off | buffer-local |
+
+Use spaces instead of tabs:
+
+```vim
+set expandtab
+```
+
+When you press `<Tab>`, Vim inserts spaces instead. The number of spaces is determined by `tabstop` (or `softtabstop` if set).
+
+### tabstop
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'tabstop'` `'ts'` | number | 8 | buffer-local |
+
+Number of spaces that a tab character counts for:
+
+```vim
+set tabstop=4
+```
+
+### shiftwidth
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'shiftwidth'` `'sw'` | number | 8 | buffer-local |
+
+Number of spaces to use for each step of (auto)indent:
+
+```vim
+set shiftwidth=4
+```
+
+Used for `>>`, `<<`, `==`, and automatic indentation.
+
+### softtabstop
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'softtabstop'` `'sts'` | number | 0 | buffer-local |
+
+Number of spaces that a tab counts for while editing:
+
+```vim
+set softtabstop=4
+```
+
+When non-zero, Vim uses a combination of spaces and tabs to reach the desired indentation.
+
+### Example configuration
+
+```vim
+" Use 4 spaces for indentation
+set tabstop=4
+set shiftwidth=4
+set expandtab
+set autoindent
+```
+
+## Text formatting
+
+Control how Vim formats and wraps text.
+
+### textwidth
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'textwidth'` `'tw'` | number | 0 | buffer-local |
+
+Maximum width of text that is being inserted:
+
+```vim
+set textwidth=80
+```
+
+When non-zero, lines longer than this are broken after white space to fit. Set to 0 to disable.
+
+### formatoptions
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'formatoptions'` `'fo'` | string | `"tcq"` | buffer-local |
+
+Controls automatic formatting:
+
+```vim
+set formatoptions=tcqrn1j
+```
+
+Common flags:
+- `t` - Auto-wrap text using textwidth
+- `c` - Auto-wrap comments using textwidth
+- `r` - Insert comment leader after `<CR>` in Insert mode
+- `o` - Insert comment leader after `o` or `O` in Normal mode
+- `q` - Allow formatting comments with `gq`
+- `n` - Recognize numbered lists
+- `1` - Don't break a line after a one-letter word
+- `j` - Remove comment leader when joining lines
+
+### wrapmargin
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'wrapmargin'` `'wm'` | number | 0 | buffer-local |
+
+Number of characters from the right window border where wrapping starts:
+
+```vim
+set wrapmargin=5
+```
+
+This is an alternative to `textwidth`. When both are set, `textwidth` takes precedence.
+
+## Backspace behavior
+
+### backspace
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'backspace'` `'bs'` | string | `"indent,eol,start"` | global |
+
+Influences how backspace works in Insert mode:
+
+```vim
+set backspace=indent,eol,start
+```
+
+Values:
+- `indent` - Allow backspacing over autoindent
+- `eol` - Allow backspacing over line breaks (join lines)
+- `start` - Allow backspacing over the start of insert
+- `nostop` - Like `start`, but CTRL-W and CTRL-U don't stop at start of insert
+
+## Joining lines
+
+### joinspaces
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'joinspaces'` `'js'` | boolean | off | global |
+
+Insert two spaces after a period when joining lines:
+
+```vim
+set nojoinspaces  " Use single space (recommended)
+```
+
+## Completion
+
+### complete
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'complete'` `'cpt'` | string | `".,w,b,u,t,i"` | buffer-local |
+
+Specifies how keyword completion works with CTRL-P and CTRL-N:
+
+```vim
+set complete=.,w,b,u,t,i
+```
+
+Flags:
+- `.` - Current buffer
+- `w` - Buffers from other windows
+- `b` - Other loaded buffers
+- `u` - Unloaded buffers
+- `t` - Tags
+- `i` - Included files
+- `k` - Dictionary files
+- `kspell` - Active spell checking
+
+### completeopt
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'completeopt'` `'cot'` | string | `"menu,preview"` | global |
+
+Options for Insert mode completion:
+
+```vim
+set completeopt=menu,menuone,noselect
+```
+
+Values:
+- `menu` - Use popup menu when there are multiple matches
+- `menuone` - Use menu even with one match
+- `longest` - Only insert longest common text
+- `preview` - Show extra info in preview window
+- `noinsert` - Don't insert text until you select a match
+- `noselect` - Don't select a match in the menu
+- `fuzzy` - Use fuzzy matching
+
+### autocomplete
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'autocomplete'` `'ac'` | boolean | off | global or buffer-local |
+
+Show completion menu automatically as you type:
+
+```vim
+set autocomplete
+```
+
+Triggers completion similar to CTRL-N but automatically. See also `autocompletedelay`.
+
+## Undo and backup
+
+### undofile
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'undofile'` `'udf'` | boolean | off | buffer-local |
+
+Automatically save undo history to a file:
+
+```vim
+set undofile
+set undodir=~/.vim/undo
+```
+
+This allows you to undo changes even after closing and reopening a file.
+
+### backup
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'backup'` `'bk'` | boolean | off | global |
+
+Keep a backup file after overwriting:
+
+```vim
+set backup
+set backupdir=~/.vim/backup
+```
+
+### writebackup
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'writebackup'` `'wb'` | boolean | on | global |
+
+Make a backup before overwriting a file:
+
+```vim
+set writebackup
+```
+
+The backup is removed after the file is successfully written unless `backup` is also set.
+
+## Modelines
+
+### modeline
+
+| Option | Type | Default | Scope |
+|--------|------|---------|-------|
+| `'modeline'` `'ml'` | boolean | on | global |
+
+Recognize modelines at the start or end of files:
+
+```vim
+set modeline
+set modelines=5
+```
+
+Modelines allow you to set options specific to a file:
+
+```
+" vim: set ts=4 sw=4 et:
+```
+
+## Practical examples
+
+### Python development
+
+```vim
+autocmd FileType python setlocal
+    \ tabstop=4
+    \ shiftwidth=4
+    \ expandtab
+    \ autoindent
+    \ textwidth=79
+    \ formatoptions=croqj
+```
+
+### Markdown writing
+
+```vim
+autocmd FileType markdown setlocal
+    \ textwidth=80
+    \ formatoptions=tcqn
+    \ spell
+    \ linebreak
+```
+
+### Web development
+
+```vim
+autocmd FileType html,css,javascript setlocal
+    \ tabstop=2
+    \ shiftwidth=2
+    \ expandtab
+```

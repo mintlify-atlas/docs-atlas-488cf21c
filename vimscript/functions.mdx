@@ -1,0 +1,259 @@
+---
+title: Functions
+description: Learn how to define and use functions in Vim script.
+---
+
+Functions allow you to organize code into reusable blocks. Vim provides many built-in functions and lets you define your own.
+
+## Calling functions
+
+Call a function with parentheses containing arguments:
+
+```vim
+search("Date: ", "W")
+let line = getline(".")
+let result = substitute(line, '\a', "*", "g")
+```
+
+In Vim9 script, you can omit the `call` command. In legacy script and on the command line, use `call`:
+
+```vim
+call search("Date: ", "W")
+```
+
+## Defining functions
+
+Define functions with the `:function` command in legacy script:
+
+```vim
+function! MyFunction(arg1, arg2)
+  let result = a:arg1 + a:arg2
+  return result
+endfunction
+```
+
+In Vim9 script, use `def` for better performance:
+
+```vim
+vim9script
+def MyFunction(arg1: number, arg2: number): number
+  var result = arg1 + arg2
+  return result
+enddef
+```
+
+## Function parameters
+
+Specify parameters in the function definition:
+
+<ParamField path="a:arg" type="required">
+  Function arguments are accessed with `a:` prefix in legacy script
+</ParamField>
+
+<ParamField path="..." type="variadic">
+  Variable number of arguments with `...` (a:000, a:1, a:2, etc.)
+</ParamField>
+
+```vim
+function! PrintArgs(...)
+  echo "Number of args: " .. a:0
+  for arg in a:000
+    echo arg
+  endfor
+endfunction
+
+call PrintArgs(1, 2, 3)
+```
+
+In Vim9 script, parameters are directly accessible:
+
+```vim
+vim9script
+def PrintGreeting(name: string, age: number = 0)
+  if age > 0
+    echo $"Hello {name}, age {age}"
+  else
+    echo $"Hello {name}"
+  endif
+enddef
+```
+
+## Return values
+
+Use `return` to return a value from a function:
+
+```vim
+function! Double(num)
+  return a:num * 2
+endfunction
+
+let result = Double(21)  " 42
+```
+
+If no `return` statement is executed, the function returns 0.
+
+## Function scope
+
+Function names must start with a capital letter or `s:` for script-local:
+
+<ParamField path="FunctionName" type="global">
+  Global function, starts with capital letter
+</ParamField>
+
+<ParamField path="s:FunctionName" type="script-local">
+  Local to the script file
+</ParamField>
+
+<ParamField path="g:FunctionName" type="explicit-global">
+  Explicitly global function
+</ParamField>
+
+```vim
+vim9script
+
+" Script-local function
+def s:HelperFunction(): string
+  return "helper"
+enddef
+
+" Global function
+def g:PublicFunction(): string
+  return s:HelperFunction() .. " result"
+enddef
+```
+
+## Function references
+
+Create a reference to a function:
+
+```vim
+let Fn = function('MyFunc')
+let result = Fn()
+
+" With bound arguments (Partial)
+let Callback = function('MyFunc', [arg1, arg2])
+call Callback()
+```
+
+In Vim9 script:
+
+```vim
+vim9script
+var Fn = MyFunc
+var result = Fn()
+```
+
+## Lambda expressions
+
+Create anonymous functions with lambda expressions:
+
+```vim
+" Legacy script
+let Callback = {arg -> arg * 2}
+echo Callback(21)  " 42
+
+" Vim9 script
+vim9script
+var Callback = (arg) => arg * 2
+echo Callback(21)  " 42
+```
+
+Useful with `map()`, `filter()`, and other list functions:
+
+```vim
+let numbers = [1, 2, 3, 4]
+call map(numbers, {_, v -> v * 2})
+echo numbers  " [2, 4, 6, 8]
+```
+
+## Dictionary functions
+
+Define functions as Dictionary entries:
+
+```vim
+let mydict = {'data': [0, 1, 2, 3]}
+
+function! mydict.len() dict
+  return len(self.data)
+endfunction
+
+echo mydict.len()  " 4
+```
+
+The `self` variable refers to the Dictionary.
+
+## Autoload functions
+
+Define functions that load automatically:
+
+```vim
+" In autoload/mylib.vim
+function! mylib#DoSomething()
+  echo "Something"
+endfunction
+
+" Use from anywhere
+call mylib#DoSomething()
+```
+
+The function only loads when first called, improving startup time.
+
+## Function attributes
+
+Specify function behavior with attributes:
+
+<ParamField path="abort" type="attribute">
+  Stop on first error
+</ParamField>
+
+<ParamField path="range" type="attribute">
+  Function handles a range of lines
+</ParamField>
+
+<ParamField path="dict" type="attribute">
+  Function is a dictionary function
+</ParamField>
+
+<ParamField path="closure" type="attribute">
+  Function is a closure
+</ParamField>
+
+```vim
+function! MyFunc() abort
+  " Stops execution on first error
+endfunction
+
+function! MyRange() range
+  echo a:firstline .. '-' .. a:lastline
+endfunction
+```
+
+## Recursive functions
+
+Functions can call themselves:
+
+```vim
+function! Factorial(n)
+  if a:n <= 1
+    return 1
+  else
+    return a:n * Factorial(a:n - 1)
+  endif
+endfunction
+
+echo Factorial(5)  " 120
+```
+
+## Function overloading
+
+In Vim9 script, you cannot overload functions, but you can use optional parameters:
+
+```vim
+vim9script
+def Greet(name: string, title: string = 'Mr.'): string
+  return $"{title} {name}"
+enddef
+
+echo Greet('Smith')             " Mr. Smith
+echo Greet('Smith', 'Dr.')      " Dr. Smith
+```

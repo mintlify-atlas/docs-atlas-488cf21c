@@ -1,0 +1,308 @@
+---
+title: Plugin file structure
+description: Understand how to organize your plugin files and directories
+---
+
+Organizing your plugin files correctly ensures they work properly and can be easily distributed and maintained.
+
+## Plugin directory structure
+
+Vim uses a standard directory structure for plugins. Here's the recommended layout:
+
+```
+your-plugin/
+├── plugin/
+│   └── yourplugin.vim       # Main plugin file (loaded at startup)
+├── autoload/
+│   └── yourplugin.vim       # Autoloaded functions
+├── ftplugin/
+│   └── filetype.vim         # Filetype-specific settings
+├── syntax/
+│   └── filetype.vim         # Syntax highlighting
+├── compiler/
+│   └── compiler.vim         # Compiler settings
+├── doc/
+│   └── yourplugin.txt       # Documentation
+└── ftdetect/
+    └── filetype.vim         # Filetype detection
+```
+
+## Directory purposes
+
+### plugin/
+
+Files in this directory are sourced automatically when Vim starts. Use this for:
+- User commands
+- Mappings
+- Menu items
+- Initial setup code
+
+```vim
+" plugin/myplugin.vim
+vim9script
+
+if exists("g:loaded_myplugin")
+  finish
+endif
+g:loaded_myplugin = 1
+
+command -nargs=1 MyCommand call myplugin#DoSomething(<f-args>)
+```
+
+### autoload/
+
+Functions in autoload scripts are loaded only when called. This speeds up Vim startup. Use the `#` syntax:
+
+```vim
+" autoload/myplugin.vim
+vim9script
+
+export def DoSomething(arg: string)
+  echo "Processing: " .. arg
+enddef
+```
+
+Call autoload functions using:
+
+```vim
+call myplugin#DoSomething('test')
+```
+
+For subdirectories:
+
+```vim
+" autoload/myplugin/util.vim
+def myplugin#util#Helper()
+  # Helper function
+enddef
+```
+
+Call with:
+
+```vim
+call myplugin#util#Helper()
+```
+
+### ftplugin/
+
+Filetype plugins are loaded when a file of a specific type is opened. Name them according to the filetype:
+
+```
+ftplugin/python.vim
+ftplugin/python_extra.vim  # Additional Python settings
+ftplugin/python/custom.vim # Alternative structure
+```
+
+Example filetype plugin:
+
+```vim
+" ftplugin/python.vim
+vim9script
+
+if exists("b:did_ftplugin")
+  finish
+endif
+b:did_ftplugin = 1
+
+setlocal expandtab
+setlocal shiftwidth=4
+setlocal softtabstop=4
+
+b:undo_ftplugin = "setlocal et< sw< sts<"
+```
+
+### syntax/
+
+Syntax files define syntax highlighting for filetypes:
+
+```vim
+" syntax/myfiletype.vim
+if exists("b:current_syntax")
+  finish
+endif
+
+syn keyword myKeyword function class return
+syn match myComment "#.*$"
+
+hi def link myKeyword Keyword
+hi def link myComment Comment
+
+b:current_syntax = "myfiletype"
+```
+
+### compiler/
+
+Compiler plugins set options for specific compilers:
+
+```vim
+" compiler/mycompiler.vim
+vim9script
+
+if exists("g:current_compiler")
+  finish
+endif
+g:current_compiler = "mycompiler"
+
+CompilerSet makeprg=mycompiler
+CompilerSet errorformat=%f:%l:%c:\ %m
+```
+
+Users load compiler settings with:
+
+```vim
+:compiler mycompiler
+```
+
+### doc/
+
+Documentation files use Vim's help file format:
+
+```
+*myplugin.txt*  Plugin for doing something useful
+
+This plugin provides functionality to...
+
+Mappings:
+<Leader>m   or   <Plug>MyPluginMap
+    Execute the main function.
+
+Commands:
+:MyCommand {arg}
+    Process {arg} and display results.
+
+                                            *myplugin-settings*
+Settings:
+g:myplugin_option    Default: 1
+    Controls the behavior...
+```
+
+The first line must start with `*` in the first column for the help system to recognize it.
+
+### ftdetect/
+
+Filetype detection scripts identify file types:
+
+```vim
+" ftdetect/myfiletype.vim
+au BufNewFile,BufRead *.myext setlocal filetype=myfiletype
+```
+
+## Using the pack system
+
+Vim's built-in package manager uses a specific structure:
+
+```
+~/.vim/pack/myplugins/start/plugin-name/
+├── plugin/
+├── autoload/
+├── ftplugin/
+└── doc/
+```
+
+Plugins in `start/` are loaded automatically at startup. For optional plugins:
+
+```
+~/.vim/pack/myplugins/opt/plugin-name/
+```
+
+Load optional plugins manually:
+
+```vim
+:packadd plugin-name
+```
+
+## Import and export structure
+
+For larger plugins, use Vim9 script's import/export feature:
+
+```
+your-plugin/
+├── plugin/
+│   └── init.vim             # Main entry point
+└── lib/
+    ├── core.vim             # Core functionality
+    ├── utils.vim            # Utility functions
+    └── config.vim           # Configuration
+```
+
+Example structure:
+
+```vim
+" plugin/init.vim
+vim9script
+
+import "../lib/core.vim"
+import "../lib/utils.vim"
+
+command MyPlugin call core.Execute()
+```
+
+```vim
+" lib/core.vim
+vim9script
+
+export def Execute()
+  echo "Plugin executing"
+enddef
+```
+
+## Combining approaches
+
+You can combine autoload with import/export for maximum efficiency:
+
+```vim
+" plugin/init.vim
+vim9script
+
+import autoload "../lib/core.vim"
+
+command MyPlugin call core.Execute()
+```
+
+This delays loading `core.vim` until `Execute()` is actually called.
+
+## File naming conventions
+
+Follow these naming conventions:
+
+- **Plugin files**: Use lowercase with underscores: `my_plugin.vim`
+- **Autoload files**: Match the function prefix: `myplugin.vim` for `myplugin#function()`
+- **Filetype plugins**: Use the exact filetype name: `python.vim`, `javascript.vim`
+- **Multiple plugins for same filetype**: Add suffix: `python_custom.vim`
+
+## Directory layout example
+
+Here's a complete example for a comment plugin:
+
+```
+comment/
+├── plugin/
+│   └── comment.vim          # Commands and mappings
+├── autoload/
+│   └── comment.vim          # Core comment functions
+│       ├── language.vim     # Language-specific handlers
+│       └── utils.vim        # Utility functions
+├── ftplugin/
+│   ├── python.vim           # Python comment settings
+│   ├── javascript.vim       # JavaScript comment settings
+│   └── vim.vim              # Vim script comment settings
+└── doc/
+    └── comment.txt          # Documentation
+```
+
+## Best practices
+
+- Keep plugin initialization minimal - use autoload for heavy functionality
+- Use descriptive directory and file names
+- Document your plugin structure in the README
+- Follow Vim's standard directory conventions
+- Use relative imports when organizing code across multiple files
+- Consider using the lib/ directory for Vim9 script modules
+
+## Next steps
+
+Learn more about:
+
+- [Creating your first plugin](/plugins/creating-plugins)
+- [Filetype-specific plugins](/plugins/filetype-plugins)
+- [Plugin development best practices](/plugins/best-practices)

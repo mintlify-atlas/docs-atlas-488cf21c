@@ -1,0 +1,339 @@
+---
+title: Normal mode commands
+description: Complete reference for Vim normal mode commands
+---
+
+Normal mode is Vim's default mode for navigation and text manipulation. Commands in normal mode are typically single characters or short key sequences.
+
+## Motion commands
+
+Motion commands move the cursor around the document.
+
+### Basic motions
+
+| Command | Description |
+|---------|-------------|
+| `h` | Move left one character |
+| `j` | Move down one line |
+| `k` | Move up one line |
+| `l` | Move right one character |
+| `w` | Move forward to start of next word |
+| `b` | Move backward to start of previous word |
+| `e` | Move forward to end of word |
+| `W` | Move forward to start of next WORD |
+| `B` | Move backward to start of previous WORD |
+| `E` | Move forward to end of WORD |
+
+### Line motions
+
+| Command | Description |
+|---------|-------------|
+| `0` | Move to start of line |
+| `^` | Move to first non-blank character of line |
+| `$` | Move to end of line |
+| `g_` | Move to last non-blank character of line |
+| `+` or `<CR>` | Move to first character of next line |
+| `-` | Move to first character of previous line |
+
+### Screen motions
+
+| Command | Description |
+|---------|-------------|
+| `H` | Move to top of screen |
+| `M` | Move to middle of screen |
+| `L` | Move to bottom of screen |
+| `gg` | Move to first line of file |
+| `G` | Move to last line of file |
+| `{count}G` | Move to line {count} |
+| `{count}%` | Move to {count} percent in file |
+
+## Editing commands
+
+### Insert commands
+
+<AccordionGroup>
+  <Accordion title="i - Insert before cursor">
+    Enter insert mode before the cursor position.
+
+    ```vim
+    i          " Insert before cursor
+    3i         " Repeat insertion 3 times
+    ```
+  </Accordion>
+
+  <Accordion title="a - Append after cursor">
+    Enter insert mode after the cursor position.
+
+    ```vim
+    a          " Append after cursor
+    3a         " Repeat insertion 3 times
+    ```
+  </Accordion>
+
+  <Accordion title="I - Insert at line start">
+    Enter insert mode at the first non-blank character of the line.
+
+    ```vim
+    I          " Insert at start of line
+    ```
+  </Accordion>
+
+  <Accordion title="A - Append at line end">
+    Enter insert mode at the end of the line.
+
+    ```vim
+    A          " Append at end of line
+    ```
+  </Accordion>
+
+  <Accordion title="o - Open line below">
+    Open a new line below the current line and enter insert mode.
+
+    ```vim
+    o          " Open line below
+    3o         " Open 3 lines below
+    ```
+  </Accordion>
+
+  <Accordion title="O - Open line above">
+    Open a new line above the current line and enter insert mode.
+
+    ```vim
+    O          " Open line above
+    3O         " Open 3 lines above
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Delete commands
+
+| Command | Description |
+|---------|-------------|
+| `x` | Delete character under cursor |
+| `X` | Delete character before cursor |
+| `dd` | Delete current line |
+| `D` | Delete from cursor to end of line |
+| `d{motion}` | Delete text moved over by {motion} |
+| `dw` | Delete word |
+| `db` | Delete word backward |
+| `d$` | Delete to end of line |
+| `d0` | Delete to start of line |
+
+### Change commands
+
+| Command | Description |
+|---------|-------------|
+| `r{char}` | Replace character under cursor with {char} |
+| `R` | Enter replace mode |
+| `cc` | Change current line |
+| `C` | Change from cursor to end of line |
+| `c{motion}` | Change text moved over by {motion} |
+| `cw` | Change word |
+| `ciw` | Change inner word |
+| `ci"` | Change inside quotes |
+
+### Copy and paste
+
+| Command | Description |
+|---------|-------------|
+| `y{motion}` | Yank (copy) text moved over by {motion} |
+| `yy` or `Y` | Yank current line |
+| `p` | Put (paste) after cursor or below line |
+| `P` | Put before cursor or above line |
+| `"{register}y` | Yank into register |
+| `"{register}p` | Put from register |
+
+## Search commands
+
+<AccordionGroup>
+  <Accordion title="/ - Search forward">
+    Search forward for a pattern.
+
+    ```vim
+    /pattern<CR>       " Search forward
+    //pattern/e<CR>    " Search with offset
+    /<CR>              " Repeat last search
+    ```
+
+    Examples:
+    ```vim
+    /function          " Find 'function'
+    /\<word\>          " Find whole word
+    ```
+  </Accordion>
+
+  <Accordion title="? - Search backward">
+    Search backward for a pattern.
+
+    ```vim
+    ?pattern<CR>       " Search backward
+    ?<CR>              " Repeat last search backward
+    ```
+
+    Examples:
+    ```vim
+    ?function          " Find 'function' backward
+    ```
+  </Accordion>
+
+  <Accordion title="* - Search word under cursor">
+    Search forward for the word under the cursor.
+
+    ```vim
+    *                  " Search forward
+    g*                 " Search forward (partial match)
+    ```
+  </Accordion>
+
+  <Accordion title="# - Search word backward">
+    Search backward for the word under the cursor.
+
+    ```vim
+    #                  " Search backward
+    g#                 " Search backward (partial match)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Search navigation
+
+| Command | Description |
+|---------|-------------|
+| `n` | Repeat search in same direction |
+| `N` | Repeat search in opposite direction |
+| `f{char}` | Find {char} forward in line |
+| `F{char}` | Find {char} backward in line |
+| `t{char}` | Move before {char} forward in line |
+| `T{char}` | Move before {char} backward in line |
+| `;` | Repeat last f, t, F, or T |
+| `,` | Repeat last f, t, F, or T reversed |
+
+## Text objects
+
+Text objects define regions of text for operators to work on.
+
+### Inner objects (exclude delimiters)
+
+| Command | Description |
+|---------|-------------|
+| `iw` | Inner word |
+| `iW` | Inner WORD |
+| `is` | Inner sentence |
+| `ip` | Inner paragraph |
+| `i"` | Inner double quoted string |
+| `i'` | Inner single quoted string |
+| `i(` or `ib` | Inner parentheses block |
+| `i{` or `iB` | Inner curly braces block |
+| `i[` | Inner square brackets block |
+| `i<` | Inner angle brackets block |
+| `it` | Inner tag block |
+
+### Outer objects (include delimiters)
+
+| Command | Description |
+|---------|-------------|
+| `aw` | A word (with whitespace) |
+| `aW` | A WORD (with whitespace) |
+| `as` | A sentence (with whitespace) |
+| `ap` | A paragraph (with whitespace) |
+| `a"` | A double quoted string (with quotes) |
+| `a'` | A single quoted string (with quotes) |
+| `a(` or `ab` | A parentheses block (with parens) |
+| `a{` or `aB` | A curly braces block (with braces) |
+| `a[` | A square brackets block (with brackets) |
+| `a<` | An angle brackets block (with brackets) |
+| `at` | A tag block (with tags) |
+
+Examples:
+```vim
+diw            " Delete inner word
+ci"            " Change inside quotes
+da(            " Delete around parentheses
+yap            " Yank a paragraph
+```
+
+## Undo and redo
+
+| Command | Description |
+|---------|-------------|
+| `u` | Undo last change |
+| `U` | Undo all changes on current line |
+| `<C-r>` | Redo (undo the undo) |
+| `g-` | Go to older text state |
+| `g+` | Go to newer text state |
+
+## Marks and jumps
+
+### Marks
+
+| Command | Description |
+|---------|-------------|
+| `m{a-zA-Z}` | Set mark at current position |
+| `'{mark}` | Jump to line of mark |
+| `` `{mark}`` | Jump to position of mark |
+| `''` | Jump to previous mark |
+| ``` `` ``` | Jump to last jump position |
+
+### Jump list
+
+| Command | Description |
+|---------|-------------|
+| `<C-o>` | Jump to older position in jump list |
+| `<C-i>` or `<Tab>` | Jump to newer position in jump list |
+
+## Registers
+
+Registers store text for copying and pasting.
+
+| Register | Description |
+|----------|-------------|
+| `""` | Unnamed register (default) |
+| `"0-9` | Numbered registers (yank history) |
+| `"a-z` | Named registers (your storage) |
+| `"A-Z` | Named registers (append mode) |
+| `"-` | Small delete register |
+| `"+` | System clipboard |
+| `"*` | Selection clipboard |
+| `"/` | Last search pattern |
+| `":` | Last command |
+
+Examples:
+```vim
+"ayy           " Yank line into register a
+"ap            " Paste from register a
+"+y            " Yank to system clipboard
+```
+
+## Visual mode
+
+| Command | Description |
+|---------|-------------|
+| `v` | Start characterwise visual mode |
+| `V` | Start linewise visual mode |
+| `<C-v>` | Start blockwise visual mode |
+| `gv` | Reselect last visual selection |
+| `o` | Move to other end of selection |
+| `O` | Move to other corner (block mode) |
+
+## Operators with counts
+
+Most commands accept a count prefix:
+
+```vim
+3dd            " Delete 3 lines
+2w             " Move 2 words forward
+5j             " Move 5 lines down
+4x             " Delete 4 characters
+2yy            " Yank 2 lines
+```
+
+## Combining operators and motions
+
+Operators combine with motions:
+
+```vim
+d2w            " Delete 2 words
+y$             " Yank to end of line
+c3j            " Change 3 lines down
+>ip            " Indent paragraph
+```

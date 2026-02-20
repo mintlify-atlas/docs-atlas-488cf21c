@@ -1,0 +1,271 @@
+---
+title: User commands
+description: Learn how to define custom Ex commands in Vim.
+---
+
+Vim allows you to define your own command-line commands. You can execute these just like any built-in command.
+
+## Defining commands
+
+Use the `:command` command to define a custom command:
+
+```vim
+command DeleteFirst 1delete
+```
+
+Now you can execute `:DeleteFirst` to delete the first line.
+
+<Note>
+User-defined command names must start with a capital letter. You cannot use `:X`, `:Next`, or `:Print`. The underscore cannot be used as the first character.
+</Note>
+
+## Command arguments
+
+Specify how many arguments the command accepts:
+
+<ParamField path="-nargs=0" type="option">
+  No arguments (default)
+</ParamField>
+
+<ParamField path="-nargs=1" type="option">
+  Exactly one argument
+</ParamField>
+
+<ParamField path="-nargs=*" type="option">
+  Any number of arguments
+</ParamField>
+
+<ParamField path="-nargs=?" type="option">
+  Zero or one argument
+</ParamField>
+
+<ParamField path="-nargs=+" type="option">
+  One or more arguments
+</ParamField>
+
+```vim
+command -nargs=1 Error echo "Error: " .. <args>
+command -nargs=+ Say echo <q-args>
+```
+
+## Accessing arguments
+
+Use special keywords to access command arguments:
+
+<ParamField path="<args>" type="keyword">
+  The arguments as typed
+</ParamField>
+
+<ParamField path="<q-args>" type="keyword">
+  The arguments as a single string, properly quoted
+</ParamField>
+
+<ParamField path="<f-args>" type="keyword">
+  The arguments as individual function arguments
+</ParamField>
+
+```vim
+command -nargs=+ Say echo <q-args>
+command -nargs=* DoIt call AFunction(<f-args>)
+```
+
+Example usage:
+
+```vim
+:Say Hello World
+" Echoes: Hello World
+
+:DoIt arg1 arg2 arg3
+" Calls: AFunction("arg1", "arg2", "arg3")
+```
+
+## Range support
+
+Allow your command to accept a range:
+
+<ParamField path="-range" type="option">
+  Range allowed, default is current line
+</ParamField>
+
+<ParamField path="-range=%" type="option">
+  Range allowed, default is whole file
+</ParamField>
+
+<ParamField path="-range={count}" type="option">
+  Range with a default count
+</ParamField>
+
+```vim
+command -range=% SaveIt <line1>,<line2>write! save_file
+```
+
+Use `<line1>` and `<line2>` to access the first and last line numbers:
+
+```vim
+command -range=% AddLineNumbers <line1>,<line2>!nl
+```
+
+## Count support
+
+Accept a count before the command:
+
+```vim
+command -count=1 MyCommand echo "Count: " .. <count>
+```
+
+Example usage:
+
+```vim
+:5MyCommand
+" Echoes: Count: 5
+```
+
+## Bang support
+
+Allow a `!` after the command name:
+
+```vim
+command -bang Quit if <bang>0 | quit! | else | quit | endif
+```
+
+Use `<bang>` which evaluates to `!` if provided, empty otherwise:
+
+```vim
+:Quit      " calls quit
+:Quit!     " calls quit!
+```
+
+## Register support
+
+Accept a register specification:
+
+```vim
+command -register MyYank echo "Register: " .. <reg>
+```
+
+The register is available as `<reg>` (or `<register>`).
+
+## Completion support
+
+Provide completion for command arguments:
+
+<ParamField path="-complete=file" type="option">
+  File name completion
+</ParamField>
+
+<ParamField path="-complete=buffer" type="option">
+  Buffer name completion
+</ParamField>
+
+<ParamField path="-complete=command" type="option">
+  Ex command completion
+</ParamField>
+
+<ParamField path="-complete=function" type="option">
+  Function name completion
+</ParamField>
+
+<ParamField path="-complete=custom,{func}" type="option">
+  Custom completion function
+</ParamField>
+
+```vim
+command -nargs=1 -complete=file Edit edit <args>
+command -nargs=1 -complete=custom,ListUsers Greet echo "Hello " .. <args>
+```
+
+## Buffer-local commands
+
+Define commands that only work in the current buffer:
+
+```vim
+command -buffer MyCommand echo "Buffer command"
+```
+
+Buffer-local commands are removed when the buffer is deleted.
+
+## Command attributes
+
+<ParamField path="-bar" type="option">
+  Command can be followed by | and another command
+</ParamField>
+
+<ParamField path="-buffer" type="option">
+  Command is local to current buffer
+</ParamField>
+
+<ParamField path="-register" type="option">
+  First argument can be a register
+</ParamField>
+
+<ParamField path="-bang" type="option">
+  Command can be followed by !
+</ParamField>
+
+```vim
+command -bar -bang WriteQuit write<bang> | quit<bang>
+```
+
+## Redefining commands
+
+To redefine an existing command, use `!`:
+
+```vim
+command Say echo "First definition"
+command! Say echo "Redefined"
+```
+
+## Deleting commands
+
+Remove a user-defined command:
+
+```vim
+delcommand MyCommand
+```
+
+Remove all user-defined commands:
+
+```vim
+comclear
+```
+
+<Warning>
+Be careful with `:comclear` as it cannot be undone.
+</Warning>
+
+## Listing commands
+
+List all user-defined commands:
+
+```vim
+command
+```
+
+List commands starting with a specific name:
+
+```vim
+command Save
+```
+
+## Advanced example
+
+Combine multiple options:
+
+```vim
+command -nargs=+ -complete=file -range=% -bar ProcessFiles <line1>,<line2>call ProcessRange(<f-args>)
+
+function! ProcessRange(...) range
+  for file in a:000
+    execute a:firstline .. ',' .. a:lastline .. 'global/pattern/call DoSomething("' .. file .. '")'
+  endfor
+endfunction
+```
+
+## Special characters
+
+Use `<lt>` to include a literal `<` character:
+
+```vim
+command Print echo "<lt>tag>"
+" Outputs: <tag>
+```

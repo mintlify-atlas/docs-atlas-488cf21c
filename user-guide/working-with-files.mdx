@@ -1,0 +1,369 @@
+---
+title: File management
+description: Learn how to open, save, and manage multiple files in Vim
+---
+
+# File management
+
+Vim provides powerful features for working with files, including editing multiple files, switching between them, and managing file operations.
+
+## Opening files
+
+<Tabs>
+  <Tab title="From command line">
+    Open Vim with one or more files:
+    ```bash
+    vim file.txt
+    vim file1.txt file2.txt file3.txt
+    vim *.txt
+    ```
+  </Tab>
+  
+  <Tab title="From within Vim">
+    ```vim
+    :edit file.txt       " Open file
+    :e file.txt          " Shorthand
+    :edit!               " Reload current file
+    :edit .              " File browser (netrw)
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  If you have unsaved changes, Vim will warn you. Use `:edit!` to discard changes and reload.
+</Note>
+
+## Saving files
+
+<Tabs>
+  <Tab title="Write">
+    ```vim
+    :write               " Save current file
+    :w                   " Shorthand
+    :w newfile.txt       " Save as newfile.txt
+    :w!                  " Force write (override readonly)
+    ```
+  </Tab>
+  
+  <Tab title="Save range">
+    Write only part of a file:
+    ```vim
+    :10,20w file.txt     " Write lines 10-20
+    :.,$w file.txt       " Write from cursor to end
+    :'<,'>w file.txt     " Write visual selection
+    ```
+  </Tab>
+  
+  <Tab title="Append">
+    Append to existing file:
+    ```vim
+    :w >> logfile.txt    " Append to file
+    ```
+  </Tab>
+</Tabs>
+
+## Quitting
+
+<Tabs>
+  <Tab title="Basic">
+    | Command | Action |
+    |---------|--------|
+    | `:q` | Quit (warns if unsaved) |
+    | `:q!` | Quit without saving |
+    | `:wq` | Write and quit |
+    | `ZZ` | Write (if changed) and quit |
+    | `ZQ` | Quit without checking changes |
+  </Tab>
+  
+  <Tab title="Multiple files">
+    ```vim
+    :qa              " Quit all windows
+    :qa!             " Quit all, discard changes
+    :wqa             " Write all and quit
+    :wall            " Write all changed files
+    ```
+  </Tab>
+</Tabs>
+
+## Working with multiple files
+
+### The argument list
+
+Files specified when starting Vim form the argument list:
+
+<Steps>
+  <Step title="View argument list">
+    ```vim
+    :args
+    ```
+    Output:
+    ```
+    [file1.txt] file2.txt file3.txt
+    ```
+    Brackets show current file.
+  </Step>
+  
+  <Step title="Navigate files">
+    | Command | Action |
+    |---------|--------|
+    | `:next` | Edit next file |
+    | `:n` | Shorthand for `:next` |
+    | `:previous` | Edit previous file |
+    | `:prev` | Shorthand |
+    | `:first` | Edit first file |
+    | `:last` | Edit last file |
+  </Step>
+  
+  <Step title="Write and move">
+    ```vim
+    :wnext           " Save and edit next
+    :wn              " Shorthand
+    :wprevious       " Save and edit previous
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  Use `:next!` to move to next file without saving changes.
+</Tip>
+
+### Redefining the argument list
+
+```vim
+:args *.txt              " Set args to all .txt files
+:args file1 file2        " Set specific files
+:args `grep -l word *`   " Set to files containing "word"
+```
+
+## The alternate file
+
+Vim remembers the previous file you edited:
+
+```vim
+Ctrl-^    " Switch to alternate file
+:e #      " Edit alternate file
+```
+
+<Tabs>
+  <Tab title="Example workflow">
+    <Steps>
+      <Step title="Edit first file">
+        ```vim
+        :e file1.txt
+        ```
+      </Step>
+      
+      <Step title="Edit second file">
+        ```vim
+        :e file2.txt
+        ```
+      </Step>
+      
+      <Step title="Toggle between files">
+        ```vim
+        Ctrl-^    " Back to file1.txt
+        Ctrl-^    " Back to file2.txt
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+  
+  <Tab title="Special marks">
+    When switching files:
+    ```vim
+    '"    " Jump to position where you left file
+    '.    " Jump to position of last change
+    ```
+  </Tab>
+</Tabs>
+
+## File explorer (netrw)
+
+Vim includes a built-in file browser:
+
+<Tabs>
+  <Tab title="Open explorer">
+    ```vim
+    :edit .              " Open current directory
+    :Explore             " Open file explorer
+    :E                   " Shorthand
+    :Sexplore            " Open in split
+    :Vexplore            " Open in vertical split
+    ```
+  </Tab>
+  
+  <Tab title="Navigation">
+    In the explorer:
+    
+    | Key | Action |
+    |-----|--------|
+    | `Enter` | Open file/directory |
+    | `-` | Go up directory |
+    | `i` | Cycle through view styles |
+    | `s` | Change sort order |
+    | `r` | Reverse sort order |
+    | `D` | Delete file |
+    | `R` | Rename file |
+    | `%` | Create new file |
+    | `d` | Create new directory |
+  </Tab>
+</Tabs>
+
+## Reading and inserting files
+
+<Tabs>
+  <Tab title="Read file">
+    Insert file contents:
+    ```vim
+    :read file.txt       " Insert below cursor
+    :r file.txt          " Shorthand
+    :0r file.txt         " Insert at top
+    :$r file.txt         " Insert at end
+    ```
+  </Tab>
+  
+  <Tab title="Read command output">
+    Insert command output:
+    ```vim
+    :read !ls            " Insert directory listing
+    :r !date             " Insert current date
+    :0r !date            " Insert date at top
+    ```
+  </Tab>
+</Tabs>
+
+## Backup files
+
+Control how Vim creates backups:
+
+<Tabs>
+  <Tab title="Enable backups">
+    ```vim
+    :set backup              " Keep backup file
+    :set nobackup            " Don't keep backup
+    :set backupext=.bak      " Backup extension
+    :set backupdir=~/.vim/backup  " Backup directory
+    ```
+  </Tab>
+  
+  <Tab title="Swap files">
+    ```vim
+    :set swapfile            " Use swap files (default)
+    :set noswapfile          " Don't use swap files
+    :set directory=~/.vim/swap  " Swap file directory
+    ```
+  </Tab>
+  
+  <Tab title="Patch mode">
+    Keep original file:
+    ```vim
+    :set patchmode=.orig     " Keep original as .orig
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+  Swap files help recover work after a crash. See `:help swap-file` for details.
+</Note>
+
+## File information
+
+<Tabs>
+  <Tab title="Current file">
+    ```vim
+    Ctrl-G               " Show file info
+    :file                " Show file name and status
+    :f                   " Shorthand
+    ```
+  </Tab>
+  
+  <Tab title="Change file name">
+    ```vim
+    :file newname.txt    " Rename buffer
+    :saveas newname.txt  " Save as and continue editing
+    :sav newname.txt     " Shorthand
+    ```
+  </Tab>
+</Tabs>
+
+## Read-only mode
+
+<Tabs>
+  <Tab title="Open read-only">
+    ```bash
+    vim -R file.txt      # Open read-only
+    view file.txt        # Same as vim -R
+    vim -M file.txt      # Modifiable off
+    ```
+  </Tab>
+  
+  <Tab title="In Vim">
+    ```vim
+    :set readonly        " Make read-only
+    :set noreadonly      " Make writable
+    :w!                  " Force write
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  Use `view` command instead of `vim -R` for easier typing.
+</Tip>
+
+## Auto-writing
+
+Automatically save files:
+
+```vim
+:set autowrite           " Write when changing files
+:set noautowrite         " Don't auto-write
+:set autowriteall        " Write on more commands
+```
+
+<Note>
+  With `autowrite`, Vim saves automatically when you use `:next`, `:prev`, etc.
+</Note>
+
+## Encryption
+
+Encrypt files:
+
+```vim
+:X                   " Set encryption key
+:set key=            " Clear encryption
+```
+
+<Warning>
+  Vim's encryption is not very strong. Use external tools for sensitive data.
+</Warning>
+
+## Recovering files
+
+After a crash:
+
+```bash
+vim -r                   # List swap files
+vim -r file.txt          # Recover file
+```
+
+In Vim:
+```vim
+:recover file.txt        " Recover file
+```
+
+## File path completion
+
+Use tab completion for file names:
+
+```vim
+:edit ~/doc<Tab>         " Complete path
+:edit **/*test<Tab>      " Find in subdirectories
+```
+
+<Tip>
+  Enable wildmenu for better completion:
+  ```vim
+  :set wildmenu
+  :set wildmode=longest:full,full
+  ```
+</Tip>

@@ -1,0 +1,410 @@
+---
+title: Functions overview
+description: Overview of Vim's built-in functions and function system
+---
+
+Vim includes hundreds of built-in functions for text manipulation, file operations, system interaction, and more. This guide provides an overview of the function system and function categories.
+
+## Calling functions
+
+Functions in Vim are called using parentheses:
+
+```vim
+:echo strlen("hello")      " Returns 5
+:let result = abs(-42)     " result = 42
+:call append(line('$'), "new line")
+```
+
+## Function categories
+
+Vim's built-in functions are organized into several categories:
+
+### String manipulation
+
+| Function | Description |
+|----------|-------------|
+| `strlen()` | String length |
+| `strpart()` | Extract substring |
+| `substitute()` | Search and replace in string |
+| `toupper()` | Convert to uppercase |
+| `tolower()` | Convert to lowercase |
+| `split()` | Split string into list |
+| `join()` | Join list into string |
+
+See [String functions](/reference/string-functions) for complete reference.
+
+### List and dictionary operations
+
+| Function | Description |
+|----------|-------------|
+| `add()` | Add item to list |
+| `insert()` | Insert item at position |
+| `remove()` | Remove item from list |
+| `len()` | Get list/dict length |
+| `empty()` | Check if empty |
+| `sort()` | Sort list |
+| `map()` | Transform each item |
+| `filter()` | Filter items |
+
+See [List functions](/reference/list-functions) for complete reference.
+
+### System and file operations
+
+| Function | Description |
+|----------|-------------|
+| `system()` | Execute shell command |
+| `systemlist()` | Execute and return list |
+| `readfile()` | Read file into list |
+| `writefile()` | Write list to file |
+| `glob()` | Expand file wildcards |
+| `executable()` | Check if program exists |
+| `getenv()` | Get environment variable |
+
+See [System functions](/reference/system-functions) for complete reference.
+
+## Function syntax
+
+### Basic function call
+
+```vim
+function_name(arg1, arg2, ...)
+```
+
+### Method call syntax
+
+In Vim 8.2+, you can use method call syntax:
+
+```vim
+" Traditional syntax
+:echo strlen("hello")
+
+" Method syntax
+:echo "hello"->strlen()
+```
+
+Method syntax is especially useful for chaining:
+
+```vim
+" Traditional (nested)
+:echo toupper(substitute(getline('.'), 'foo', 'bar', 'g'))
+
+" Method (chained)
+:echo getline('.')
+  \ ->substitute('foo', 'bar', 'g')
+  \ ->toupper()
+```
+
+## Defining custom functions
+
+<Accordion title="Basic function definition">
+  Define your own functions using the `:function` command.
+
+  ```vim
+  function! MyFunction(arg1, arg2)
+    " Function body
+    return a:arg1 + a:arg2
+  endfunction
+  ```
+
+  <ParamField path="function!" type="command">
+    The `!` allows redefining the function without error
+  </ParamField>
+
+  <ParamField path="a:" type="prefix">
+    Function arguments are accessed with `a:` prefix
+  </ParamField>
+</Accordion>
+
+<Accordion title="Function with range">
+  Functions can operate on a range of lines:
+
+  ```vim
+  function! ProcessLines() range
+    for lnum in range(a:firstline, a:lastline)
+      let line = getline(lnum)
+      " Process line
+      call setline(lnum, modified_line)
+    endfor
+  endfunction
+  ```
+
+  Call with a range:
+  ```vim
+  :1,10call ProcessLines()
+  ```
+</Accordion>
+
+<Accordion title="Function with variable arguments">
+  Use `...` to accept variable number of arguments:
+
+  ```vim
+  function! Sum(...)
+    let total = 0
+    for arg in a:000
+      let total += arg
+    endfor
+    return total
+  endfunction
+  ```
+
+  - `a:0` - Number of arguments
+  - `a:1, a:2, ...` - Individual arguments
+  - `a:000` - List of all arguments
+</Accordion>
+
+<Accordion title="Dictionary functions">
+  Functions can be bound to dictionaries:
+
+  ```vim
+  let mydict = {}
+  
+  function! mydict.method() dict
+    return self.value
+  endfunction
+  
+  let mydict.value = 42
+  echo mydict.method()    " Returns 42
+  ```
+
+  The `self` variable refers to the dictionary.
+</Accordion>
+
+## Function references (Funcref)
+
+<AccordionGroup>
+  <Accordion title="Creating function references">
+    Create references to functions:
+
+    ```vim
+    " Get reference to built-in function
+    let Fn = function('strlen')
+    echo Fn("hello")        " Returns 5
+    
+    " Get reference to user function
+    function! MyFunc(x)
+      return a:x * 2
+    endfunction
+    let Fn = function('MyFunc')
+    echo Fn(21)             " Returns 42
+    ```
+  </Accordion>
+
+  <Accordion title="Lambda expressions">
+    Create anonymous functions:
+
+    ```vim
+    " Legacy script
+    let Double = {x -> x * 2}
+    echo Double(21)         " Returns 42
+    
+    " Vim9 script
+    var Double = (x) => x * 2
+    echo Double(21)         " Returns 42
+    ```
+
+    Useful with map, filter, etc.:
+    ```vim
+    let numbers = [1, 2, 3, 4]
+    let doubled = map(numbers, {_, v -> v * 2})
+    echo doubled            " [2, 4, 6, 8]
+    ```
+  </Accordion>
+
+  <Accordion title="Partial application">
+    Bind arguments to a function:
+
+    ```vim
+    function! Greet(greeting, name)
+      return a:greeting .. ', ' .. a:name
+    endfunction
+    
+    " Create partial with first argument bound
+    let SayHello = function('Greet', ['Hello'])
+    echo SayHello('World')  " Returns "Hello, World"
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Common function patterns
+
+### Error handling
+
+```vim
+function! SafeOperation()
+  try
+    " Risky operation
+    call SomethingThatMightFail()
+  catch
+    echo "Error: " .. v:exception
+    return 0
+  endtry
+  return 1
+endfunction
+```
+
+### Optional arguments
+
+```vim
+function! MyFunction(required, ...)
+  let optional = a:0 > 0 ? a:1 : 'default'
+  echo a:required .. ' ' .. optional
+endfunction
+
+call MyFunction('hello')           " hello default
+call MyFunction('hello', 'world')  " hello world
+```
+
+### Type checking
+
+```vim
+function! ProcessData(data)
+  if type(a:data) != v:t_list
+    throw 'Expected a list'
+  endif
+  " Process list
+endfunction
+```
+
+## Function information
+
+Get information about functions:
+
+```vim
+:function                " List all functions
+:function MyFunc         " Show function definition
+:function /pattern       " List functions matching pattern
+
+" Check if function exists
+if exists('*MyFunction')
+  call MyFunction()
+endif
+
+" Get function info
+let info = execute('function MyFunction')
+```
+
+## Autoload functions
+
+Organize functions in autoload files for lazy loading:
+
+```vim
+" In ~/.vim/autoload/mylib.vim
+function! mylib#util#helper()
+  " Function implementation
+endfunction
+
+" Call from anywhere
+call mylib#util#helper()
+```
+
+The file is loaded only when the function is first called.
+
+## Script-local functions
+
+Create functions private to a script:
+
+```vim
+" Script-local function (private)
+function! s:HelperFunction()
+  " Implementation
+endfunction
+
+" Public function that uses private helper
+function! PublicFunction()
+  call s:HelperFunction()
+endfunction
+```
+
+## Performance considerations
+
+### Compiled functions (Vim9)
+
+Vim9 script functions are compiled for better performance:
+
+```vim
+vim9script
+
+def FastFunction(n: number): number
+  var total = 0
+  for i in range(n)
+    total += i
+  endfor
+  return total
+enddef
+```
+
+### Avoid expensive operations in loops
+
+```vim
+" Bad: repeated function calls
+for i in range(1000)
+  call strlen(getline(i))  " strlen called 1000 times
+endfor
+
+" Better: cache if possible
+let max = line('$')
+for i in range(1, max)
+  " Process
+endfor
+```
+
+## Debugging functions
+
+Debug functions with these tools:
+
+```vim
+:debug call MyFunction()     " Step through function
+:breakadd func MyFunction    " Set breakpoint
+:breakdel *                  " Clear breakpoints
+```
+
+Add debug messages:
+```vim
+function! MyFunction()
+  echom "Debug: entering MyFunction"  " Use :messages to view
+  " Function body
+endfunction
+```
+
+## Common built-in functions
+
+### Text and buffer manipulation
+
+```vim
+getline(lnum)           " Get line content
+setline(lnum, text)     " Set line content
+append(lnum, text)      " Append after line
+line('.')               " Current line number
+line('$')               " Last line number
+col('.')                " Current column
+```
+
+### File operations
+
+```vim
+readfile('path')        " Read file into list
+writefile(list, 'path') " Write list to file
+filereadable('path')    " Check if file is readable
+glob('*.txt')           " Expand wildcards
+```
+
+### String operations
+
+```vim
+strlen(str)             " String length
+substitute(str, pat, repl, flags)
+toupper(str)            " Convert to uppercase
+tolower(str)            " Convert to lowercase
+split(str, pat)         " Split into list
+join(list, sep)         " Join list into string
+```
+
+## Function help
+
+Get help on any function:
+
+```vim
+:help strlen()
+:help function-list      " List all functions
+:help functions          " Function reference
+```

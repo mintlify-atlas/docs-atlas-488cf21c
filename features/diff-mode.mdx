@@ -1,0 +1,446 @@
+---
+title: Diff mode
+description: Compare and merge files using Vim's built-in diff functionality
+---
+
+Vim's diff mode allows you to view and merge differences between two to eight files, making it an excellent tool for code review and file comparison.
+
+## Starting diff mode
+
+<Tabs>
+  <Tab title="From command line">
+    Start Vim in diff mode:
+
+    ```bash
+    # Compare two files
+    vimdiff file1 file2
+    
+    # Or use vim -d
+    vim -d file1 file2
+    
+    # Compare three files
+    vimdiff file1 file2 file3
+    
+    # Use horizontal splits
+    vimdiff -o file1 file2
+    ```
+  </Tab>
+  <Tab title="Within Vim">
+    Start diff mode from within Vim:
+
+    ```vim
+    " Open file in diff split
+    :diffsplit other_file.txt
+    
+    " Make current window part of diff
+    :diffthis
+    
+    " Vertical split (default)
+    :vert diffsplit other_file.txt
+    
+    " Horizontal split
+    :diffsplit other_file.txt
+    ```
+  </Tab>
+  <Tab title="With patches">
+    Apply a patch and view differences:
+
+    ```vim
+    " Patch current file and show diff
+    :diffpatch patch_file.diff
+    
+    " With vertical split
+    :vert diffpatch patch_file.diff
+    ```
+  </Tab>
+</Tabs>
+
+## Navigation
+
+Move between differences efficiently:
+
+```vim
+" Jump to next difference
+]c
+
+" Jump to previous difference
+[c
+
+" Move to start of current change
+[c
+
+" Move to end of current change
+]c
+```
+
+## Merging changes
+
+<CodeGroup>
+
+```vim Obtain changes
+" Get changes from other buffer
+do
+
+" Or use full command
+:diffget
+
+" Get from specific buffer (if more than 2)
+:diffget 2
+
+" Get for range
+:'<,'>diffget
+```
+
+```vim Put changes
+" Put changes to other buffer
+dp
+
+" Or use full command
+:diffput
+
+" Put to specific buffer
+:diffput 2
+
+" Put for range
+:'<,'>diffput
+```
+
+```vim Update diffs
+" Manually update diff highlighting
+:diffupdate
+
+" Update and reload if file changed
+:diffupdate!
+```
+
+</CodeGroup>
+
+## Exiting diff mode
+
+Return to normal editing:
+
+```vim
+" Exit diff mode in current window
+:diffoff
+
+" Exit diff mode in all windows
+:diffoff!
+
+" Close other diff windows
+:only
+```
+
+## Diff options
+
+<Accordion title="Configure diff behavior">
+
+Customize how diffs are displayed:
+
+```vim
+" Set diff options
+set diffopt=filler,vertical,context:3
+
+" Available options:
+" filler     - show filler lines
+" vertical   - use vertical splits
+" horizontal - use horizontal splits
+" context:n  - number of context lines
+" iwhite     - ignore whitespace changes
+" icase      - ignore case
+" followwrap - follow 'wrap' option
+```
+
+Example configurations:
+```vim
+" Ignore whitespace
+set diffopt+=iwhite
+
+" Increase context lines
+set diffopt=context:5
+
+" Use horizontal splits by default
+set diffopt+=horizontal
+```
+
+</Accordion>
+
+## Practical examples
+
+<Tabs>
+  <Tab title="Two-way merge">
+    Compare and merge two files:
+
+    ```vim
+    " Start diff
+    $ vimdiff original.txt modified.txt
+    
+    " Navigate differences
+    ]c          " Next difference
+    [c          " Previous difference
+    
+    " Merge changes
+    do          " Obtain from other file
+    dp          " Put to other file
+    
+    " Save and exit
+    :wqa
+    ```
+  </Tab>
+  <Tab title="Three-way merge">
+    Merge with a base file:
+
+    ```vim
+    " Open three-way diff
+    $ vimdiff base.txt mine.txt theirs.txt
+    
+    " In middle window (mine.txt)
+    do          " Get from theirs (right)
+    
+    " Switch to left window
+    <Ctrl-W>h
+    do          " Get from base
+    
+    " Use specific buffer numbers
+    :diffget 1  " Get from buffer 1 (base)
+    :diffget 3  " Get from buffer 3 (theirs)
+    ```
+  </Tab>
+  <Tab title="Compare versions">
+    Compare current file with saved version:
+
+    ```vim
+    " Compare with file on disk
+    :DiffOrig
+    
+    " Or manually:
+    :vert new
+    :set bt=nofile
+    :r #
+    :0d_
+    :diffthis
+    :wincmd p
+    :diffthis
+    ```
+  </Tab>
+  <Tab title="Git integration">
+    Use with version control:
+
+    ```vim
+    " Compare with git version
+    :!git show HEAD:% > /tmp/git_version
+    :vert diffsplit /tmp/git_version
+    
+    " Or use git difftool
+    $ git difftool -y file.txt
+    
+    " Configure git to use vimdiff
+    $ git config --global diff.tool vimdiff
+    $ git config --global difftool.prompt false
+    ```
+  </Tab>
+</Tabs>
+
+## Folding in diff mode
+
+<Accordion title="Working with folds">
+
+Diff mode automatically creates folds for unchanged text:
+
+```vim
+" Open fold under cursor
+zo
+
+" Open all folds
+zR
+
+" Close fold under cursor
+zc
+
+" Close all folds
+zM
+
+" Toggle fold
+za
+```
+
+Control fold context:
+```vim
+" Set context lines around differences
+set diffopt=context:5
+
+" Disable folding in diff
+set diffopt+=filler,context:99999
+```
+
+</Accordion>
+
+## Highlighting
+
+Diff mode uses these highlight groups:
+
+<CodeGroup>
+
+```vim Highlight groups
+" Changed lines
+DiffChange
+
+" Added lines
+DiffAdd
+
+" Deleted (filler) lines
+DiffDelete
+
+" Changed text within a line
+DiffText
+```
+
+```vim Customize colors
+" Set custom diff colors
+highlight DiffAdd    guibg=DarkGreen  guifg=White
+highlight DiffDelete guibg=DarkRed    guifg=White
+highlight DiffChange guibg=DarkBlue   guifg=White
+highlight DiffText   guibg=DarkCyan   guifg=Black
+```
+
+</CodeGroup>
+
+## Advanced techniques
+
+<Tabs>
+  <Tab title="Custom diff command">
+    Use an external diff program:
+
+    ```vim
+    " Set external diff program
+    set diffexpr=MyDiff()
+    
+    function! MyDiff()
+      let opt = ""
+      if &diffopt =~ "icase"
+        let opt = opt .. "-i "
+      endif
+      if &diffopt =~ "iwhite"
+        let opt = opt .. "-b "
+      endif
+      silent execute "!diff -a " .. opt .. 
+        \ v:fname_in .. " " .. v:fname_new .. 
+        \ " > " .. v:fname_out
+    endfunction
+    ```
+  </Tab>
+  <Tab title="Ignore patterns">
+    Ignore specific differences:
+
+    ```vim
+    " Ignore whitespace
+    set diffopt+=iwhite
+    
+    " Ignore case
+    set diffopt+=icase
+    
+    " Custom ignore patterns with external diff
+    set diffexpr=MyDiffIgnore()
+    ```
+  </Tab>
+  <Tab title="Diff anchors">
+    Control how diffs are aligned:
+
+    ```vim
+    " Set diff anchors to align on function
+    set diffanchors='a
+    
+    " Or use pattern
+    set diffanchors=1/function
+    
+    " Multiple anchors
+    set diffanchors='<,'>+1
+    ```
+  </Tab>
+  <Tab title="Scripting">
+    Automate diff workflows:
+
+    ```vim
+    " Function to diff with backup
+    function! DiffWithBackup()
+      let l:backup = expand('%') .. '.bak'
+      if filereadable(l:backup)
+        execute 'vert diffsplit ' .. l:backup
+      else
+        echo 'No backup file found'
+      endif
+    endfunction
+    
+    command! DiffBackup call DiffWithBackup()
+    ```
+  </Tab>
+</Tabs>
+
+## Diff mode options
+
+<Accordion title="Option reference">
+
+```vim
+" Window options in diff mode
+set diff              " Enable diff mode
+set scrollbind        " Synchronize scrolling
+set cursorbind        " Synchronize cursor
+set scrollopt+=hor    " Horizontal scrollbind
+set nowrap            " Don't wrap lines
+set foldmethod=diff   " Fold unchanged text
+set foldcolumn=2      " Show fold column
+
+" Diff-specific options
+set diffopt=filler,vertical,context:3
+set diffopt+=iwhite              " Ignore whitespace
+set diffopt+=icase               " Ignore case
+set diffopt+=followwrap          " Follow wrap setting
+set diffopt+=algorithm:patience  " Use patience diff
+```
+
+</Accordion>
+
+## Tips and best practices
+
+<Accordion title="Diff workflow tips">
+
+### Navigation shortcuts
+```vim
+" Map for easier navigation
+nnoremap <leader>dn ]c
+nnoremap <leader>dp [c
+
+" Map merge operations
+nnoremap <leader>dg :diffget<CR>
+nnoremap <leader>dp :diffput<CR>
+```
+
+### Quick comparisons
+```vim
+" Compare with saved version
+command! DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ 
+  \ | diffthis | wincmd p | diffthis
+
+" Compare with clipboard
+command! DiffClip vert new | set bt=nofile | put + | diffthis 
+  \ | wincmd p | diffthis
+```
+
+### Batch operations
+```vim
+" Get all changes from other buffer
+:0,$+1diffget
+
+" Put all changes to other buffer
+:0,$+1diffput
+```
+
+### Review changes before saving
+```vim
+" Review before writing
+:DiffOrig
+" Review changes
+:diffoff!
+:w
+```
+
+</Accordion>

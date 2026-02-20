@@ -1,0 +1,224 @@
+---
+title: Syntax highlighting
+description: Learn how to enable and customize syntax highlighting in Vim
+---
+
+Vim supports syntax highlighting on all terminals, enabling parts of text to be shown in different fonts or colors. The highlighting works best in the GUI version (gvim) but functions on all terminal types.
+
+## Quick start
+
+Enable syntax highlighting with:
+
+```vim
+:syntax enable
+```
+
+This command preserves your current color settings. To use Vim's default colors instead:
+
+```vim
+:syntax on
+```
+
+You can toggle syntax on and off:
+
+```vim
+:if exists("g:syntax_on") | syntax off | else | syntax enable | endif
+```
+
+## Syntax files
+
+Syntax highlighting commands for each language are stored in syntax files named `{name}.vim`, where `{name}` is the language name or abbreviation.
+
+### Creating your own syntax files
+
+<Accordion title="Set up custom syntax files">
+
+1. Create your user runtime directory:
+   ```vim
+   mkdir ~/.vim
+   ```
+
+2. Create a syntax directory:
+   ```vim
+   mkdir ~/.vim/syntax
+   ```
+
+3. Write your syntax file:
+   ```vim
+   :w ~/.vim/syntax/mine.vim
+   ```
+
+4. Use your syntax:
+   ```vim
+   :set syntax=mine
+   ```
+
+</Accordion>
+
+### Adding to existing syntax
+
+<Accordion title="Extend an existing syntax file">
+
+If you want to modify an existing syntax file:
+
+1. Create an after/syntax directory:
+   ```vim
+   mkdir -p ~/.vim/after/syntax
+   ```
+
+2. Create a file with the syntax name:
+   ```vim
+   :w ~/.vim/after/syntax/c.vim
+   ```
+
+3. Add your customizations:
+   ```vim
+   highlight cComment ctermfg=Green guifg=Green
+   ```
+
+</Accordion>
+
+## Syntax groups
+
+<Tabs>
+  <Tab title="Common groups">
+    Vim uses standard syntax group names for consistency:
+
+    - `Comment` - any comment
+    - `Constant` - any constant (strings, numbers, booleans)
+    - `Identifier` - variable names and functions
+    - `Statement` - keywords like if, while, for
+    - `PreProc` - preprocessor directives
+    - `Type` - int, long, char types
+    - `Special` - special symbols
+    - `Error` - erroneous constructs
+    - `Todo` - TODO, FIXME, XXX
+  </Tab>
+  <Tab title="Customization">
+    You can customize colors for syntax groups:
+
+    ```vim
+    :highlight Comment ctermfg=Blue guifg=Blue
+    :highlight String ctermfg=Green guifg=DarkGreen
+    :highlight Function ctermfg=Yellow guifg=Yellow
+    ```
+
+    Set colors in your vimrc file to make them permanent.
+  </Tab>
+</Tabs>
+
+## Converting to HTML
+
+Convert your highlighted code to HTML:
+
+```vim
+:runtime! syntax/2html.vim
+```
+
+Or use the TOhtml command:
+
+```vim
+:TOhtml
+```
+
+<Accordion title="HTML conversion options">
+
+Control the HTML output with these variables:
+
+```vim
+" Include line numbers
+let g:html_number_lines = 1
+
+" Use CSS for styling
+let g:html_use_css = 1
+
+" Specify font
+let g:html_font = "monospace"
+
+" Include dynamic folds
+let g:html_dynamic_folds = 1
+
+" Set encoding
+let g:html_use_encoding = "UTF-8"
+```
+
+</Accordion>
+
+## Performance considerations
+
+If syntax highlighting is slow:
+
+```vim
+" Limit syntax highlighting to first N columns
+set synmaxcol=200
+
+" Use faster sync method
+syntax sync minlines=100
+```
+
+## Language-specific settings
+
+<Tabs>
+  <Tab title="C/C++">
+    ```vim
+    " Highlight function calls
+    let c_functions = 1
+    
+    " Highlight space errors
+    let c_space_errors = 1
+    
+    " Don't highlight bracket errors
+    let c_no_bracket_error = 1
+    ```
+  </Tab>
+  <Tab title="Python">
+    ```vim
+    " Highlight all errors
+    let python_highlight_all = 1
+    
+    " Highlight space errors
+    let python_space_error_highlight = 1
+    ```
+  </Tab>
+  <Tab title="HTML">
+    ```vim
+    " Enable JavaScript syntax
+    let html_use_javascript = 1
+    
+    " Enable CSS syntax
+    let html_use_css = 1
+    ```
+  </Tab>
+</Tabs>
+
+## Troubleshooting
+
+<Accordion title="Common issues">
+
+### Incorrect highlighting
+
+If highlighting errors appear while scrolling:
+
+```vim
+" Increase sync lines
+let c_minlines = 100
+
+" Force sync from start (slower)
+syntax sync fromstart
+```
+
+### Highlighting not working
+
+Check if syntax is enabled:
+
+```vim
+:echo exists("g:syntax_on")
+```
+
+Verify your filetype is detected:
+
+```vim
+:set filetype?
+```
+
+</Accordion>

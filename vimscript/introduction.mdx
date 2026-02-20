@@ -1,0 +1,174 @@
+---
+title: Introduction to Vim Script
+description: Learn about Vim's scripting language, its purpose, and basic concepts
+---
+
+Vim Script is the scripting language used to customize and extend Vim's functionality. It powers your vimrc file, syntax files, plugins, and much more.
+
+## What is Vim Script?
+
+A Vim script is any file that Vim can interpret and execute. This includes:
+
+- `.vim` files containing script code
+- Configuration files like `.vimrc` and `.gvimrc`
+- Syntax files that define syntax highlighting
+- Plugin files that add new features
+
+These scripts can define functions, commands, and settings that customize Vim's behavior to match your workflow.
+
+<Tip>
+The correct notation is "Vim script" (or "Vim9 script" for the newer language variant). We use this notation throughout the documentation.
+</Tip>
+
+## Vim Script vs Vim9 script
+
+Vim script comes in two flavors:
+
+<CodeGroup>
+
+```vim Legacy Script
+" Uses let for variables
+let counter = 1
+
+" Requires explicit commands
+call search("pattern", "W")
+
+" Leading zeros create octal numbers
+let octal = 017  " This is 15 in decimal!
+```
+
+```vim Vim9 Script
+vim9script
+
+" Uses var for variables
+var counter = 1
+
+" Function calls don't need 'call'
+search("pattern", "W")
+
+" Leading zeros are just zeros
+var decimal = 017  " This is 17
+```
+
+</CodeGroup>
+
+This documentation teaches the newer **Vim9 script** syntax, which:
+
+- Looks more like modern languages (JavaScript, TypeScript)
+- Executes much faster
+- Supports type checking
+- Has clearer, more consistent syntax
+
+## Your first Vim script
+
+Your first experience with Vim scripts is likely your vimrc file. When Vim starts, it reads this file and executes the commands inside. You can:
+
+- Set options to your preferred values
+- Define custom key mappings
+- Load plugins
+- Create custom commands
+
+Any colon command (commands starting with `:`, also called Ex commands) can be used in a Vim script.
+
+## Where scripts are loaded from
+
+Vim automatically loads scripts from several locations:
+
+### Configuration files
+
+- **`~/.vimrc`** or **`~/.vim/vimrc`** - Your main configuration file
+- **`~/.gvimrc`** - GUI-specific settings (when using gVim)
+
+### Runtime directories
+
+Vim searches for scripts in your runtime path (see `:help 'runtimepath'`):
+
+<Steps>
+
+<Step title="Plugin scripts">
+**`~/.vim/plugin/`** - Loaded automatically at startup
+
+Place general-purpose plugins here that should always be available.
+</Step>
+
+<Step title="Filetype scripts">
+**`~/.vim/ftplugin/`** - Loaded when editing specific file types
+
+Example: `~/.vim/ftplugin/python.vim` loads only for Python files.
+</Step>
+
+<Step title="Syntax files">
+**`~/.vim/syntax/`** - Define syntax highlighting
+
+Custom syntax definitions for languages or file types.
+</Step>
+
+<Step title="Autoload scripts">
+**`~/.vim/autoload/`** - Loaded on demand
+
+For better startup performance, functions load only when called.
+</Step>
+
+</Steps>
+
+## Vim plugins
+
+A **Vim plugin** is a collection of one or more Vim scripts along with additional resources like:
+
+- Help documentation
+- Configuration files
+- Supporting data files
+- External tool integrations
+
+Plugins add specific features or functionalities to Vim, such as new commands, enhanced capabilities, or integrations with external tools.
+
+## Types of data in Vim Script
+
+Vim Script supports several data types:
+
+| Type | Description | Example |
+|------|-------------|----------|
+| **Number** | 32 or 64-bit signed integer | `42`, `-123`, `0x1f`, `0o17`, `0b101` |
+| **Float** | Floating point number | `3.14`, `1.5e-3` |
+| **String** | Text enclosed in quotes | `"hello"`, `'world'` |
+| **List** | Ordered sequence of items | `[1, 2, "three"]` |
+| **Dictionary** | Key-value pairs | `{'name': 'vim', 'version': 9}` |
+| **Funcref** | Reference to a function | `function("MyFunc")` |
+| **Blob** | Binary data | `0zFF00ED015DAF` |
+
+## Number formats
+
+Vim Script supports multiple number formats:
+
+<CodeGroup>
+
+```vim Decimal
+echo 127        " Standard decimal
+```
+
+```vim Hexadecimal
+echo 0x7f       " Prefix with 0x
+echo 0X7F       " Case insensitive
+```
+
+```vim Octal
+echo 0o177      " Prefix with 0o
+echo 0O177      " Case insensitive
+```
+
+```vim Binary
+echo 0b1111111  " Prefix with 0b
+echo 0B1111111  " Case insensitive
+```
+
+</CodeGroup>
+
+All of these represent the decimal number 127. The `echo` command always displays numbers in decimal format.
+
+<Tip>
+In Vim9 script, a leading zero doesn't create an octal number (unlike legacy script). Use `0o` explicitly for octal notation.
+</Tip>
+
+## Next steps
+
+Now that you understand what Vim Script is and where scripts are loaded from, you're ready to write your first Vim script. Continue to the next section to learn how to create and execute your first script.

@@ -1,0 +1,265 @@
+---
+title: Ex commands
+description: Complete reference for Vim Ex commands
+---
+
+Ex commands are entered on the command-line by typing a colon (`:`) followed by the command name. This reference covers the most commonly used Ex commands.
+
+## Basic syntax
+
+Ex commands follow this general format:
+
+```
+:[range]command[!][arguments]
+```
+
+- `[range]` - Optional line range (e.g., `1,10` or `%` for entire file)
+- `command` - The command name
+- `!` - Optional bang modifier for forced execution
+- `[arguments]` - Command-specific arguments
+
+## Common Ex commands
+
+| Command | Description |
+|---------|-------------|
+| `:write` or `:w` | Write current buffer to file |
+| `:quit` or `:q` | Quit current window |
+| `:wq` | Write and quit |
+| `:edit` or `:e` | Edit a file |
+| `:new` | Create new window |
+| `:split` or `:sp` | Split window horizontally |
+| `:vsplit` or `:vs` | Split window vertically |
+| `:tabnew` | Open new tab |
+| `:close` | Close current window |
+| `:only` | Close all windows except current |
+
+## File operations
+
+<AccordionGroup>
+  <Accordion title=":read - Read file into buffer">
+    Read the contents of a file into the current buffer.
+
+    ```vim
+    :read filename
+    :r filename
+    :read !command    " Read command output
+    ```
+
+    Example:
+    ```vim
+    :read ~/.vimrc
+    :r !date
+    ```
+  </Accordion>
+
+  <Accordion title=":write - Write buffer to file">
+    Write the current buffer to a file.
+
+    ```vim
+    :write filename
+    :w filename
+    :w !command       " Pipe to command
+    :w >> file        " Append to file
+    ```
+
+    Example:
+    ```vim
+    :w /tmp/backup.txt
+    :w !wc -l
+    ```
+  </Accordion>
+
+  <Accordion title=":saveas - Save file with new name">
+    Save the current buffer with a new filename and continue editing the new file.
+
+    ```vim
+    :saveas filename
+    :sav filename
+    ```
+
+    Example:
+    ```vim
+    :saveas newfile.txt
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Search and replace
+
+### Substitute command
+
+The `:substitute` command is used to search and replace text:
+
+```vim
+:[range]s/pattern/replacement/[flags]
+```
+
+<ParamField path="range" type="string">
+  Line range to operate on. Use `%` for entire file, or `'<,'>` for visual selection.
+</ParamField>
+
+<ParamField path="pattern" type="string">
+  Regular expression pattern to search for.
+</ParamField>
+
+<ParamField path="replacement" type="string">
+  Text to replace matches with.
+</ParamField>
+
+<ParamField path="flags" type="string">
+  Modifiers:
+  - `g` - Replace all occurrences in line
+  - `c` - Confirm each substitution
+  - `i` - Ignore case
+  - `I` - Don't ignore case
+</ParamField>
+
+Examples:
+```vim
+:s/foo/bar/           " Replace first 'foo' with 'bar' on current line
+:s/foo/bar/g          " Replace all 'foo' with 'bar' on current line
+:%s/foo/bar/g         " Replace all 'foo' with 'bar' in entire file
+:%s/foo/bar/gc        " Replace with confirmation
+:1,10s/foo/bar/g      " Replace in lines 1-10
+```
+
+## Buffer management
+
+| Command | Description |
+|---------|-------------|
+| `:buffers` or `:ls` | List all buffers |
+| `:buffer N` | Switch to buffer N |
+| `:bnext` or `:bn` | Go to next buffer |
+| `:bprevious` or `:bp` | Go to previous buffer |
+| `:bdelete` or `:bd` | Delete buffer |
+| `:badd` | Add file to buffer list |
+| `:ball` | Open all buffers in windows |
+
+## Window management
+
+| Command | Description |
+|---------|-------------|
+| `:split` | Split horizontally |
+| `:vsplit` | Split vertically |
+| `:new` | New horizontal split |
+| `:vnew` | New vertical split |
+| `:close` | Close current window |
+| `:only` | Close all but current window |
+| `:resize N` | Resize to N lines |
+| `:vertical resize N` | Resize to N columns |
+
+## Settings and options
+
+Set options using the `:set` command:
+
+```vim
+:set option          " Enable boolean option
+:set nooption        " Disable boolean option
+:set option!         " Toggle boolean option
+:set option?         " Show option value
+:set option=value    " Set value
+:set option+=value   " Append to value
+:set option-=value   " Remove from value
+```
+
+Examples:
+```vim
+:set number          " Show line numbers
+:set nonumber        " Hide line numbers
+:set tabstop=4       " Set tab width to 4
+:set expandtab       " Use spaces instead of tabs
+```
+
+## Execution commands
+
+<AccordionGroup>
+  <Accordion title=":! - Execute shell command">
+    Execute an external shell command.
+
+    ```vim
+    :!command
+    :!!               " Repeat last command
+    ```
+
+    Example:
+    ```vim
+    :!ls -la
+    :!make
+    ```
+  </Accordion>
+
+  <Accordion title=":source - Execute script">
+    Execute commands from a file.
+
+    ```vim
+    :source filename
+    :so filename
+    ```
+
+    Example:
+    ```vim
+    :source ~/.vimrc
+    :so %            " Source current file
+    ```
+  </Accordion>
+
+  <Accordion title=":normal - Execute normal mode commands">
+    Execute normal mode commands from Ex mode.
+
+    ```vim
+    :normal commands
+    :norm commands
+    ```
+
+    Example:
+    ```vim
+    :normal dd       " Delete current line
+    :%normal A;      " Append ';' to all lines
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Help and documentation
+
+```vim
+:help topic          " Open help for topic
+:h topic             " Short form
+:helpgrep pattern    " Search help files
+:helptags path       " Generate help tags
+```
+
+## Comments
+
+Add comments to Ex commands using double quotes:
+
+```vim
+:set number          " This is a comment
+" Full line comment
+```
+
+<Note>
+The quote character `"` starts a comment after a command. Not all commands support comments; exceptions include `:map` and commands that expect expressions.
+</Note>
+
+## Command-line ranges
+
+You can specify line ranges before commands:
+
+| Range | Description |
+|-------|-------------|
+| `.` | Current line |
+| `$` | Last line |
+| `%` | Entire file (1,$) |
+| `'<,'>` | Visual selection |
+| `1,10` | Lines 1 to 10 |
+| `.,+5` | Current line plus 5 |
+| `/pattern/` | Next line matching pattern |
+| `?pattern?` | Previous line matching pattern |
+
+Examples:
+```vim
+:1,10d              " Delete lines 1-10
+:.,$y               " Yank from current line to end
+:%s/old/new/g       " Substitute in entire file
+:g/pattern/d        " Delete all lines matching pattern
+```

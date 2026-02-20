@@ -1,0 +1,486 @@
+---
+title: Session management
+description: Save and restore your Vim workspace including windows, buffers, and settings using sessions and views
+---
+
+Vim's session and view features let you save your editing environment and restore it later, preserving window layouts, open files, and settings.
+
+## Sessions overview
+
+A session saves almost everything about your current Vim state:
+
+- Window layout and sizes
+- Open files and buffers
+- Window and buffer options
+- Mappings and abbreviations
+- Current directory
+- Command line history
+- Marks and registers
+
+<Tip>
+Sessions are perfect for project-specific workflows. Create one session per project to quickly switch between different codebases.
+</Tip>
+
+## Creating sessions
+
+### Basic session creation
+
+```vim
+" Save session with specific name
+:mksession ~/mysession.vim
+
+" Save to default Session.vim in current directory
+:mksession
+
+" Overwrite existing session
+:mksession! ~/mysession.vim
+```
+
+<Note>
+By default, Vim saves session files in the current directory. Use an absolute path to save elsewhere.
+</Note>
+
+### What gets saved
+
+Control what's included in the session with `'sessionoptions'`:
+
+```vim
+" View current settings
+:set sessionoptions?
+
+" Default includes:
+set sessionoptions=blank,buffers,curdir,folds,help,tabpages,winsize
+
+" Customize what to save
+set sessionoptions=blank,buffers,curdir,folds,help,tabpages,winsize,winpos
+```
+
+### Session options explained
+
+| Option | What it saves |
+|--------|---------------|
+| `blank` | Empty windows |
+| `buffers` | All buffers, not just those in windows |
+| `curdir` | Current directory |
+| `folds` | Manually created folds |
+| `help` | Help windows |
+| `options` | All options and mappings |
+| `resize` | Size of the Vim window |
+| `tabpages` | All tab pages |
+| `winpos` | Position of the Vim window |
+| `winsize` | Window sizes |
+| `globals` | Global variables (uppercase letters only) |
+
+<Warning>
+Including `options` in `sessionoptions` saves all your options, which might override your vimrc settings when loading the session.
+</Warning>
+
+## Loading sessions
+
+### From command line
+
+```bash
+# Load session when starting Vim
+vim -S ~/mysession.vim
+
+# Alternative syntax
+vim -S Session.vim
+
+# Load session with -S flag
+vim -S
+```
+
+### Inside Vim
+
+```vim
+" Load specific session
+:source ~/mysession.vim
+
+" Or use the short form
+:so ~/mysession.vim
+```
+
+<Tip>
+You can create a mapping to quickly load your project session:
+```vim
+nnoremap <leader>ss :source ~/projects/myproject/Session.vim<CR>
+```
+</Tip>
+
+## Views
+
+Views are like sessions but for a single window. They save:
+
+- Cursor position
+- Folds
+- Scroll position
+- Window-local options
+
+### Creating views
+
+```vim
+" Save view for current window
+:mkview
+
+" Save to specific slot (1-9)
+:mkview 1
+
+" Save to specific file
+:mkview ~/myview.vim
+```
+
+### Loading views
+
+```vim
+" Load the default view
+:loadview
+
+" Load from specific slot
+:loadview 1
+
+" Load from file
+:source ~/myview.vim
+```
+
+<Note>
+Views are automatically saved to `~/.vim/view/` by default. The filename is generated from the full path of the edited file.
+</Note>
+
+### Automatic view saving
+
+Automatically save and restore views:
+
+```vim
+" In your vimrc
+augroup AutoSaveViews
+    autocmd!
+    " Save view when leaving a buffer
+    autocmd BufWinLeave *.* mkview
+    " Load view when entering a buffer
+    autocmd BufWinEnter *.* silent! loadview
+augroup END
+```
+
+<Warning>
+Auto-saving views for all files can be slow. Consider limiting it to specific file types or directories.
+</Warning>
+
+## Practical session workflows
+
+### Project-based sessions
+
+Create a session for each project:
+
+```vim
+" Create project structure
+cd ~/projects/myproject
+vim
+
+" Set up your workspace
+" ... open files, split windows, etc ...
+
+" Save the session
+:mksession! Session.vim
+
+" Later, return to the project
+" From shell:
+vim -S ~/projects/myproject/Session.vim
+```
+
+### Named sessions
+
+Use descriptive session names:
+
+```vim
+" Development session
+:mksession! dev-session.vim
+
+" Testing session
+:mksession! test-session.vim
+
+" Documentation session
+:mksession! docs-session.vim
+```
+
+<Tip>
+Keep your sessions in a dedicated directory for better organization:
+```vim
+:mksession! ~/.vim/sessions/project-name.vim
+```
+</Tip>
+
+## Session management helpers
+
+### Session saving function
+
+```vim
+" Function to save session with timestamp
+function! SaveSession()
+    let l:sessionfile = 'Session-' . strftime('%Y%m%d-%H%M%S') . '.vim'
+    execute 'mksession! ' . l:sessionfile
+    echo 'Session saved as ' . l:sessionfile
+endfunction
+
+nnoremap <leader>ss :call SaveSession()<CR>
+```
+
+### Session menu
+
+```vim
+" Quick session management commands
+nnoremap <leader>ms :mksession! Session.vim<CR>
+nnoremap <leader>ls :source Session.vim<CR>
+nnoremap <leader>rs :mksession! Session.vim<CR>:source Session.vim<CR>
+```
+
+## Advanced session techniques
+
+### Session with git branch
+
+Save different sessions per git branch:
+
+```vim
+function! SessionName()
+    let l:branch = system('git rev-parse --abbrev-ref HEAD 2>/dev/null')
+    if v:shell_error == 0
+        let l:branch = substitute(l:branch, '\n', '', 'g')
+        return 'Session-' . l:branch . '.vim'
+    else
+        return 'Session.vim'
+    endif
+endfunction
+
+function! SaveBranchSession()
+    let l:sessionfile = SessionName()
+    execute 'mksession! ' . l:sessionfile
+    echo 'Session saved as ' . l:sessionfile
+endfunction
+
+function! LoadBranchSession()
+    let l:sessionfile = SessionName()
+    if filereadable(l:sessionfile)
+        execute 'source ' . l:sessionfile
+        echo 'Session loaded from ' . l:sessionfile
+    else
+        echo 'No session found for this branch'
+    endif
+endfunction
+
+nnoremap <leader>ss :call SaveBranchSession()<CR>
+nnoremap <leader>ls :call LoadBranchSession()<CR>
+```
+
+### Excluding certain files
+
+```vim
+" Don't save certain buffers in sessions
+set sessionoptions-=buffers
+set sessionoptions+=tabpages
+
+" Only save visible windows
+set sessionoptions-=buffers
+```
+
+## Viminfo files
+
+Viminfo complements sessions by saving:
+
+- Command line history
+- Search history
+- Buffer list
+- Marks
+- Registers
+
+### Configuring viminfo
+
+```vim
+" Basic viminfo configuration
+set viminfo='100,<50,s10,h,n~/.viminfo
+
+" Explained:
+" '100  : Save marks for 100 files
+" <50   : Save max 50 lines per register
+" s10   : Max size of items in KB
+" h     : Disable hlsearch when loading
+" n~/.viminfo : Viminfo file location
+```
+
+<Note>
+Sessions and viminfo work together. Sessions save window layout and options, while viminfo saves command history and registers.
+</Note>
+
+### Manual viminfo operations
+
+```vim
+" Write viminfo file
+:wviminfo
+
+" Read viminfo file
+:rviminfo
+
+" Write and merge
+:wviminfo!
+```
+
+## Session restoration strategies
+
+### Automatic session restoration
+
+```vim
+" Auto-save session on exit
+autocmd VimLeave * mksession! ~/.vim/Session.vim
+
+" Auto-load session on start if no files specified
+autocmd VimEnter * nested
+    \ if argc() == 0 && filereadable('Session.vim') |
+    \   source Session.vim |
+    \ endif
+```
+
+<Warning>
+Automatic session loading can be confusing if you forget about it. Make sure it's what you want.
+</Warning>
+
+### Smart session loading
+
+```vim
+" Load session only if in project directory
+function! LoadProjectSession()
+    " Check if Session.vim exists and we're in a project
+    if filereadable('Session.vim') && isdirectory('.git')
+        source Session.vim
+        echo 'Project session loaded'
+    endif
+endfunction
+
+autocmd VimEnter * nested call LoadProjectSession()
+```
+
+## Session plugins
+
+Popular plugins for enhanced session management:
+
+- **vim-obsession**: Continuous session saving
+- **vim-prosession**: Per-project session management
+- **vim-startify**: Start screen with session management
+- **vim-workspace**: Automatic workspace management
+
+<Tip>
+Plugins can provide automatic session saving, better UI, and integration with other tools.
+</Tip>
+
+## Troubleshooting
+
+### Session not loading correctly
+
+```vim
+" Check what's in sessionoptions
+:set sessionoptions?
+
+" Try minimal session options
+set sessionoptions=blank,curdir,folds,tabpages,winsize
+
+" Debug by sourcing manually
+:source Session.vim
+" Watch for error messages
+```
+
+### Conflicting settings
+
+```vim
+" Don't save options if they conflict with vimrc
+set sessionoptions-=options
+
+" Save only window-specific settings
+set sessionoptions=blank,curdir,folds,tabpages,winsize
+```
+
+### Large session files
+
+```vim
+" Reduce session file size
+set sessionoptions-=buffers  " Don't save all buffers
+set sessionoptions-=help     " Don't save help windows
+set sessionoptions-=options  " Don't save all options
+```
+
+<Warning>
+Very large session files can slow down Vim startup. Keep only what you need.
+</Warning>
+
+## Best practices
+
+### Session organization
+
+```vim
+" Create a sessions directory
+mkdir -p ~/.vim/sessions
+
+" Save with project names
+:mksession! ~/.vim/sessions/myproject.vim
+
+" Create a mapping for quick access
+nnoremap <leader>s :mksession! ~/.vim/sessions/
+```
+
+### Version control
+
+<Tip>
+Add session files to `.gitignore`:
+```gitignore
+Session.vim
+*.vim.session
+```
+Sessions are personal and shouldn't be committed to version control.
+</Tip>
+
+### Minimal sessions
+
+```vim
+" Keep sessions simple and reliable
+set sessionoptions=blank,curdir,tabpages,winsize
+
+" This includes just the essentials:
+" - Empty windows
+" - Current directory
+" - Tab pages and their windows
+" - Window sizes
+```
+
+## Example workflows
+
+### Daily development workflow
+
+```vim
+" Morning: Load yesterday's work
+vim -S ~/sessions/myproject.vim
+
+" During the day: Save whenever you take a break
+:mksession! ~/sessions/myproject.vim
+
+" End of day: Save final state
+:mksession! ~/sessions/myproject.vim
+:qa
+```
+
+### Multi-project workflow
+
+```bash
+# Project 1
+cd ~/projects/project1
+vim -S Session.vim
+# ... work ...
+:mksession! Session.vim
+:qa
+
+# Project 2
+cd ~/projects/project2
+vim -S Session.vim
+# ... work ...
+:mksession! Session.vim
+:qa
+```
+
+<Tip>
+Combine sessions with terminal multiplexers like tmux or screen for even better workspace management.
+</Tip>

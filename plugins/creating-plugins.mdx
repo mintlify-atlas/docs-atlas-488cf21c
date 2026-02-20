@@ -1,0 +1,202 @@
+---
+title: Creating your first plugin
+description: Learn how to write your first Vim plugin using Vim9 script
+---
+
+You can write a Vim script that many people can use by creating a plugin. This guide will walk you through creating your first plugin from scratch.
+
+## Types of plugins
+
+There are two types of plugins in Vim:
+
+- **Global plugins**: Work for all types of files
+- **Filetype plugins**: Only for files of a specific type
+
+This guide focuses on creating global plugins. For filetype-specific plugins, see [Filetype-specific plugins](/plugins/filetype-plugins).
+
+## Creating a plugin step by step
+
+<Steps>
+  <Step title="Choose a descriptive name">
+    First, choose a name that clearly describes what your plugin does. The name should be unique and unlikely to conflict with other plugins.
+
+    For example, a plugin that corrects typing mistakes could be called `typecorrect.vim`.
+  </Step>
+
+  <Step title="Start with vim9script">
+    Begin your plugin file with the `vim9script` command. This enables Vim9 script syntax, which is the recommended way to write new plugins:
+
+    ```vim
+    vim9script noclear
+    ```
+
+    The `noclear` argument prevents items from being lost when the script is reloaded.
+  </Step>
+
+  <Step title="Add a header with metadata">
+    Include a header with information about your plugin:
+
+    ```vim
+    # Vim global plugin for correcting typing mistakes
+    # Last Change: 2021 Dec 30
+    # Maintainer: Your Name <your@email.com>
+    # License: This file is placed in the public domain.
+    ```
+
+    Consider making your plugin either public domain or using the Vim license to encourage distribution.
+  </Step>
+
+  <Step title="Add a load guard">
+    Allow users to disable your plugin if needed:
+
+    ```vim
+    if exists("g:loaded_typecorrect")
+      finish
+    endif
+    g:loaded_typecorrect = 1
+    ```
+
+    This also prevents the plugin from being loaded twice.
+  </Step>
+
+  <Step title="Implement the functionality">
+    Add the actual code that does the work:
+
+    ```vim
+    iabbrev teh the
+    iabbrev otehr other
+    iabbrev wnat want
+    iabbrev synchronisation
+      \ synchronization
+    ```
+  </Step>
+
+  <Step title="Add optional mappings">
+    Provide mappings that users can customize:
+
+    ```vim
+    if !hasmapto('<Plug>TypecorrAdd;')
+      map <unique> <Leader>a  <Plug>TypecorrAdd;
+    endif
+    noremap <unique> <script> <Plug>TypecorrAdd;  <SID>Add
+    ```
+
+    Users can set `g:mapleader` to change the prefix for plugin mappings.
+  </Step>
+
+  <Step title="Define script-local functions">
+    Create functions that are local to your script:
+
+    ```vim
+    def Add(from: string, correct: bool)
+      var to = input($"type the correction for {from}: ")
+      exe $":iabbrev {from} {to}"
+      if correct | exe "normal viws\<C-R>\" \b\e" | endif
+    enddef
+    ```
+
+    In Vim9 script, functions are local to the script by default.
+  </Step>
+
+  <Step title="Add user commands">
+    Provide commands only if they don't already exist:
+
+    ```vim
+    if !exists(":Correct")
+      command -nargs=1  Correct  call Add(<q-args>, false)
+    endif
+    ```
+  </Step>
+</Steps>
+
+## Complete example
+
+Here's a complete example plugin that corrects typing mistakes:
+
+```vim
+vim9script noclear
+# Vim global plugin for correcting typing mistakes
+# Last Change: 2021 Dec 30
+# Maintainer: Bram Moolenaar <Bram@vim.org>
+# License: This file is placed in the public domain.
+
+if exists("g:loaded_typecorrect")
+  finish
+endif
+g:loaded_typecorrect = 1
+
+iabbrev teh the
+iabbrev otehr other
+iabbrev wnat want
+iabbrev synchronisation
+  \ synchronization
+var count = 4
+
+if !hasmapto('<Plug>TypecorrAdd;')
+  map <unique> <Leader>a  <Plug>TypecorrAdd;
+endif
+noremap <unique> <script> <Plug>TypecorrAdd;  <SID>Add
+
+noremenu <script> Plugin.Add\ Correction      <SID>Add
+
+noremap <SID>Add  :call <SID>Add(expand("<cword>"), true)<CR>
+
+def Add(from: string, correct: bool)
+  var to = input("type the correction for " .. from .. ": ")
+  exe ":iabbrev " .. from .. " " .. to
+  if correct | exe "normal viws\<C-R>\" \b\e" | endif
+  count += 1
+  echo "you now have " .. count .. " corrections"
+enddef
+
+if !exists(":Correct")
+  command -nargs=1  Correct  call Add(<q-args>, false)
+endif
+```
+
+## Script variables
+
+Variables in Vim9 script are local to the script by default. You can use them throughout your script, including in functions:
+
+```vim
+var count = 4
+
+def Add(from: string, correct: bool)
+  # ... function code ...
+  count += 1  # Access script variable directly
+  echo "you now have " .. count .. " corrections"
+enddef
+```
+
+The variable persists as long as Vim is running and is shared across all invocations within the script.
+
+## Understanding `<SID>` and `<Plug>`
+
+Both `<SID>` and `<Plug>` help avoid conflicts with other plugins:
+
+- **`<Plug>`**: Visible outside the script. Use it for mappings that users might want to customize. Format: `<Plug>ScriptnameMapname`
+- **`<SID>`**: Script ID, unique to your script. Vim translates it internally to `<SNR>123_` where `123` is a unique number
+
+Mapping sequence example:
+
+```
+\a  ->  <Plug>TypecorrAdd;  ->  <SID>Add  ->  :call <SID>Add(...)
+```
+
+## Adding menu entries
+
+You can add menu items for your plugin functionality:
+
+```vim
+noremenu <script> Plugin.Add\ Correction      <SID>Add
+```
+
+Use the "Plugin" menu for adding plugin items. For multiple items, create a submenu like "Plugin.CVS.checkin" or "Plugin.CVS.checkout".
+
+## Next steps
+
+Now that you understand the basics, learn about:
+
+- [Plugin file structure](/plugins/plugin-structure)
+- [Plugin development best practices](/plugins/best-practices)
+- [Filetype-specific plugins](/plugins/filetype-plugins)

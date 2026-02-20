@@ -1,0 +1,447 @@
+---
+title: Unicode and encoding
+description: Configure Vim for Unicode and multibyte character support including UTF-8, file encodings, and international text editing
+---
+
+Vim provides comprehensive support for Unicode and multibyte character encodings, allowing you to edit text in any language.
+
+## Understanding encodings
+
+Vim works with three main encoding concepts:
+
+- **`encoding`**: How Vim stores text internally
+- **`fileencoding`**: The encoding of the file being edited
+- **`termencoding`**: The encoding your terminal uses
+
+<Tip>
+For most users, setting `encoding` to UTF-8 is the best choice for modern text editing.
+</Tip>
+
+## Setting up UTF-8
+
+### Basic UTF-8 configuration
+
+```vim
+" In your vimrc
+set encoding=utf-8
+set fileencoding=utf-8
+set fileencodings=ucs-bom,utf-8,latin1
+set termencoding=utf-8
+```
+
+<Note>
+Set `encoding` early in your vimrc. Changing it later can cause text already in memory to display incorrectly.
+</Note>
+
+### Checking current encoding
+
+```vim
+" View current settings
+:set encoding?
+:set fileencoding?
+:set fileencodings?
+
+" Check what encoding a file was opened with
+:set fenc?
+```
+
+## File encodings
+
+### Auto-detection
+
+Vim tries to detect file encoding using the `'fileencodings'` option:
+
+```vim
+" Try these encodings in order
+set fileencodings=ucs-bom,utf-8,utf-16,latin1,cp1252
+
+" Add support for Asian encodings
+set fileencodings=ucs-bom,utf-8,utf-16,gb2312,big5,latin1
+```
+
+Vim tries each encoding in order and uses the first one that successfully decodes the file.
+
+<Warning>
+Order matters in `fileencodings`. Put more specific encodings before general ones.
+</Warning>
+
+### Opening files with specific encoding
+
+```vim
+" Open file with specified encoding
+:e ++enc=latin1 file.txt
+:e ++enc=utf-16 file.txt
+
+" Convert file from one encoding to another
+:e ++enc=latin1 file.txt
+:set fenc=utf-8
+:w
+```
+
+### Saving with different encoding
+
+```vim
+" Save file with specific encoding
+:set fileencoding=utf-16
+:w
+
+" Save a copy in different encoding
+:w ++enc=latin1 file_latin1.txt
+```
+
+## Supported encodings
+
+### Common encodings
+
+| Encoding | Description |
+|----------|-------------|
+| `utf-8` | Unicode 8-bit (recommended) |
+| `utf-16` | Unicode 16-bit |
+| `utf-32` | Unicode 32-bit |
+| `latin1` | ISO-8859-1 (Western European) |
+| `cp1252` | Windows-1252 (Western European) |
+| `iso-8859-15` | Latin-9 (includes Euro sign) |
+
+### Asian encodings
+
+| Encoding | Description |
+|----------|-------------|
+| `euc-jp` | Japanese (Unix) |
+| `sjis` | Shift-JIS (Japanese, Unix) |
+| `cp932` | Japanese (Windows) |
+| `euc-kr` | Korean (Unix) |
+| `cp949` | Korean (Windows) |
+| `euc-cn` | Simplified Chinese (Unix) |
+| `cp936` | Simplified Chinese (Windows) |
+| `big5` | Traditional Chinese |
+| `cp950` | Traditional Chinese (Windows) |
+
+<Tip>
+For maximum compatibility, use UTF-8 whenever possible. It can represent all Unicode characters.
+</Tip>
+
+## Entering Unicode characters
+
+### Using digraphs
+
+```vim
+" In insert mode, type Ctrl-K followed by two characters
+" For example:
+Ctrl-K a:  → ä
+Ctrl-K e'  → é
+Ctrl-K >=  → ≥
+Ctrl-K Co  → ©
+
+" View all available digraphs
+:digraphs
+
+" Define custom digraph
+:digraph eu 8364  " € (Euro sign)
+```
+
+### Direct Unicode input
+
+```vim
+" In insert mode:
+" Ctrl-V u followed by 4 hex digits
+Ctrl-V u00e9  → é
+
+" Ctrl-V U followed by 8 hex digits
+Ctrl-V U0001F600  → 😀
+
+" Decimal value
+Ctrl-V 233  → é
+```
+
+<Note>
+The `Ctrl-V u` method only works if you have `encoding` set to UTF-8 or another Unicode encoding.
+</Note>
+
+## Character width
+
+Vim handles characters of different widths:
+
+### Ambiguous width characters
+
+```vim
+" Set width for ambiguous characters
+set ambiwidth=single  " Default
+set ambiwidth=double  " For Asian terminals
+```
+
+Some characters (like Greek letters and box-drawing characters) have ambiguous width in Unicode. The `'ambiwidth'` option controls how Vim displays them.
+
+### Emoji and wide characters
+
+```vim
+" Enable proper display of emoji
+set emoji
+
+" Check if emoji support is available
+if has('emoji')
+    set emoji
+endif
+```
+
+<Tip>
+Emoji are typically double-width characters. Make sure your terminal and font support them properly.
+</Tip>
+
+## Right-to-left languages
+
+For languages like Arabic and Hebrew:
+
+```vim
+" Enable right-to-left mode
+set rightleft
+
+" Or use short form
+set rl
+
+" Disable
+set norightleft
+
+" Toggle
+set rl!
+```
+
+### Right-to-left search
+
+```vim
+" Set right-to-left search direction
+set rightleftcmd=search
+```
+
+<Note>
+Vim has built-in support for bidirectional text (both left-to-right and right-to-left in the same line).
+</Note>
+
+## Font configuration for Unicode
+
+### GUI font settings
+
+For GVim with Unicode:
+
+```vim
+" Set font that supports Unicode
+set guifont=DejaVu\ Sans\ Mono\ 11
+set guifont=Consolas:h11
+
+" For wide characters (Asian text)
+set guifontwide=NSimSun:h11
+```
+
+### Terminal font
+
+Make sure your terminal uses a font with good Unicode coverage:
+
+- **Recommended fonts**: DejaVu Sans Mono, Consolas, Liberation Mono, Source Code Pro
+- **With emoji**: Noto Emoji, Symbola
+- **With powerline symbols**: Any Nerd Font
+
+## Byte Order Mark (BOM)
+
+### Handling BOM
+
+```vim
+" Check if file has BOM
+:set bomb?
+
+" Add BOM when saving
+set bomb
+
+" Remove BOM
+set nobomb
+
+" Auto-detect BOM
+set fileencodings=ucs-bom,utf-8,latin1
+```
+
+<Warning>
+The BOM is not needed for UTF-8 files and can cause problems with some tools. Only use it if required.
+</Warning>
+
+## Conversion between encodings
+
+### Converting file encoding
+
+```vim
+" Step 1: Reload with correct encoding
+:e ++enc=latin1
+
+" Step 2: Set new encoding
+:set fenc=utf-8
+
+" Step 3: Save
+:w
+```
+
+### Using iconv
+
+For batch conversion:
+
+```bash
+# Convert file encoding using iconv
+iconv -f latin1 -t utf-8 input.txt > output.txt
+
+# Convert multiple files
+for file in *.txt; do
+    iconv -f latin1 -t utf-8 "$file" > "$file.utf8"
+done
+```
+
+<Tip>
+Vim can use the iconv library for encoding conversion if it's available on your system.
+</Tip>
+
+## Troubleshooting
+
+### Garbled text
+
+```vim
+" If text looks wrong, try reloading with different encoding
+:e ++enc=utf-8
+:e ++enc=latin1
+:e ++enc=cp1252
+
+" Check what encoding was detected
+:set fenc?
+```
+
+### Missing characters (boxes or question marks)
+
+This usually means:
+
+1. Your font doesn't have the character
+2. Your terminal doesn't support Unicode
+3. The encoding is wrong
+
+```vim
+" Check encoding
+:set enc?
+:set fenc?
+
+" Try a different font
+set guifont=DejaVu\ Sans\ Mono\ 11
+```
+
+### Invalid multibyte sequence
+
+```vim
+" Skip invalid sequences
+:e ++bad=keep
+
+" Replace invalid sequences with ?
+:e ++bad=?
+
+" Drop invalid sequences
+:e ++bad=drop
+```
+
+<Warning>
+If you see "CONVERSION ERROR" messages, the file contains characters that can't be represented in the current encoding.
+</Warning>
+
+## Terminal encoding
+
+### Terminal mismatch
+
+If your terminal uses a different encoding than Vim:
+
+```vim
+" Set terminal encoding
+set termencoding=utf-8
+
+" Vim will convert between encoding and termencoding automatically
+set encoding=utf-8
+set termencoding=latin1
+```
+
+<Note>
+Modern terminals almost always use UTF-8. You usually don't need to set `termencoding`.
+</Note>
+
+## Input methods
+
+For complex input (Asian languages):
+
+### Using system input method
+
+```vim
+" Let system input method handle input
+set iminsert=0
+
+" Use Vim's built-in input method
+set iminsert=1
+```
+
+### XIM (X Input Method)
+
+For X11 GUI:
+
+```vim
+" XIM is automatically used in GVim on X11
+" Check if available
+if has('xim')
+    " XIM support is available
+endif
+```
+
+## Best practices
+
+<Tip>
+Follow these guidelines for Unicode handling:
+
+1. Always use UTF-8 for `encoding`
+2. Add `utf-8` first in `fileencodings`
+3. Make sure your terminal supports UTF-8
+4. Use fonts with good Unicode coverage
+5. Set `LANG` environment variable to UTF-8 locale
+</Tip>
+
+### Recommended vimrc settings
+
+```vim
+" Unicode configuration
+if has('multi_byte')
+    set encoding=utf-8
+    set fileencoding=utf-8
+    set fileencodings=ucs-bom,utf-8,utf-16le,latin1,cp1252
+    set termencoding=utf-8
+    
+    " Better display of ambiguous characters
+    set listchars=tab:▸\ ,trail:·,extends:❯,precedes:❮,nbsp:×
+    
+    " Show Unicode value of character under cursor
+    nnoremap <leader>u :echo "U+" . printf("%04X", char2nr(matchstr(getline('.'), '.', col('.') - 1)))<CR>
+endif
+```
+
+## Platform-specific notes
+
+### Windows
+
+```vim
+" Windows often uses cp1252 instead of latin1
+set fileencodings=ucs-bom,utf-8,utf-16le,cp1252,latin1
+
+" Set GUI font with Unicode support
+set guifont=Consolas:h11:cANSI
+```
+
+### macOS
+
+```vim
+" macOS uses UTF-8 by default
+" Just ensure your vimrc has:
+set encoding=utf-8
+```
+
+### Linux
+
+```vim
+" Most Linux distributions use UTF-8
+" Check your locale:
+" $ locale
+" LANG=en_US.UTF-8
+```

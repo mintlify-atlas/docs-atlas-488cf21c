@@ -1,0 +1,703 @@
+---
+title: System functions
+description: Complete reference for Vim's system interaction and file operation functions
+---
+
+Vim provides extensive functions for interacting with the operating system, file system, and external programs. This reference covers system interaction, file operations, and environment management.
+
+## Executing shell commands
+
+<AccordionGroup>
+  <Accordion title="system() - Execute command">
+    Execute a shell command and return its output.
+
+    ```vim
+    system({command} [, {input}])
+    ```
+
+    <ParamField path="command" type="string" required>
+      Shell command to execute
+    </ParamField>
+
+    <ParamField path="input" type="string/list">
+      Input to send to command's stdin
+    </ParamField>
+
+    <ResponseField name="return" type="string">
+      Command output (stdout and stderr combined)
+    </ResponseField>
+
+    Examples:
+    ```vim
+    echo system('ls -la')                " Directory listing
+    echo system('date')                   " Current date
+    let output = system('wc -l', "line1\nline2")  " Count lines
+    
+    " Check exit status
+    let output = system('grep pattern file.txt')
+    if v:shell_error == 0
+      echo "Found!"
+    endif
+    ```
+
+    <Note>
+    The exit code is stored in `v:shell_error`. Zero indicates success.
+    </Note>
+  </Accordion>
+
+  <Accordion title="systemlist() - Execute and return list">
+    Execute a command and return output as a list of lines.
+
+    ```vim
+    systemlist({command} [, {input}])
+    ```
+
+    <ResponseField name="return" type="list">
+      List of output lines
+    </ResponseField>
+
+    Examples:
+    ```vim
+    let files = systemlist('ls')
+    let commits = systemlist('git log --oneline -10')
+    
+    " Process each line
+    for line in systemlist('ps aux')
+      echo line
+    endfor
+    ```
+  </Accordion>
+
+  <Accordion title="executable() - Check if program exists">
+    Check if a program is executable.
+
+    ```vim
+    executable({program})
+    ```
+
+    <ParamField path="program" type="string" required>
+      Program name or path
+    </ParamField>
+
+    <ResponseField name="return" type="number">
+      1 if executable exists and is executable, 0 otherwise
+    </ResponseField>
+
+    Examples:
+    ```vim
+    if executable('git')
+      echo "Git is available"
+    endif
+    
+    if executable('node')
+      let output = system('node --version')
+    endif
+    ```
+  </Accordion>
+
+  <Accordion title="exepath() - Get full program path">
+    Get the full path to an executable.
+
+    ```vim
+    exepath({program})
+    ```
+
+    <ResponseField name="return" type="string">
+      Full path to executable, or empty string if not found
+    </ResponseField>
+
+    Examples:
+    ```vim
+    echo exepath('vim')          " /usr/bin/vim
+    echo exepath('python3')      " /usr/bin/python3
+    let gitpath = exepath('git')
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## File reading and writing
+
+<AccordionGroup>
+  <Accordion title="readfile() - Read file into list">
+    Read a file and return its contents as a list of lines.
+
+    ```vim
+    readfile({filename} [, {type} [, {max}]])
+    ```
+
+    <ParamField path="filename" type="string" required>
+      Path to file
+    </ParamField>
+
+    <ParamField path="type" type="string">
+      - "" (default) - text mode
+      - "b" - binary mode (returns blob)
+    </ParamField>
+
+    <ParamField path="max" type="number">
+      Maximum number of lines to read
+    </ParamField>
+
+    <ResponseField name="return" type="list">
+      List of lines from the file
+    </ResponseField>
+
+    Examples:
+    ```vim
+    let lines = readfile('config.txt')
+    let first10 = readfile('log.txt', '', 10)
+    let blob = readfile('image.png', 'b')
+    
+    " Process lines
+    for line in readfile('.gitignore')
+      if line !~ '^#'
+        echo 'Pattern: ' .. line
+      endif
+    endfor
+    ```
+  </Accordion>
+
+  <Accordion title="writefile() - Write list to file">
+    Write a list of lines to a file.
+
+    ```vim
+    writefile({list}, {filename} [, {flags}])
+    ```
+
+    <ParamField path="list" type="list" required>
+      List of strings to write
+    </ParamField>
+
+    <ParamField path="filename" type="string" required>
+      Path to file
+    </ParamField>
+
+    <ParamField path="flags" type="string">
+      - "a" - append to file
+      - "b" - binary mode
+      - "S" - fsync after writing
+    </ParamField>
+
+    <ResponseField name="return" type="number">
+      0 on success, -1 on error
+    </ResponseField>
+
+    Examples:
+    ```vim
+    call writefile(['line1', 'line2'], 'output.txt')
+    call writefile(['new line'], 'log.txt', 'a')  " Append
+    
+    " Save buffer to file
+    call writefile(getline(1, '$'), 'backup.txt')
+    ```
+  </Accordion>
+
+  <Accordion title="readblob() - Read binary file">
+    Read a file as a blob (binary data).
+
+    ```vim
+    readblob({filename} [, {offset} [, {size}]])
+    ```
+
+    <ParamField path="offset" type="number">
+      Starting byte position
+    </ParamField>
+
+    <ParamField path="size" type="number">
+      Number of bytes to read
+    </ParamField>
+
+    <ResponseField name="return" type="blob">
+      Binary data as a blob
+    </ResponseField>
+
+    Examples:
+    ```vim
+    let data = readblob('image.png')
+    let header = readblob('file.dat', 0, 512)  " First 512 bytes
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## File and directory operations
+
+<AccordionGroup>
+  <Accordion title="filereadable() - Check if file is readable">
+    Check if a file exists and is readable.
+
+    ```vim
+    filereadable({filename})
+    ```
+
+    <ResponseField name="return" type="number">
+      1 if file is readable, 0 otherwise
+    </ResponseField>
+
+    Examples:
+    ```vim
+    if filereadable('config.vim')
+      source config.vim
+    endif
+    
+    if !filereadable('.env')
+      echo 'Warning: .env file not found'
+    endif
+    ```
+  </Accordion>
+
+  <Accordion title="filewritable() - Check if file is writable">
+    Check if a file is writable.
+
+    ```vim
+    filewritable({filename})
+    ```
+
+    <ResponseField name="return" type="number">
+      - 0 - Not writable
+      - 1 - Writable
+      - 2 - Writable directory
+    </ResponseField>
+
+    Examples:
+    ```vim
+    if filewritable('output.txt')
+      call writefile(data, 'output.txt')
+    endif
+    ```
+  </Accordion>
+
+  <Accordion title="delete() - Delete file or directory">
+    Delete a file or directory.
+
+    ```vim
+    delete({filename} [, {flags}])
+    ```
+
+    <ParamField path="flags" type="string">
+      - "d" - delete empty directory
+      - "rf" - recursively delete directory
+    </ParamField>
+
+    <ResponseField name="return" type="number">
+      0 on success, -1 on error
+    </ResponseField>
+
+    Examples:
+    ```vim
+    call delete('temp.txt')
+    call delete('tmpdir', 'd')    " Delete empty directory
+    call delete('tmpdir', 'rf')   " Delete directory recursively
+    ```
+  </Accordion>
+
+  <Accordion title="mkdir() - Create directory">
+    Create a directory.
+
+    ```vim
+    mkdir({dirname} [, {flags} [, {prot}]])
+    ```
+
+    <ParamField path="flags" type="string">
+      - "p" - create parent directories
+    </ParamField>
+
+    <ParamField path="prot" type="number">
+      Unix permission mode (octal)
+    </ParamField>
+
+    <ResponseField name="return" type="number">
+      0 on success, -1 on error
+    </ResponseField>
+
+    Examples:
+    ```vim
+    call mkdir('newdir')
+    call mkdir('path/to/newdir', 'p')      " Create parents
+    call mkdir('mydir', 'p', 0755)         " With permissions
+    ```
+  </Accordion>
+
+  <Accordion title="glob() - Expand wildcards">
+    Expand file wildcards.
+
+    ```vim
+    glob({pattern} [, {nosuf} [, {list} [, {alllinks}]]])
+    ```
+
+    <ParamField path="pattern" type="string" required>
+      Wildcard pattern
+    </ParamField>
+
+    <ParamField path="nosuf" type="boolean">
+      Don't apply 'suffixes' option
+    </ParamField>
+
+    <ParamField path="list" type="boolean">
+      Return list instead of string
+    </ParamField>
+
+    <ParamField path="alllinks" type="boolean">
+      Include broken symlinks
+    </ParamField>
+
+    <ResponseField name="return" type="string/list">
+      Matching files
+    </ResponseField>
+
+    Examples:
+    ```vim
+    echo glob('*.txt')                   " String of files
+    let files = glob('*.vim', 0, 1)      " List of files
+    let all = glob('**/*.js', 0, 1)      " Recursive search
+    
+    " Process all Python files
+    for file in glob('**/*.py', 0, 1)
+      echo 'Found: ' .. file
+    endfor
+    ```
+  </Accordion>
+
+  <Accordion title="globpath() - Glob in multiple directories">
+    Expand wildcards in multiple directories.
+
+    ```vim
+    globpath({path}, {pattern} [, {nosuf} [, {list} [, {alllinks}]]])
+    ```
+
+    <ParamField path="path" type="string" required>
+      Comma-separated list of directories
+    </ParamField>
+
+    Examples:
+    ```vim
+    " Search in multiple directories
+    let found = globpath('/usr/share,/usr/local/share', 'vim/**/*.vim', 0, 1)
+    
+    " Search in 'runtimepath'
+    let files = globpath(&runtimepath, 'plugin/*.vim', 0, 1)
+    ```
+  </Accordion>
+
+  <Accordion title="readdir() - List directory">
+    List files in a directory.
+
+    ```vim
+    readdir({directory} [, {expr} [, {dict}]])
+    ```
+
+    <ParamField path="directory" type="string" required>
+      Path to directory
+    </ParamField>
+
+    <ParamField path="expr" type="string/funcref">
+      Filter expression (use v:val for filename)
+    </ParamField>
+
+    <ResponseField name="return" type="list">
+      List of filenames
+    </ResponseField>
+
+    Examples:
+    ```vim
+    let files = readdir('.')
+    let vimfiles = readdir('.', 'v:val =~ "\\.vim$"')
+    let dirs = readdir('.', {n -> isdirectory(n)})
+    ```
+  </Accordion>
+
+  <Accordion title="isdirectory() - Check if directory">
+    Check if a path is a directory.
+
+    ```vim
+    isdirectory({path})
+    ```
+
+    <ResponseField name="return" type="number">
+      1 if directory, 0 otherwise
+    </ResponseField>
+
+    Examples:
+    ```vim
+    if isdirectory('src')
+      echo 'src is a directory'
+    endif
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## File information
+
+<AccordionGroup>
+  <Accordion title="getfsize() - Get file size">
+    Get the size of a file in bytes.
+
+    ```vim
+    getfsize({filename})
+    ```
+
+    <ResponseField name="return" type="number">
+      File size in bytes, or -1 on error
+    </ResponseField>
+
+    Examples:
+    ```vim
+    let size = getfsize('largefile.dat')
+    if size > 1000000
+      echo 'File is larger than 1MB'
+    endif
+    ```
+  </Accordion>
+
+  <Accordion title="getftime() - Get modification time">
+    Get the last modification time of a file.
+
+    ```vim
+    getftime({filename})
+    ```
+
+    <ResponseField name="return" type="number">
+      Unix timestamp, or -1 on error
+    </ResponseField>
+
+    Examples:
+    ```vim
+    let mtime = getftime('config.vim')
+    echo strftime('%Y-%m-%d %H:%M:%S', mtime)
+    
+    " Check if file is newer than one day
+    if getftime('file.txt') > localtime() - 86400
+      echo 'Modified within last 24 hours'
+    endif
+    ```
+  </Accordion>
+
+  <Accordion title="getfperm() - Get file permissions">
+    Get file permissions as a string.
+
+    ```vim
+    getfperm({filename})
+    ```
+
+    <ResponseField name="return" type="string">
+      Permission string like "rwxr-xr-x"
+    </ResponseField>
+
+    Examples:
+    ```vim
+    echo getfperm('script.sh')   " "rwxr-xr-x"
+    echo getfperm('data.txt')    " "rw-r--r--"
+    ```
+  </Accordion>
+
+  <Accordion title="getftype() - Get file type">
+    Get the type of a file.
+
+    ```vim
+    getftype({filename})
+    ```
+
+    <ResponseField name="return" type="string">
+      File type: "file", "dir", "link", "fifo", "socket", etc.
+    </ResponseField>
+
+    Examples:
+    ```vim
+    echo getftype('file.txt')    " "file"
+    echo getftype('mydir')       " "dir"
+    echo getftype('symlink')     " "link"
+    ```
+  </Accordion>
+
+  <Accordion title="resolve() - Resolve symlink">
+    Resolve symbolic links and get the actual path.
+
+    ```vim
+    resolve({filename})
+    ```
+
+    <ResponseField name="return" type="string">
+      Resolved path
+    </ResponseField>
+
+    Examples:
+    ```vim
+    echo resolve('/usr/bin/python')   " /usr/bin/python3.9
+    let realpath = resolve('symlink')
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Environment and system info
+
+<AccordionGroup>
+  <Accordion title="getenv() - Get environment variable">
+    Get the value of an environment variable.
+
+    ```vim
+    getenv({name})
+    ```
+
+    <ResponseField name="return" type="string">
+      Variable value, or null if not set
+    </ResponseField>
+
+    Examples:
+    ```vim
+    echo getenv('HOME')          " /home/username
+    echo getenv('PATH')
+    let user = getenv('USER')
+    
+    if getenv('TERM') =~ 'xterm'
+      echo 'Running in xterm'
+    endif
+    ```
+  </Accordion>
+
+  <Accordion title="setenv() - Set environment variable">
+    Set an environment variable.
+
+    ```vim
+    setenv({name}, {value})
+    ```
+
+    <ParamField path="value" type="string/null" required>
+      New value, or null to unset
+    </ParamField>
+
+    Examples:
+    ```vim
+    call setenv('MY_VAR', 'value')
+    call setenv('DEBUG', '1')
+    call setenv('OLD_VAR', v:null)   " Unset
+    ```
+  </Accordion>
+
+  <Accordion title="environ() - Get all environment variables">
+    Get all environment variables as a dictionary.
+
+    ```vim
+    environ()
+    ```
+
+    <ResponseField name="return" type="dict">
+      Dictionary of all environment variables
+    </ResponseField>
+
+    Examples:
+    ```vim
+    let env = environ()
+    echo env['HOME']
+    
+    " List all variables
+    for [key, val] in items(environ())
+      echo key .. '=' .. val
+    endfor
+    ```
+  </Accordion>
+
+  <Accordion title="hostname() - Get hostname">
+    Get the system hostname.
+
+    ```vim
+    hostname()
+    ```
+
+    <ResponseField name="return" type="string">
+      The hostname
+    </ResponseField>
+
+    Examples:
+    ```vim
+    echo hostname()              " mycomputer.local
+    let host = hostname()
+    ```
+  </Accordion>
+
+  <Accordion title="has() - Check feature availability">
+    Check if a feature is available.
+
+    ```vim
+    has({feature})
+    ```
+
+    <ResponseField name="return" type="number">
+      1 if feature is available, 0 otherwise
+    </ResponseField>
+
+    Examples:
+    ```vim
+    if has('python3')
+      echo 'Python 3 support available'
+    endif
+    
+    if has('unix')
+      echo 'Running on Unix'
+    endif
+    
+    if has('win32')
+      echo 'Running on Windows'
+    endif
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Path manipulation
+
+<AccordionGroup>
+  <Accordion title="fnamemodify() - Modify filename">
+    Modify a filename using modifiers.
+
+    ```vim
+    fnamemodify({filename}, {modifiers})
+    ```
+
+    <ParamField path="modifiers" type="string" required>
+      - :p - full path
+      - :h - head (directory)
+      - :t - tail (filename)
+      - :r - root (without extension)
+      - :e - extension
+    </ParamField>
+
+    Examples:
+    ```vim
+    echo fnamemodify('src/file.txt', ':p')    " /full/path/src/file.txt
+    echo fnamemodify('src/file.txt', ':h')    " src
+    echo fnamemodify('src/file.txt', ':t')    " file.txt
+    echo fnamemodify('src/file.txt', ':r')    " src/file
+    echo fnamemodify('src/file.txt', ':e')    " txt
+    echo fnamemodify('src/file.txt', ':t:r')  " file
+    ```
+  </Accordion>
+
+  <Accordion title="simplify() - Simplify path">
+    Simplify a file path.
+
+    ```vim
+    simplify({filename})
+    ```
+
+    Examples:
+    ```vim
+    echo simplify('src/../lib/file.txt')  " lib/file.txt
+    echo simplify('./src/./file.txt')     " src/file.txt
+    ```
+  </Accordion>
+
+  <Accordion title="expand() - Expand special strings">
+    Expand special strings and wildcards.
+
+    ```vim
+    expand({string} [, {nosuf} [, {list}]])
+    ```
+
+    Examples:
+    ```vim
+    echo expand('%')             " Current filename
+    echo expand('%:p')           " Full path
+    echo expand('~')             " Home directory
+    echo expand('$HOME')         " Environment variable
+    echo expand('<cword>')       " Word under cursor
+    ```
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,402 @@
+---
+title: Code style guidelines
+description: Follow these coding style rules to keep the Vim source code readable and maintainable
+---
+
+These are the rules to use when making changes to the Vim source code. Please stick to these rules to keep the sources readable and maintainable.
+
+This list is not complete. Look in the source code for more examples. The code repository contains an `.editorconfig` file that can be used with the distributed editorconfig plugin to ensure the recommended style is followed.
+
+## Indentation
+
+We use 4 spaces to indent the code. If you're using Vim to edit the source, the modeline will handle this automatically.
+
+For the source files `sign.c` and `sound.c` and any new file, use only spaces, no tabs. Any new file must include a modeline with `set et` to pass the indentation test.
+
+Example from `src/sign.c:1`:
+
+```c
+/* vi:set ts=8 sts=4 sw=4 et: */
+```
+
+## Comments
+
+Try to avoid putting multiline comments inside a function body. If the function is so complex that you need to separately comment parts of it, you should probably rethink the structure of the function.
+
+### File headers and function descriptions
+
+Use multiline comments:
+
+```c
+/*
+ * Description
+ */
+```
+
+Example from `src/sign.c:10-12`:
+
+```c
+/*
+ * sign.c: functions for managing signs
+ */
+```
+
+### Inline comments
+
+Use single-line comments:
+
+```c
+// comment
+```
+
+Example from `src/sign.c:25-26`:
+
+```c
+sign_T *sn_next; // next sign in list
+int sn_typenr; // type number of sign
+```
+
+## Declarations
+
+Declare `for` loop variables in the guard when possible:
+
+```c
+// OK
+for (int i = 0; i < len; ++i)
+
+// Wrong
+int i;
+for (i = 0; i < len; ++i)
+```
+
+Always declare a variable with a default value:
+
+```c
+// OK
+int n = 0;
+int *ptr = NULL;
+
+// Wrong
+int n;
+int *ptr;
+```
+
+## Braces
+
+All curly braces must be placed on a new line:
+
+```c
+// OK
+if (cond)
+{
+    cmd;
+    cmd;
+}
+else
+{
+    cmd;
+    cmd;
+}
+
+// Wrong
+if (cond) {
+    cmd;
+    cmd;
+} else {
+    cmd;
+    cmd;
+}
+```
+
+The same applies to `while` loops:
+
+```c
+// OK
+while (cond)
+{
+    cmd;
+    cmd;
+}
+
+// Wrong
+while (cond) {
+    cmd;
+    cmd;
+}
+```
+
+For `do-while` loops, both styles are acceptable:
+
+```c
+// OK
+do
+{
+    cmd;
+    cmd;
+} while (cond);
+
+// Also OK
+do
+{
+    cmd;
+    cmd;
+}
+while (cond);
+```
+
+## Types
+
+Use descriptive types defined in `src/vim.h` and `src/structs.h`. All custom types are postfixed with `_T`:
+
+```c
+linenr_T
+buf_T
+pos_T
+```
+
+Example from `src/sign.c:21`:
+
+```c
+typedef struct sign sign_T;
+```
+
+## Spaces and punctuation
+
+### Function calls
+
+No space between a function name and the bracket:
+
+```c
+func(arg);      // OK
+func (arg);     // Wrong
+```
+
+### Keywords
+
+Use a space after `if`, `while`, `switch`, etc.:
+
+```c
+if (arg)        // OK
+if(arg)         // Wrong
+
+for (;;)        // OK
+for(;;)         // Wrong
+```
+
+### Commas and semicolons
+
+Use a space after a comma or semicolon:
+
+```c
+func(arg1, arg2);              // OK
+func(arg1,arg2);               // Wrong
+
+for (i = 0; i < 2; ++i)        // OK
+for (i = 0;i < 2;++i)          // Wrong
+```
+
+### Operators
+
+Use a space before and after `=`, `+`, `/`, etc.:
+
+```c
+var = a * 5;    // OK
+var=a*5;        // Wrong
+```
+
+### Empty lines
+
+Use empty lines to group similar actions together:
+
+```c
+// OK
+msg_puts_title(_("\n--- Signs ---"));
+msg_putchar('\n');
+
+if (rbuf == NULL)
+    buf = firstbuf;
+else
+    buf = rbuf;
+
+while (buf != NULL && !got_int)
+
+// Wrong
+msg_puts_title(_("\n--- Signs ---"));
+msg_putchar('\n');
+if (rbuf == NULL)
+    buf = firstbuf;
+else
+    buf = rbuf;
+while (buf != NULL && !got_int)
+```
+
+## Functions
+
+Use function declarations with the return type on a separate indented line:
+
+```c
+// OK
+int
+function_name(int arg1, int arg2)
+{
+}
+
+// Wrong
+int function_name(int arg1, int arg2)
+{
+}
+```
+
+Example from `src/sign.c:71-75`:
+
+```c
+void
+init_signs(void)
+{
+    hash_init(&sg_table); // sign group hash table
+}
+```
+
+Give meaningful names to function parameters.
+
+## Common functions
+
+Some functions have special Vim versions. Always consider using the Vim version, as they were introduced for a reason:
+
+| Normal name | Vim name | Difference |
+|-------------|----------|------------|
+| `free()` | `vim_free()` | Checks for freeing NULL |
+| `malloc()` | `alloc()` | Checks for out of memory |
+| `malloc()` | `lalloc()` | Like `alloc()`, but has long argument |
+| `strcpy()` | `STRCPY()` | Includes cast to `(char *)` for `char_u *` args |
+| `strchr()` | `vim_strchr()` | Accepts special characters |
+| `strrchr()` | `vim_strrchr()` | Accepts special characters |
+| `isspace()` | `vim_isspace()` | Can handle characters > 128 |
+| `iswhite()` | `vim_iswhite()` | Only TRUE for tab and space |
+| `memcpy()` | `mch_memmove()` | Handles overlapped copies |
+| `bcopy()` | `mch_memmove()` | Handles overlapped copies |
+| `memset()` | `vim_memset()` | Uniform for all systems |
+
+Example from `src/sign.c:95`:
+
+```c
+STRCPY(group->sg_name, groupname);
+```
+
+## Naming conventions
+
+### Function names
+
+Function names cannot be more than 31 characters long (because of VMS).
+
+### Avoid reserved words
+
+Don't use `delete` or `this` as variable names. C++ doesn't like it.
+
+### System-reserved names
+
+Avoid names that are already defined by the system. The following patterns are known to cause trouble:
+
+- `is.*()` - POSIX, ctype.h
+- `to.*()` - POSIX, ctype.h
+- `d_.*` - POSIX, dirent.h
+- `l_.*` - POSIX, fcntl.h
+- `gr_.*` - POSIX, grp.h
+- `pw_.*` - POSIX, pwd.h
+- `sa_.*` - POSIX, signal.h
+- `mem.*` - POSIX, string.h
+- `str.*` - POSIX, string.h
+- `wcs.*` - POSIX, string.h
+- `st_.*` - POSIX, stat.h
+- `tms_.*` - POSIX, times.h
+- `tm_.*` - POSIX, time.h
+- `c_.*` - POSIX, termios.h
+- `MAX.*` - POSIX, limits.h
+- `__.*` - POSIX, system
+- `_[A-Z].*` - POSIX, system
+- `E[A-Z0-9]*` - POSIX, errno.h
+- `.*_t` - POSIX, for typedefs (use `.*_T` instead)
+
+Additional names to avoid:
+
+- `wait` - Conflicts with types.h
+- `index` - Shadows global declaration
+- `time` - Shadows global declaration
+- `new` - C++ reserved keyword
+- `clear`, `echo`, `instr`, `meta`, `newwin`, `nl`, `overwrite`, `refresh`, `scroll`, `typeahead` - Mac curses.h
+- `basename()`, `dirname()` - GNU string functions
+- `get_env_value()` - Linux system function
+
+## Style examples
+
+### One statement per line
+
+```c
+// Wrong
+if (cond) a = 1;
+
+// OK
+if (cond)
+    a = 1;
+
+// Wrong
+while (cond);
+
+// OK
+while (cond)
+    ;
+
+// Wrong
+do a = 1; while (cond);
+
+// OK
+do
+    a = 1;
+while (cond);
+```
+
+### Preprocessor directives
+
+Defined names should be uppercase:
+
+```c
+#define SOME_THING
+```
+
+Features always start with `FEAT_`:
+
+```c
+#define FEAT_FOO
+```
+
+Don't use `\"`, some compilers can't handle it. Use `'"'` instead.
+
+Don't use:
+
+```c
+#if HAVE_SOME
+```
+
+Some compilers can't handle that and complain that `HAVE_SOME` is not defined. Use:
+
+```c
+#ifdef HAVE_SOME
+// or
+#if defined(HAVE_SOME)
+```
+
+## Code style testing
+
+The test suite includes `src/testdir/test_codestyle.vim` which checks for common style violations. This test must pass for all contributions:
+
+- Space before Tab
+- Trailing white space
+- Double semicolon
+- Curly brace placement
+- Missing white space after keywords
+
+Make sure your changes don't introduce any violations detected by this test.
+
+## Clang-format
+
+Some files (`sound.c` and `sign.c`) can be semi-automatically formatted using `clang-format` according to the distributed `.clang-format` file. Other source files don't yet correspond to the `.clang-format` file, but this may change in the future.

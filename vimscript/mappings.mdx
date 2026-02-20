@@ -1,0 +1,332 @@
+---
+title: Key mappings
+description: Learn how to create custom key mappings in Vim to enhance your workflow.
+---
+
+Key mapping allows you to change the meaning of typed keys. You can define command sequences for function keys, remap existing keys, or create leader-based shortcuts.
+
+## Creating mappings
+
+Use the `:map` command to create a key mapping:
+
+```vim
+map <F2> GoDate: <Esc>:read !date<CR>kJ
+```
+
+This maps F2 to append the current date.
+
+## Map modes
+
+Different map commands work in different modes:
+
+<ParamField path=":map" type="command">
+  Normal, Visual, Select, and Operator-pending modes
+</ParamField>
+
+<ParamField path=":nmap" type="command">
+  Normal mode only
+</ParamField>
+
+<ParamField path=":vmap" type="command">
+  Visual and Select mode
+</ParamField>
+
+<ParamField path=":xmap" type="command">
+  Visual mode only
+</ParamField>
+
+<ParamField path=":smap" type="command">
+  Select mode only
+</ParamField>
+
+<ParamField path=":omap" type="command">
+  Operator-pending mode
+</ParamField>
+
+<ParamField path=":imap" type="command">
+  Insert mode
+</ParamField>
+
+<ParamField path=":cmap" type="command">
+  Command-line mode
+</ParamField>
+
+<ParamField path=":tmap" type="command">
+  Terminal mode
+</ParamField>
+
+```vim
+nmap <F3> :echo "Normal mode"<CR>
+imap <F3> <C-O>:echo "Insert mode"<CR>
+vmap <F3> :echo "Visual mode"<CR>
+```
+
+## Non-recursive mappings
+
+Use `:noremap` to prevent the right-hand side from being remapped:
+
+```vim
+nnoremap j gj
+nnoremap k gk
+nnoremap gQ Q
+```
+
+Without `noremap`, mappings could create infinite loops:
+
+```vim
+" This creates a recursive loop:
+map x y
+map y x
+
+" Use noremap instead:
+noremap x y
+noremap y x
+```
+
+Non-recursive variants:
+- `:noremap` - Normal, Visual, Operator-pending
+- `:nnoremap` - Normal
+- `:vnoremap` - Visual
+- `:inoremap` - Insert
+- `:cnoremap` - Command-line
+
+## Special keys
+
+Use angle bracket notation for special keys:
+
+```vim
+<F1> to <F12>       Function keys
+<CR>                Enter/Return
+<Esc>               Escape
+<Space>             Space bar
+<Tab>               Tab key
+<BS>                Backspace
+<Del>               Delete
+<Up> <Down>         Arrow keys
+<Left> <Right>
+<Home> <End>
+<PageUp> <PageDown>
+```
+
+Examples:
+
+```vim
+nnoremap <Space> za
+inoremap <C-Space> <C-X><C-O>
+nnoremap <CR> :write<CR>
+```
+
+## Modifier keys
+
+Combine modifiers with keys:
+
+```vim
+<C-x>               Control-x
+<A-x>               Alt-x (or Meta-x)
+<S-x>               Shift-x
+<D-x>               Command-x (Mac only)
+<C-S-F>             Control-Shift-F
+```
+
+Examples:
+
+```vim
+nnoremap <C-s> :write<CR>
+inoremap <C-s> <Esc>:write<CR>a
+nnoremap <A-j> :move .+1<CR>
+nnoremap <A-k> :move .-2<CR>
+```
+
+## Mapping options
+
+### Silent mappings
+
+Suppress command output with `<silent>`:
+
+```vim
+nnoremap <silent> <F3> :echo "No output shown"<CR>
+```
+
+### Buffer-local mappings
+
+Create mappings that only work in the current buffer:
+
+```vim
+nnoremap <buffer> <F5> :call RunTests()<CR>
+```
+
+### Unique mappings
+
+Fail if the mapping already exists:
+
+```vim
+nnoremap <unique> <Leader>w :write<CR>
+```
+
+### Script-local mappings
+
+Only remap characters using script-local mappings:
+
+```vim
+nnoremap <script> <SID>Function :call s:MyFunction()<CR>
+```
+
+### Expression mappings
+
+Evaluate an expression to get the mapping result:
+
+```vim
+inoremap <expr> <C-L> nr2char(getchar())
+nnoremap <expr> <F4> CountSpaces()
+```
+
+## Leader key
+
+Use `<Leader>` as a prefix for custom mappings:
+
+```vim
+let mapleader = ","
+nnoremap <Leader>w :write<CR>
+nnoremap <Leader>q :quit<CR>
+nnoremap <Leader>s :source %<CR>
+```
+
+Default leader is backslash (`\`). Use `<LocalLeader>` for buffer-local mappings:
+
+```vim
+let maplocalleader = "_"
+nnoremap <buffer> <LocalLeader>c :!gcc %<CR>
+```
+
+## Unmapping
+
+Remove a mapping:
+
+```vim
+unmap <F2>
+nunmap <Leader>w
+vunmap <C-c>
+```
+
+Clear all mappings for a mode:
+
+```vim
+mapclear
+nmapclear
+imapclear
+```
+
+## Listing mappings
+
+List all mappings:
+
+```vim
+map
+nmap
+imap
+```
+
+List mappings starting with a key:
+
+```vim
+map <Leader>
+nmap <C-
+```
+
+## Plugin mappings
+
+Use `<Plug>` for plugin mappings:
+
+```vim
+" In plugin
+nnoremap <Plug>(MyPluginAction) :call myplugin#Action()<CR>
+
+" User can remap
+nmap <Leader>a <Plug>(MyPluginAction)
+```
+
+## Operator-pending mappings
+
+Define text objects and motions:
+
+```vim
+" Select function
+onoremap <silent> F :<C-U>normal! 0f(hviw<CR>
+
+" Usage: dF deletes function name
+```
+
+## Common mapping patterns
+
+### Save and source
+
+```vim
+nnoremap <Leader>w :write<CR>
+nnoremap <Leader>s :source %<CR>
+```
+
+### Toggle options
+
+```vim
+nnoremap <Leader>n :set number!<CR>
+nnoremap <Leader>r :set relativenumber!<CR>
+nnoremap <Leader>p :set paste!<CR>
+```
+
+### Quick navigation
+
+```vim
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+```
+
+### Buffer navigation
+
+```vim
+nnoremap <Leader>b :buffers<CR>:buffer<Space>
+nnoremap <Leader>n :bnext<CR>
+nnoremap <Leader>p :bprevious<CR>
+```
+
+### Insert mode shortcuts
+
+```vim
+inoremap jk <Esc>
+inoremap <C-e> <End>
+inoremap <C-a> <Home>
+```
+
+### Visual mode enhancements
+
+```vim
+vnoremap < <gv
+vnoremap > >gv
+vnoremap <Leader>y "+y
+```
+
+## Advanced example
+
+```vim
+" Map F5 to compile and run based on filetype
+autocmd FileType python nnoremap <buffer> <F5> :!python %<CR>
+autocmd FileType javascript nnoremap <buffer> <F5> :!node %<CR>
+autocmd FileType c nnoremap <buffer> <F5> :!gcc % -o %< && ./%<<CR>
+
+" Smart tab completion
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+
+" Quick function wrapper
+vnoremap <Leader>f di()<Esc>P
+```
+
+## Best practices
+
+1. Use `nnoremap` instead of `nmap` to avoid recursive issues
+2. Use `<Leader>` for custom mappings to avoid conflicts
+3. Document your mappings with comments
+4. Use `<buffer>` for filetype-specific mappings
+5. Test mappings in a separate file before adding to vimrc
+6. Avoid mapping commonly used keys like `s`, `t`, or `m`

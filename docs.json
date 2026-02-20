@@ -1,122 +1,184 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Vim",
+  "theme": "linden",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#019833",
+    "light": "#57A143",
+    "dark": "#016d24"
   },
-  "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/vim/vim"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/vim/vim"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
+              "introduction",
+              "installation",
               "quickstart",
-              "development"
+              "tutorial"
             ]
           },
           {
-            "group": "Customization",
+            "group": "User Guide",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "user-guide/basics",
+              "user-guide/moving-around",
+              "user-guide/editing-text",
+              "user-guide/working-with-files",
+              "user-guide/windows-and-tabs",
+              "user-guide/visual-mode",
+              "user-guide/search-and-replace"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Features",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "features/syntax-highlighting",
+              "features/folding",
+              "features/macros",
+              "features/registers",
+              "features/marks",
+              "features/diff-mode",
+              "features/spell-checking"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Advanced",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "advanced/gui",
+              "advanced/terminal-info",
+              "advanced/unicode",
+              "advanced/sessions",
+              "advanced/tags"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "Vim Script",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "vimscript/introduction",
+              "vimscript/getting-started"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Language Features",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "vimscript/variables-and-types",
+              "vimscript/expressions",
+              "vimscript/functions",
+              "vimscript/user-commands",
+              "vimscript/autocommands",
+              "vimscript/mappings"
+            ]
+          },
+          {
+            "group": "Vim9 Script",
+            "pages": [
+              "vim9/introduction",
+              "vim9/syntax",
+              "vim9/performance",
+              "vim9/migration"
+            ]
+          },
+          {
+            "group": "Plugin Development",
+            "pages": [
+              "plugins/creating-plugins",
+              "plugins/plugin-structure",
+              "plugins/filetype-plugins",
+              "plugins/best-practices"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "Commands",
+            "pages": [
+              "reference/ex-commands",
+              "reference/normal-mode-commands",
+              "reference/insert-mode-commands",
+              "reference/visual-mode-commands"
+            ]
+          },
+          {
+            "group": "Options",
+            "pages": [
+              "reference/options-overview",
+              "reference/editing-options",
+              "reference/display-options",
+              "reference/programming-options"
+            ]
+          },
+          {
+            "group": "Patterns & Search",
+            "pages": [
+              "reference/patterns",
+              "reference/regular-expressions",
+              "reference/search-commands"
+            ]
+          },
+          {
+            "group": "Built-in Functions",
+            "pages": [
+              "reference/functions-overview",
+              "reference/string-functions",
+              "reference/list-functions",
+              "reference/system-functions"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Development",
+        "groups": [
+          {
+            "group": "Building Vim",
+            "pages": [
+              "development/building-from-source",
+              "development/unix-build",
+              "development/windows-build",
+              "development/macos-build"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "development/contributing-guide",
+              "development/coding-style",
+              "development/testing"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "development/architecture-overview",
+              "development/source-structure",
+              "development/runtime-files"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

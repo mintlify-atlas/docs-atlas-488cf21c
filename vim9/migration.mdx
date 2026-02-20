@@ -1,0 +1,451 @@
+---
+title: Migrating from legacy Vim script
+description: Learn how to migrate your legacy Vim scripts to Vim9 script with practical examples, common patterns, and strategies for gradual adoption.
+---
+
+Migrating to Vim9 script doesn't require rewriting everything at once. You can adopt it gradually, starting with performance-critical code while keeping legacy scripts working alongside.
+
+## Migration strategies
+
+### Gradual adoption
+
+The recommended approach is to migrate incrementally:
+
+1. **Keep existing scripts working**: Legacy scripts continue to function
+2. **Add new code in Vim9**: Write new functions with `:def`
+3. **Convert hot paths**: Migrate performance-critical functions first
+4. **Update over time**: Gradually convert remaining code as needed
+
+### Full conversion
+
+For smaller scripts or new projects, you can convert entirely:
+
+1. Add `vim9script` at the top of the file
+2. Convert syntax throughout the file
+3. Update function definitions to use `:def`
+4. Test thoroughly with type checking
+
+## Common conversions
+
+### Script header
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    vim9script
+    
+    # Variables and functions are script-local by default
+    var count = 0
+    
+    def MyFunction(): void
+      echo 'hello'
+    enddef
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    " Variables need s: prefix for script-local
+    let s:count = 0
+    
+    function! s:MyFunction()
+      echo 'hello'
+    endfunction
+    ```
+  </Tab>
+</Tabs>
+
+### Variable declarations
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    # Declare with :var
+    var name = 'value'
+    var count = 0
+    var items: list<string> = []
+    
+    # Constants
+    const MAX_SIZE = 100
+    final results = []  # can modify contents
+    
+    # Assignment without :let
+    count = 5
+    items->add('new')
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    " Use :let for everything
+    let name = 'value'
+    let count = 0
+    let items = []
+    
+    " No real constants
+    let MAX_SIZE = 100
+    let results = []
+    
+    " Assignment needs :let
+    let count = 5
+    call add(items, 'new')
+    ```
+  </Tab>
+</Tabs>
+
+### Function definitions
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    def ProcessText(text: string, count: number): list<string>
+      var results: list<string> = []
+      for i in range(count)
+        results->add(text .. i)
+      endfor
+      return results
+    enddef
+    
+    # Call without :call
+    var output = ProcessText('item', 5)
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    function! s:ProcessText(text, count)
+      let l:results = []
+      for i in range(a:count)
+        call add(l:results, a:text .. i)
+      endfor
+      return l:results
+    endfunction
+    
+    let output = s:ProcessText('item', 5)
+    ```
+  </Tab>
+</Tabs>
+
+### Comments
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    # This is a comment
+    var count = 0  # inline comment
+    
+    # Multi-line comments still need
+    # a hash on each line
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    " This is a comment
+    let count = 0  " inline comment
+    
+    " Multi-line comments still need
+    " a quote on each line
+    ```
+  </Tab>
+</Tabs>
+
+### Lambda functions
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    var filtered = filter(items, (_, v) => v > 10)
+    var mapped = map(items, (_, v) => v * 2)
+    
+    var Lambda = (x: number): number => {
+      var result = x * 2
+      return result + 1
+    }
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    let filtered = filter(copy(items), {_, v -> v > 10})
+    let mapped = map(copy(items), {_, v -> v * 2})
+    
+    let Lambda = {x -> x * 2 + 1}
+    ```
+  </Tab>
+</Tabs>
+
+### Dictionary literals
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    var config = {
+      width: 80,
+      height: 24,
+      title: 'My Window'
+    }
+    
+    var dynamic = {[keyname]: value}
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    let config = #{
+      \ width: 80,
+      \ height: 24,
+      \ title: 'My Window'
+      \ }
+    
+    let dynamic = {keyname: value}
+    ```
+  </Tab>
+</Tabs>
+
+### Method calls
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    # No line continuation needed
+    var result = GetBuilder()
+      ->SetWidth(80)
+      ->SetHeight(24)
+      ->Build()
+    
+    items->filter((_, v) => v > 0)
+      ->map((_, v) => v * 2)
+      ->sort()
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    " Backslashes required
+    let result = GetBuilder()
+      \ ->SetWidth(80)
+      \ ->SetHeight(24)
+      \ ->Build()
+    
+    call filter(items, {_, v -> v > 0})
+    call map(items, {_, v -> v * 2})
+    call sort(items)
+    ```
+  </Tab>
+</Tabs>
+
+## Handling incompatibilities
+
+### Ex command ranges
+
+Ranges need a colon prefix in Vim9 script:
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    :%s/old/new/g          # substitute all lines
+    :1,10delete            # delete lines 1-10
+    :'a,'bsort            # sort between marks
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    %s/old/new/g
+    1,10delete
+    'a,'bsort
+    ```
+  </Tab>
+</Tabs>
+
+### Global and script-local scope
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    vim9script
+    
+    # Script-local (default)
+    var localVar = 'local'
+    def LocalFunc(): void
+    enddef
+    
+    # Explicit global
+    g:globalVar = 'global'
+    def g:GlobalFunc(): void
+    enddef
+    
+    # For export
+    export def ExportedFunc(): void
+    enddef
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    " Script-local needs s: prefix
+    let s:localVar = 'local'
+    function! s:LocalFunc()
+    endfunction
+    
+    " Global is default
+    let g:globalVar = 'global'
+    function! GlobalFunc()
+    endfunction
+    ```
+  </Tab>
+</Tabs>
+
+### Boolean expressions
+
+Vim9 is stricter with boolean operations:
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    # Only boolean values in boolean operators
+    if flag && other
+    if count > 0 || hasKey
+    
+    # Use !! to convert to boolean
+    if !!mylist
+    if !empty(text)
+    
+    # Nulls and empty collections
+    if mylist != null && !empty(mylist)
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    " Any truthy value works
+    if count
+    if text
+    if mylist
+    
+    " Check with empty()
+    if !empty(mylist)
+    ```
+  </Tab>
+</Tabs>
+
+## Mixed Vim9 and legacy code
+
+### Calling legacy from Vim9
+
+```vim
+vim9script
+
+def Vim9Function(): void
+  # Call legacy function with full name
+  legacy_function()
+  
+  # Access legacy script-local with s:
+  echo legacy#script#Function()
+  
+  # Use :legacy for legacy syntax
+  legacy call OldStyleFunc()
+enddef
+```
+
+### Calling Vim9 from legacy
+
+```vim
+" Legacy script
+
+function! LegacyFunction()
+  " Call Vim9 function normally
+  call Vim9Function()
+  
+  " Access script-local Vim9 function
+  call s:Vim9ScriptLocal()
+endfunction
+```
+
+## Migration checklist
+
+When converting a script to Vim9:
+
+- [ ] Add `vim9script` at the top of the file
+- [ ] Change `"` comments to `#` comments
+- [ ] Replace `:let` with `:var`, `:const`, or `:final`
+- [ ] Remove `:let` from assignments to existing variables
+- [ ] Change `:function` to `:def` with type annotations
+- [ ] Remove `a:` prefix from function arguments
+- [ ] Remove `l:` prefix from local variables  
+- [ ] Remove `s:` prefix from script-local items
+- [ ] Add `g:` prefix to global variables and functions
+- [ ] Remove `:call` when calling functions
+- [ ] Change `{->}` lambdas to `() =>` syntax
+- [ ] Update `#{key: val}` dictionaries to `{key: val}`
+- [ ] Add colons before Ex command ranges
+- [ ] Ensure white space around operators
+- [ ] Remove unnecessary line continuation backslashes
+- [ ] Update boolean expressions to use proper types
+- [ ] Replace `v:true`/`v:false` with `true`/`false`
+
+## Testing your migration
+
+After converting code:
+
+1. **Source the script**: Compilation errors will be reported immediately
+   ```vim
+   :source %
+   ```
+
+2. **Use `:defcompile`**: Compile all `:def` functions
+   ```vim
+   :defcompile
+   ```
+
+3. **Check with `:disassemble`**: View compiled instructions
+   ```vim
+   :disassemble MyFunction
+   ```
+
+4. **Test functionality**: Run your functions with test data
+
+5. **Watch for runtime errors**: Some type errors only appear at runtime
+
+## Common pitfalls
+
+### Variables not declared
+
+```vim
+# Error: variable not declared
+count = 0  # Error!
+
+# Must declare first
+var count = 0  # OK
+count = 5      # OK - now declared
+```
+
+### Wrong function call syntax
+
+```vim
+# Error: white space before (
+MyFunc (arg)   # Error!
+MyFunc(arg)    # OK
+```
+
+### Forgetting type annotations
+
+```vim
+# Error: missing argument type
+def MyFunc(arg)  # Error!
+
+# Must specify type
+def MyFunc(arg: string)  # OK
+def MyFunc(arg: any)     # OK if type unknown
+```
+
+### Using legacy boolean logic
+
+```vim
+# Error: not a boolean
+if count        # Error!
+if count > 0    # OK
+
+if text         # Error!
+if !empty(text) # OK
+```
+
+## Getting help
+
+For more information:
+
+- `:help vim9-differences` - Complete list of syntax differences
+- `:help vim9-gotchas` - Common unexpected behaviors  
+- `:help :def` - Function definition reference
+- `:help vim9script` - Script-level Vim9 features

@@ -1,0 +1,311 @@
+---
+title: Vim9 syntax differences
+description: Understand the key syntax differences between Vim9 script and legacy Vim script, including comments, variables, functions, and white space requirements.
+---
+
+Vim9 script introduces several syntax changes that make code more readable and consistent with modern programming languages. Here are the most important differences you'll encounter.
+
+## Comments start with #
+
+In Vim9 script, comments start with `#` instead of `"`. This avoids confusion with strings:
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    var count = 0  # number of occurrences
+    echo "hello"   # comment
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    let count = 0  " number of occurrences
+    echo "hello"   " comment
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+You must put a space before the `#` that starts a comment. Don't start comments with `#{`, as it looks like the legacy dictionary literal.
+</Note>
+
+## Variable declarations
+
+Vim9 script requires you to declare variables with `:var`, `:final`, or `:const`:
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    var count = 0           # mutable variable
+    count += 3
+    
+    final matches = []      # final reference, mutable value
+    matches->add('text')
+    
+    const NAMES = ['Betty'] # immutable
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    let count = 0
+    let count += 3
+    
+    let matches = []
+    call add(matches, 'text')
+    
+    let NAMES = ['Betty']
+    ```
+  </Tab>
+</Tabs>
+
+Key differences:
+
+- Use `:var` for mutable variables (no `:let`)
+- Use `:final` when only the variable is constant, but its value can change
+- Use `:const` when both the variable and value are constant
+- Assign to existing variables without any command
+
+## Functions and type annotations
+
+Vim9 functions are defined with `:def` and require type annotations:
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    def CallMe(count: number, message: string): bool
+      var result = count > 0
+      if result
+        echo message
+      endif
+      return result
+    enddef
+    
+    # Call without :call
+    CallMe(5, 'hello')
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    function! CallMe(count, message)
+      let l:result = a:count > 0
+      if l:result
+        echo a:message
+      endif
+      return l:result
+    endfunction
+    
+    call CallMe(5, 'hello')
+    ```
+  </Tab>
+</Tabs>
+
+Key changes:
+
+- Arguments are accessed by name without `a:` prefix
+- No `a:` dictionary or `a:000` list
+- Return type must be specified
+- Local variables don't need `l:` prefix
+- Call functions without `:call`
+
+## Script-local by default
+
+Functions and variables are script-local by default in Vim9 script:
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    vim9script
+    
+    def ThisFunction()       # script-local
+    enddef
+    
+    def g:ThatFunction()     # global
+    enddef
+    
+    export def Function()    # for import
+    enddef
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    function! s:ThisFunction()
+    endfunction
+    
+    function! ThatFunction()
+    endfunction
+    ```
+  </Tab>
+</Tabs>
+
+To define global functions or variables, use the `g:` prefix. For functions meant to be imported or in autoload scripts, use `export`.
+
+## White space requirements
+
+Vim9 script enforces proper use of white space for readability:
+
+```vim
+# Required white space around operators
+var name = 234      # OK
+var name=234        # Error!
+var name= 234       # Error!
+var name =234       # Error!
+
+# Required white space before comments
+var name = 234 # OK
+var name = 234# Error!
+
+# No white space between function name and (
+Func(arg)           # OK
+Func (arg)          # Error!
+```
+
+## Automatic line continuation
+
+In many cases, you don't need backslashes for line continuation:
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    var mylist = [
+      'one',
+      'two',
+    ]
+    
+    var text = lead
+      .. middle
+      .. end
+    
+    var result = GetBuilder()
+      ->BuilderSetWidth(333)
+      ->BuilderSetHeight(777)
+      ->BuilderBuild()
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    let mylist = [
+      \ 'one',
+      \ 'two',
+      \ ]
+    
+    let text = lead
+      \ .. middle
+      \ .. end
+    
+    let result = GetBuilder()
+      \ ->BuilderSetWidth(333)
+      \ ->BuilderSetHeight(777)
+      \ ->BuilderBuild()
+    ```
+  </Tab>
+</Tabs>
+
+Backslashes are not needed when:
+
+- Lists and dictionaries span multiple lines
+- Binary operators appear at line boundaries
+- Method calls use `->` across lines
+
+## Lambda syntax
+
+Vim9 script uses `=>` instead of `->` for lambdas:
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    var Lambda = (arg) => expression
+    var Lambda = (arg): string => expression
+    
+    # With statement block
+    var Lambda = (arg) => {
+      g:was_called = 'yes'
+      return expression
+    }
+    
+    filter(list, (k, v) => v > 0)
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    let Lambda = {arg -> expression}
+    
+    call filter(list, {k, v -> v > 0})
+    ```
+  </Tab>
+</Tabs>
+
+## Dictionary literals
+
+Vim9 script uses `{}` with literal keys, similar to JavaScript:
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    var dict = {key: value, other: 123}
+    var dict = {'key with space': value}
+    var dict = {["key" .. nr]: value}  # expression key
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    let dict = #{key: value, other: 123}
+    let dict = {'key with space': value}
+    ```
+  </Tab>
+</Tabs>
+
+## Boolean values and conditions
+
+Vim9 script is stricter with boolean operations:
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    # Boolean operators require boolean values
+    if 1 || false      # OK
+    if 8 || 0          # Error!
+    if 'yes' && 0      # Error!
+    
+    # Use ! for any type
+    if ![]             # OK, evaluates to true
+    if !!mylist        # OK, converts to boolean
+    
+    # Use true/false/null
+    var flag = true
+    var empty = null
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    " Any value can be used as boolean
+    if 8
+    if 'yes'
+    if [1, 2, 3]
+    
+    " Use 1/0
+    let flag = 1
+    ```
+  </Tab>
+</Tabs>
+
+## Ranges require colon prefix
+
+Ex command ranges must be prefixed with a colon:
+
+<Tabs>
+  <Tab title="Vim9 script">
+    ```vim
+    :%s/this/that       # substitute on all lines
+    :'t                 # jump to mark t
+    :% call MyFunc()    # call on all lines
+    ```
+  </Tab>
+  <Tab title="Legacy script">
+    ```vim
+    %s/this/that
+    't
+    % call MyFunc()
+    ```
+  </Tab>
+</Tabs>
+
+This prevents confusion between ranges and expressions like method calls or the modulo operator.

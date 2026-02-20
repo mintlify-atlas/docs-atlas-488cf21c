@@ -1,0 +1,543 @@
+---
+title: Plugin development best practices
+description: Learn best practices for writing maintainable, efficient Vim plugins
+---
+
+Follow these best practices to create plugins that are efficient, maintainable, and work well with other plugins.
+
+## Use Vim9 script
+
+Vim9 script is the recommended way to write new plugins. It offers:
+
+- **Better performance**: Compiled functions run up to 100x faster
+- **Modern syntax**: Similar to TypeScript
+- **Better error detection**: Type checking catches errors early
+- **Cleaner code**: Script-local by default
+
+```vim
+vim9script noclear
+
+export def MyFunction(count: number): string
+  return $"Processing {count} items"
+enddef
+```
+
+## Organize code for fast loading
+
+### Use autoload for heavy functionality
+
+Keep your main plugin file minimal. Move heavy functionality to autoload:
+
+```vim
+" plugin/myplugin.vim - Main file (small)
+vim9script
+
+if exists("g:loaded_myplugin")
+  finish
+endif
+g:loaded_myplugin = 1
+
+command MyCommand call myplugin#Execute()
+```
+
+```vim
+" autoload/myplugin.vim - Heavy functionality
+vim9script
+
+export def Execute()
+  # Complex implementation here
+  # Only loaded when command is used
+enddef
+```
+
+### Use autoload with import/export
+
+For even better organization:
+
+```vim
+" plugin/myplugin.vim
+vim9script
+
+import autoload "../lib/core.vim"
+
+command MyCommand call core.Execute()
+```
+
+The `autoload` keyword delays loading until the function is called.
+
+## Avoid naming conflicts
+
+### Use unique plugin names
+
+Choose descriptive, unique names:
+
+```vim
+# Good - specific and unique
+g:loaded_typecorrect
+
+# Bad - too generic
+g:loaded_plugin
+```
+
+### Prefix global items
+
+Prefix global variables, functions, and commands:
+
+```vim
+# Global variables
+g:myplugin_enabled = 1
+g:myplugin_timeout = 5000
+
+# Commands
+command MyPluginExecute ...
+command MyPluginConfig ...
+```
+
+### Use script-local variables
+
+In Vim9 script, variables are script-local by default:
+
+```vim
+vim9script
+
+var count = 0        # Script-local (only in this file)
+g:count = 0          # Global (avoid unless needed)
+```
+
+## Respect user configuration
+
+### Allow users to disable loading
+
+```vim
+if exists("g:loaded_myplugin")
+  finish
+endif
+g:loaded_myplugin = 1
+```
+
+Users can add to their `.vimrc`:
+
+```vim
+g:loaded_myplugin = 1  # Prevent loading
+```
+
+### Use `<Leader>` and `<LocalLeader>`
+
+```vim
+# Global plugin mappings
+map <unique> <Leader>a  <Plug>MyPluginAction;
+
+# Filetype plugin mappings
+map <buffer> <unique> <LocalLeader>i <Plug>JavaImport;
+```
+
+Users control the prefix:
+
+```vim
+g:mapleader = ","         # For <Leader>
+g:maplocalleader = "\\"   # For <LocalLeader>
+```
+
+### Check before creating mappings
+
+```vim
+if !hasmapto('<Plug>MyPluginAction;')
+  map <unique> <Leader>a  <Plug>MyPluginAction;
+endif
+```
+
+Users can override:
+
+```vim
+map <Leader>x <Plug>MyPluginAction;  # Use custom key
+```
+
+### Allow disabling mappings
+
+```vim
+if !exists("g:no_plugin_maps") && !exists("g:no_myplugin_maps")
+  # Define mappings
+endif
+```
+
+Users can disable:
+
+```vim
+g:no_plugin_maps = 1      # Disable all plugin mappings
+g:no_myplugin_maps = 1    # Disable only this plugin's mappings
+```
+
+### Check before creating commands
+
+```vim
+if !exists(":MyCommand")
+  command -nargs=1 MyCommand call Execute(<q-args>)
+endif
+```
+
+Find conflicts:
+
+```vim
+:verbose command MyCommand
+```
+
+## Use proper mappings
+
+### Use the two-step mapping pattern
+
+```vim
+# Step 1: User-facing mapping
+if !hasmapto('<Plug>MyAction;')
+  map <unique> <Leader>a <Plug>MyAction;
+endif
+
+# Step 2: Plug to script-local
+noremap <unique> <script> <Plug>MyAction; <SID>DoAction
+
+# Step 3: Script-local to function
+noremap <SID>DoAction :call <SID>DoAction()<CR>
+```
+
+### Use `noremap` to prevent remapping
+
+```vim
+# Good - prevents conflicts
+noremap <Plug>MyAction; :call MyFunc()<CR>
+
+# Bad - could cause unexpected behavior
+map <Plug>MyAction; :call MyFunc()<CR>
+```
+
+### Use `<unique>` to detect conflicts
+
+```vim
+map <unique> <Leader>a <Plug>MyAction;  # Error if already mapped
+```
+
+### Use `<script>` for script-local mappings
+
+```vim
+noremap <unique> <script> <Plug>MyAction; <SID>DoAction
+```
+
+Only remaps things starting with `<SID>` from this script.
+
+## Handle filetype plugins correctly
+
+### Use buffer-local everything
+
+```vim
+# Buffer-local variable
+b:did_ftplugin = 1
+
+# Buffer-local option
+setlocal textwidth=80
+
+# Buffer-local mapping
+map <buffer> <LocalLeader>i <Plug>Import
+
+# Buffer-local command
+command -buffer Format call FormatCode()
+```
+
+### Always provide undo
+
+```vim
+b:undo_ftplugin = "setlocal fo< com< tw<"
+  \ .. "| unlet b:did_ftplugin b:match_words"
+  \ .. "| execute 'au! MyEvents <buffer>'"
+```
+
+### Reset then modify options
+
+```vim
+# Reset to default first
+setlocal formatoptions&
+# Then modify
+setlocal formatoptions+=ro
+setlocal formatoptions-=t
+```
+
+## Write documentation
+
+Provide help documentation for your plugin:
+
+```
+*myplugin.txt*  Plugin for doing something useful
+
+This plugin provides functionality to process data.
+
+COMMANDS                                        *myplugin-commands*
+
+:MyCommand {arg}                                *:MyCommand*
+    Process {arg} and display results.
+
+MAPPINGS                                        *myplugin-mappings*
+
+<Leader>a   or   <Plug>MyAction;                *myplugin-action*
+    Execute the main action.
+
+SETTINGS                                        *myplugin-settings*
+
+g:myplugin_enabled                              *g:myplugin_enabled*
+    Default: 1
+    Set to 0 to disable the plugin.
+
+g:myplugin_timeout                              *g:myplugin_timeout*
+    Default: 5000
+    Timeout in milliseconds for operations.
+```
+
+Key points:
+
+- First line must start with `*` in column 1
+- Use `*tags*` for searchable help tags
+- Reference other help topics with `|topic|`
+- Use consistent formatting
+
+## Use appropriate error handling
+
+### Check for prerequisites
+
+```vim
+if !has('python3')
+  echohl ErrorMsg
+  echo "MyPlugin requires Python 3 support"
+  echohl None
+  finish
+endif
+```
+
+### Validate user input
+
+```vim
+def SetTimeout(ms: number)
+  if ms < 0
+    echohl ErrorMsg
+    echo "Timeout must be positive"
+    echohl None
+    return
+  endif
+  timeout = ms
+enddef
+```
+
+### Use try-catch for risky operations
+
+```vim
+try
+  var result = ReadFile(filename)
+  ProcessData(result)
+catch
+  echohl ErrorMsg
+  echo $"Error: {v:exception}"
+  echohl None
+endcatch
+```
+
+## Optimize performance
+
+### Use Vim9 compiled functions
+
+Vim9 functions are compiled for speed:
+
+```vim
+vim9script
+
+# Fast - compiled
+def ProcessItems(items: list<string>): number
+  var count = 0
+  for item in items
+    if item =~ 'pattern'
+      count += 1
+    endif
+  endfor
+  return count
+enddef
+```
+
+### Avoid unnecessary regex
+
+```vim
+# Good - simple string comparison
+if text == "match"
+
+# Slower - unnecessary regex
+if text =~ '^match$'
+```
+
+### Cache expensive operations
+
+```vim
+var cache: dict<any> = {}
+
+def GetData(key: string): any
+  if has_key(cache, key)
+    return cache[key]
+  endif
+  var data = ExpensiveOperation(key)
+  cache[key] = data
+  return data
+enddef
+```
+
+### Use autoload for initialization
+
+```vim
+# Put expensive initialization in autoload
+def myplugin#Initialize()
+  var data = LoadLargeDataset()
+  ProcessComplexData(data)
+enddef
+```
+
+## Make plugins testable
+
+### Separate logic from UI
+
+```vim
+# Good - testable logic
+export def CalculateResult(input: number): number
+  return input * 2 + 10
+enddef
+
+# UI layer
+def ShowResult()
+  var input = input("Enter number: ")
+  echo CalculateResult(str2nr(input))
+enddef
+```
+
+### Use pure functions when possible
+
+```vim
+# Pure function - same input = same output
+def Add(a: number, b: number): number
+  return a + b
+enddef
+
+# Not pure - depends on global state
+var offset = 10
+def AddWithOffset(a: number): number
+  return a + offset
+enddef
+```
+
+## Distribution and licensing
+
+### Choose an appropriate license
+
+Recommended options:
+
+- **Public domain**: No restrictions
+- **Vim license**: Same as Vim itself
+- **MIT**: Permissive open source
+
+```vim
+# License: This file is placed in the public domain.
+```
+
+### Provide installation instructions
+
+Create a README with:
+
+- Installation methods (vim-plug, Vundle, manual)
+- Requirements
+- Configuration examples
+- Usage examples
+
+### Use version control
+
+Distribute via GitHub or vim.org:
+
+```
+README.md
+LICENSE
+plugin/
+autoload/
+doc/
+```
+
+### Support plugin managers
+
+Structure your plugin to work with:
+
+- vim-plug
+- Vundle
+- Pathogen
+- Vim's built-in packages
+
+## Checklist for plugin development
+
+Before releasing your plugin:
+
+- [ ] Uses `vim9script` at the top
+- [ ] Has `g:loaded_` guard variable
+- [ ] Allows users to disable loading
+- [ ] Uses `<Leader>` for mappings
+- [ ] Checks `hasmapto()` before creating mappings
+- [ ] Uses `<Plug>` and `<SID>` correctly
+- [ ] Uses `<unique>` for mappings
+- [ ] Commands check `exists(":CommandName")`
+- [ ] Filetype plugins use `b:did_ftplugin`
+- [ ] Filetype plugins provide `b:undo_ftplugin`
+- [ ] Uses `setlocal` not `set` in filetype plugins
+- [ ] Uses autoload for heavy functionality
+- [ ] Has documentation in doc/
+- [ ] Has descriptive header with maintainer info
+- [ ] Includes license information
+- [ ] Uses unique, descriptive names
+- [ ] Handles errors gracefully
+- [ ] Works with common plugin managers
+
+## Example: Well-structured plugin
+
+Here's a complete example following all best practices:
+
+```vim
+vim9script noclear
+# Vim global plugin for text statistics
+# Last Change: 2026 Feb 20
+# Maintainer: Your Name <your@email.com>
+# License: This file is placed in the public domain.
+
+if exists("g:loaded_textstats")
+  finish
+endif
+g:loaded_textstats = 1
+
+# Default settings
+if !exists('g:textstats_show_words')
+  g:textstats_show_words = 1
+endif
+
+if !exists('g:textstats_show_chars')
+  g:textstats_show_chars = 1
+endif
+
+# Commands
+if !exists(":TextStats")
+  command -range=% TextStats call textstats#Show(<line1>, <line2>)
+endif
+
+# Mappings
+if !exists("g:no_plugin_maps") && !exists("g:no_textstats_maps")
+  if !hasmapto('<Plug>TextStatsShow;')
+    nmap <unique> <Leader>ts <Plug>TextStatsShow;
+    vmap <unique> <Leader>ts <Plug>TextStatsShow;
+  endif
+  
+  nnoremap <unique> <script> <Plug>TextStatsShow; <SID>ShowStats
+  vnoremap <unique> <script> <Plug>TextStatsShow; <SID>ShowStats
+  
+  nnoremap <SID>ShowStats :TextStats<CR>
+  vnoremap <SID>ShowStats :TextStats<CR>
+endif
+```
+
+## Next steps
+
+- Read the [Vim help on write-plugin](vim:help write-plugin)
+- Study existing well-written plugins
+- Test your plugin with different configurations
+- Get feedback from the Vim community

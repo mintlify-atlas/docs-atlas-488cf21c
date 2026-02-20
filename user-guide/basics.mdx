@@ -1,0 +1,230 @@
+---
+title: Vim basics and modes
+description: Learn the fundamental concepts of Vim including its modal editing system, basic commands, and how to navigate between modes
+---
+
+# Vim basics and modes
+
+Vim is a modal editor, which means it behaves differently depending on which mode you're in. Understanding modes is essential to using Vim effectively.
+
+## Understanding modes
+
+Vim has several modes, but the two most important ones are:
+
+- **Normal mode**: For navigating and manipulating text
+- **Insert mode**: For typing and inserting text
+
+### Normal mode
+
+When you start Vim, you're in Normal mode. In this mode, characters you type are commands, not text to be inserted.
+
+<Tip>
+  Press `Esc` to return to Normal mode from any other mode. If Vim beeps when you press `Esc`, you're already in Normal mode.
+</Tip>
+
+### Insert mode
+
+To start typing text, you need to enter Insert mode. There are several ways to do this:
+
+<Tabs>
+  <Tab title="i">
+    Insert text before the cursor
+    ```vim
+    i
+    ```
+  </Tab>
+  <Tab title="a">
+    Insert text after the cursor (append)
+    ```vim
+    a
+    ```
+  </Tab>
+  <Tab title="o">
+    Open a new line below and enter Insert mode
+    ```vim
+    o
+    ```
+  </Tab>
+  <Tab title="O">
+    Open a new line above and enter Insert mode
+    ```vim
+    O
+    ```
+  </Tab>
+</Tabs>
+
+When you're in Insert mode, you'll see `-- INSERT --` at the bottom of the screen (if you have `set showmode` enabled).
+
+<Steps>
+  <Step title="Start Vim">
+    Open a file with Vim:
+    ```bash
+    vim filename.txt
+    ```
+  </Step>
+  
+  <Step title="Enter Insert mode">
+    Press `i` to enter Insert mode before the cursor
+  </Step>
+  
+  <Step title="Type your text">
+    Type some text. It will appear in the file.
+  </Step>
+  
+  <Step title="Return to Normal mode">
+    Press `Esc` to return to Normal mode
+  </Step>
+</Steps>
+
+## Basic editing commands
+
+### Inserting text
+
+Here are the main commands to enter Insert mode:
+
+| Command | Description |
+|---------|-------------|
+| `i` | Insert before cursor |
+| `I` | Insert at start of line (first non-blank character) |
+| `a` | Append after cursor |
+| `A` | Append at end of line |
+| `o` | Open new line below |
+| `O` | Open new line above |
+
+### Deleting text
+
+In Normal mode, you can delete text with these commands:
+
+| Command | Description |
+|---------|-------------|
+| `x` | Delete character under cursor |
+| `X` | Delete character before cursor |
+| `dd` | Delete entire line |
+| `dw` | Delete word |
+| `D` | Delete from cursor to end of line |
+
+<Note>
+  When you delete text in Vim, it's actually cut to a register, so you can paste it elsewhere.
+</Note>
+
+### Undo and redo
+
+| Command | Description |
+|---------|-------------|
+| `u` | Undo last change |
+| `Ctrl-R` | Redo (undo the undo) |
+| `U` | Undo all changes on current line |
+
+## Saving and exiting
+
+These commands are entered in Normal mode by typing a colon (`:`):
+
+<Tabs>
+  <Tab title="Save">
+    Write the file to disk:
+    ```vim
+    :write
+    ```
+    Or use the shorthand:
+    ```vim
+    :w
+    ```
+  </Tab>
+  
+  <Tab title="Save and quit">
+    Write the file and exit Vim:
+    ```vim
+    :wq
+    ```
+    Or use:
+    ```vim
+    ZZ
+    ```
+  </Tab>
+  
+  <Tab title="Quit without saving">
+    Exit without saving changes:
+    ```vim
+    :q!
+    ```
+  </Tab>
+  
+  <Tab title="Just quit">
+    Exit (will warn if there are unsaved changes):
+    ```vim
+    :q
+    ```
+  </Tab>
+</Tabs>
+
+## Getting help
+
+Vim has extensive built-in help. To access it:
+
+```vim
+:help
+```
+
+For help on a specific topic:
+
+```vim
+:help i_CTRL-W
+:help dd
+:help 'textwidth'
+```
+
+<Tip>
+  Use `Ctrl-]` to jump to a tag in the help, and `Ctrl-T` to jump back.
+</Tip>
+
+## Checking your mode
+
+To see which mode you're in:
+
+```vim
+:set showmode
+```
+
+This will display the current mode at the bottom of the screen.
+
+## Joining lines
+
+To join two lines together:
+
+```vim
+J
+```
+
+This removes the line break and adds a space between the lines.
+
+## Using counts
+
+Many commands can be preceded by a count:
+
+```vim
+3dd    " Delete 3 lines
+5x     " Delete 5 characters
+2o     " Open 2 new lines
+```
+
+<Note>
+  The count goes before the command. For example, `3dw` deletes three words.
+</Note>
+
+## Practice exercises
+
+Try these exercises to get comfortable with Vim's modes:
+
+1. Start Vim and enter some text
+2. Delete a few words using `dw`
+3. Undo your changes with `u`
+4. Redo with `Ctrl-R`
+5. Save the file with `:w`
+6. Exit with `:q`
+
+<Tip>
+  The `vimtutor` program provides an interactive tutorial. Run it from your terminal:
+  ```bash
+  vimtutor
+  ```
+</Tip>

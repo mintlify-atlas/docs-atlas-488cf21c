@@ -1,0 +1,410 @@
+---
+title: First Vim Script
+description: Write and execute your first Vim script with variables, loops, and functions
+---
+
+Let's write your first Vim script and learn the fundamental concepts you'll use every day.
+
+## Creating and running a script
+
+The best way to learn Vim script is to create a file, write some code, and execute it.
+
+<Steps>
+
+<Step title="Create a new script file">
+Open a new file in Vim:
+
+```vim
+:edit test.vim
+```
+</Step>
+
+<Step title="Write your script">
+Enter insert mode and type your script code (examples below).
+</Step>
+
+<Step title="Save the file">
+Save your changes:
+
+```vim
+:w
+```
+</Step>
+
+<Step title="Execute the script">
+Source the script to run it:
+
+```vim
+:source %
+```
+
+The `%` represents the current file.
+</Step>
+
+</Steps>
+
+## Your first script: A simple loop
+
+Let's start with a simple counting example:
+
+```vim
+vim9script
+var i = 1
+while i < 5
+  echo "count is" i
+  i += 1
+endwhile
+```
+
+**Output:**
+```
+count is 1
+count is 2
+count is 3
+count is 4
+```
+
+Let's break down what's happening:
+
+### The vim9script declaration
+
+```vim
+vim9script
+```
+
+This line tells Vim you're using the modern Vim9 script syntax. It should always be the **first line** in your script file, before any comments.
+
+### Variables
+
+```vim
+var i = 1
+```
+
+This declares a variable named `i` and initializes it with the value `1`. The generic form is:
+
+```vim
+var {name} = {expression}
+```
+
+Variable names must:
+- Start with a letter or underscore
+- Contain only letters, digits, and underscores
+- Be descriptive (e.g., `counter`, `user_name`, `maxValue`)
+
+### While loops
+
+```vim
+while i < 5
+  echo "count is" i
+  i += 1
+endwhile
+```
+
+The `while` command executes statements repeatedly as long as the condition is true:
+
+```vim
+while {condition}
+  {statements}
+endwhile
+```
+
+<Tip>
+If you accidentally write an infinite loop, press **CTRL-C** (or **CTRL-Break** on Windows) to interrupt it.
+</Tip>
+
+### The echo command
+
+```vim
+echo "count is" i
+```
+
+The `echo` command prints its arguments. When given multiple arguments, it separates them with spaces.
+
+### Incrementing variables
+
+```vim
+i += 1
+```
+
+This adds `1` to the variable `i`. It's shorthand for:
+
+```vim
+i = i + 1
+```
+
+## A more elegant approach
+
+The same loop can be written more compactly using a `for` loop:
+
+```vim
+vim9script
+for i in range(1, 4)
+  echo $"count is {i}"
+endfor
+```
+
+This introduces two new concepts:
+
+### For loops
+
+The `for` command iterates over items in a list:
+
+```vim
+for item in mylist
+  call Doit(item)
+endfor
+```
+
+### String interpolation
+
+```vim
+echo $"count is {i}"
+```
+
+The `$"..."` syntax creates an interpolated string where expressions in curly braces `{...}` are evaluated and inserted.
+
+## Trying code snippets quickly
+
+You don't need to save code to a file to try it. You can execute Vim script directly from the editor:
+
+<Steps>
+
+<Step title="Select the code">
+Position your cursor on the first line, press `v` to start visual mode, then move down to select all lines.
+</Step>
+
+<Step title="Execute the selection">
+Press `:` (you'll see `:'<,'>`), then type:
+
+```vim
+vim9 so
+```
+
+and press Enter.
+</Step>
+
+</Steps>
+
+The `vim9` command modifier tells Vim to execute the following command using Vim9 script syntax. The `so` is short for `:source`.
+
+<Tip>
+This method works for most examples, but not for code that requires a script context (like function definitions).
+</Tip>
+
+## Working with strings
+
+Strings are essential in Vim scripts. You can create them in several ways:
+
+<CodeGroup>
+
+```vim Double quotes
+var name = "Peter"
+var quote = "he said \"hello\""
+var special = "tab\there\nbackslash\\"
+```
+
+```vim Single quotes
+var name = 'Peter'
+var quote = 'he said "hello"'
+var apostrophe = 'can''t'  " Use '' for '
+```
+
+```vim Interpolated strings
+var name = "Peter"
+var age = 42
+var message = $"Name: {name}, Age: {age}"
+```
+
+</CodeGroup>
+
+### String type declarations
+
+You can declare a variable's type before assigning a value:
+
+```vim
+vim9script
+var name: string
+var age: number
+
+if male
+  name = "Peter"
+  age = 42
+else
+  name = "Elisa"
+  age = 45
+endif
+```
+
+Vim will give an error if you try to assign the wrong type:
+
+```vim
+age = "Peter"  " Error: Type mismatch
+```
+
+## Conditionals
+
+Use `if` statements to execute code based on conditions:
+
+```vim
+vim9script
+if &term == "xterm"
+  # Do stuff for xterm
+elseif &term == "vt100"
+  # Do stuff for vt100
+else
+  # Do something for other terminals
+endif
+```
+
+### Comparison operators
+
+| Operator | Meaning |
+|----------|----------|
+| `==` | Equal to |
+| `!=` | Not equal to |
+| `>` | Greater than |
+| `>=` | Greater than or equal |
+| `<` | Less than |
+| `<=` | Less than or equal |
+| `=~` | Matches pattern |
+| `!~` | Doesn't match pattern |
+
+### Accessing Vim options
+
+The `&` prefix accesses option values:
+
+```vim
+echo &tabstop          # Current tabstop value
+echo &ignorecase       # Is case ignored in searches?
+
+var save_ic = &ic      # Save current ignorecase
+set noic               # Turn it off temporarily
+s/The Start/The Beginning/
+&ic = save_ic          # Restore original value
+```
+
+## Working with expressions
+
+Vim Script supports standard mathematical and string operations:
+
+<CodeGroup>
+
+```vim Math
+echo 10 + 5 * 2        # 20 (multiplication first)
+echo (10 + 5) * 2      # 30 (parentheses group)
+echo 17 % 5            # 2 (modulo/remainder)
+```
+
+```vim Strings
+echo "Name: " .. name          # Concatenate with ..
+echo $"Name: {name}"           # String interpolation
+```
+
+```vim Conditional
+var nr = 4
+echo nr > 5 ? "big" : "small"  # Ternary operator
+# Output: small
+```
+
+</CodeGroup>
+
+## Comments
+
+In Vim9 script, comments start with `#`:
+
+```vim
+vim9script
+
+# This is a comment
+var count = 0  # This is an end-of-line comment
+
+# You can have multiple lines of comments
+# to explain complex logic
+```
+
+<Tip>
+Legacy Vim script uses `"` for comments, but Vim9 script uses `#` to avoid ambiguity with strings.
+</Tip>
+
+## Using functions
+
+Vim provides many built-in functions. Here's how to call them:
+
+```vim
+vim9script
+
+# Get a line from the buffer
+var line = getline(".")
+
+# Replace text with a pattern
+var repl = substitute(line, '\a', "*", "g")
+
+# Set the line back
+setline(".", repl)
+```
+
+This example:
+1. Gets the current line (`.` means cursor line)
+2. Replaces all alphabetic characters (`\a`) with asterisks
+3. Sets the current line to the modified text
+
+The result is the same as running:
+
+```vim
+:substitute/\a/*/g
+```
+
+## Loop control
+
+You can control loop execution with `continue` and `break`:
+
+```vim
+vim9script
+var counter = 1
+while counter < 40
+  if skip_number(counter)
+    continue      # Skip to next iteration
+  endif
+  if last_number(counter)
+    break         # Exit the loop
+  endif
+  sleep 50m       # Sleep for 50 milliseconds
+  ++counter
+endwhile
+```
+
+- `continue` - Jump back to the start of the loop
+- `break` - Exit the loop immediately
+- `sleep` - Pause execution (e.g., `50m` = 50 milliseconds, `4` = 4 seconds)
+
+## Whitespace requirements
+
+Vim9 script requires whitespace around operators for clarity:
+
+<CodeGroup>
+
+```vim Correct
+echo -0x7f (-0o36)     # Parentheses group negation
+echo -0x7f + -0o36     # Error: needs spaces around +
+echo -0x7f + (-0o36)   # Correct with parentheses
+```
+
+```vim Error
+echo -0x7f -0o36       # Error: ambiguous
+# Is this subtraction or two negative numbers?
+```
+
+</CodeGroup>
+
+This requirement helps prevent errors and makes code easier to read.
+
+## Next steps
+
+You now know how to:
+- Create and execute Vim scripts
+- Use variables and basic data types
+- Write loops and conditionals
+- Call built-in functions
+- Work with strings and numbers
+
+Next, explore more advanced topics like defining your own functions, working with lists and dictionaries, and creating custom commands.

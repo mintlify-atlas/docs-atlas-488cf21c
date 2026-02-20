@@ -1,0 +1,442 @@
+---
+title: Marks and jumps
+description: Navigate efficiently using Vim's marks and jump list
+---
+
+Marks allow you to save cursor positions and jump back to them later, making navigation in large files and across files much more efficient.
+
+## Setting marks
+
+Set a mark at the cursor position:
+
+```vim
+m{a-zA-Z}
+```
+
+- Lowercase marks `a-z` are local to the current buffer
+- Uppercase marks `A-Z` are global and include the filename
+- Numbered marks `0-9` are set automatically by viminfo
+
+## Jumping to marks
+
+<Tabs>
+  <Tab title="Backtick">
+    Jump to exact position (column and line):
+
+    ```vim
+    `{mark}      " Jump to mark position
+    ``           " Jump to position before last jump
+    `[           " Jump to start of last changed/yanked text
+    `]           " Jump to end of last changed/yanked text
+    `<           " Jump to start of last visual selection
+    `>           " Jump to end of last visual selection
+    ```
+  </Tab>
+  <Tab title="Single quote">
+    Jump to first non-blank character of line:
+
+    ```vim
+    '{mark}      " Jump to mark's line
+    ''           " Jump to line before last jump
+    '[           " Jump to start line of last changed/yanked text
+    ']           " Jump to end line of last changed/yanked text
+    '<           " Jump to start line of last visual selection
+    '>           " Jump to end line of last visual selection
+    ```
+  </Tab>
+</Tabs>
+
+## Listing marks
+
+View all marks:
+
+```vim
+" Show all marks
+:marks
+
+" Show specific marks
+:marks aB
+
+" Show marks in range
+:marks a-z
+```
+
+## Deleting marks
+
+Remove marks you no longer need:
+
+```vim
+" Delete specific marks
+:delmarks a
+:delmarks a b c
+
+" Delete marks in range
+:delmarks a-z
+
+" Delete all marks for current buffer (except A-Z and 0-9)
+:delmarks!
+```
+
+## Automatic marks
+
+<Accordion title="Special marks set by Vim">
+
+Vim automatically sets several useful marks:
+
+```vim
+`"      " Position when last exiting buffer
+`.      " Position of last change
+`^      " Position of last insert
+`[      " Start of last changed or yanked text
+`]      " End of last changed or yanked text
+`<      " Start of last visual selection
+`>      " End of last visual selection
+'(      " Start of current sentence
+')      " End of current sentence
+'{      " Start of current paragraph
+'}      " End of current paragraph
+```
+
+These marks update automatically and cannot be set manually.
+
+</Accordion>
+
+## Practical examples
+
+<Tabs>
+  <Tab title="Local navigation">
+    Use marks for quick navigation within a file:
+
+    ```vim
+    " Mark important positions
+    ma          " Mark current position as 'a'
+    /function<CR>
+    mb          " Mark as 'b'
+    /class<CR>
+    mc          " Mark as 'c'
+    
+    " Jump between marks
+    `a          " Jump to mark a
+    `b          " Jump to mark b
+    `c          " Jump to mark c
+    ```
+
+    Useful mark naming:
+    - `m` for "main" or starting point
+    - `t` for "top" of section
+    - `b` for "bottom" of section
+  </Tab>
+  <Tab title="Cross-file">
+    Use uppercase marks to jump between files:
+
+    ```vim
+    " In file1.txt
+    mA          " Mark position as 'A'
+    
+    " In file2.txt
+    mB          " Mark position as 'B'
+    
+    " Jump between files
+    `A          " Opens file1.txt at mark A
+    `B          " Opens file2.txt at mark B
+    ```
+
+    Great for:
+    - Jumping between related code sections
+    - Marking TODOs across files
+    - Bookmarking important locations
+  </Tab>
+  <Tab title="Edit and return">
+    Mark position before making changes:
+
+    ```vim
+    " Mark current position
+    ma
+    
+    " Go elsewhere and make changes
+    /function<CR>
+    cw new_name<Esc>
+    
+    " Return to marked position
+    `a
+    ```
+
+    Or use automatic marks:
+    ```vim
+    " Make a change
+    ciw newword<Esc>
+    
+    " Jump back to where you were
+    ``
+    
+    " Jump to last change
+    `.
+    ```
+  </Tab>
+  <Tab title="Copy between positions">
+    Use marks to specify ranges:
+
+    ```vim
+    " Mark start of range
+    ma
+    
+    " Move to end
+    /end<CR>
+    
+    " Yank from mark to current position
+    y'a
+    
+    " Or delete
+    d'a
+    
+    " Or operate on the range
+    :'a,.s/old/new/g
+    ```
+  </Tab>
+</Tabs>
+
+## Jump list
+
+Vim maintains a jump list of cursor positions:
+
+<CodeGroup>
+
+```vim Navigate jumps
+" Jump to older position
+<Ctrl-O>
+
+" Jump to newer position
+<Ctrl-I> or <Tab>
+
+" View jump list
+:jumps
+
+" Clear jump list
+:clearjumps
+```
+
+```vim Jump commands
+" These create jump list entries:
+'       " Jump to mark
+`       " Jump to mark
+G       " Go to line
+/       " Search forward
+?       " Search backward
+n       " Next search match
+N       " Previous search match
+%       " Jump to matching bracket
+(       " Sentence backward
+)       " Sentence forward
+{       " Paragraph backward
+}       " Paragraph forward
+[[      " Section backward
+]]      " Section forward
+```
+
+</CodeGroup>
+
+## Change list
+
+Navigate through your edit history:
+
+```vim
+" Jump to older change position
+g;
+
+" Jump to newer change position
+g,
+
+" View change list
+:changes
+```
+
+<Accordion title="Using the change list">
+
+The change list tracks up to 100 positions where you made changes:
+
+```vim
+" Make some changes
+ciw word1<Esc>
+/other<CR>
+ciw word2<Esc>
+
+" Jump back through changes
+g;          " Jump to 'word2' change
+g;          " Jump to 'word1' change
+
+" Jump forward
+g,          " Jump to 'word2' change
+g,          " Jump to current position
+```
+
+Useful for:
+- Reviewing recent edits
+- Finding where you made a specific change
+- Navigating through complex editing sessions
+
+</Accordion>
+
+## Practical workflows
+
+<Tabs>
+  <Tab title="Code review">
+    Mark sections while reviewing code:
+
+    ```vim
+    " Mark issues
+    mI          " Issue to investigate
+    /bug<CR>
+    mB          " Bug location
+    /todo<CR>
+    mT          " TODO item
+    
+    " Review marks
+    :marks IBT
+    
+    " Jump to each
+    `I
+    " ... review ...
+    `B
+    " ... fix ...
+    `T
+    ```
+  </Tab>
+  <Tab title="Refactoring">
+    Track related code locations:
+
+    ```vim
+    " Mark definition
+    mD
+    
+    " Find usages and mark them
+    /usage1<CR>
+    mA
+    /usage2<CR>
+    mB
+    
+    " Update each location
+    `D          " Update definition
+    `A          " Update usage 1
+    `B          " Update usage 2
+    ```
+  </Tab>
+  <Tab title="Documentation">
+    Navigate between documentation sections:
+
+    ```vim
+    " Mark sections
+    /^# Introduction<CR>
+    mi
+    /^# Installation<CR>
+    mn
+    /^# Usage<CR>
+    mu
+    
+    " Jump between sections
+    `i          " Introduction
+    `n          " Installation
+    `u          " Usage
+    ```
+  </Tab>
+  <Tab title="Multi-file edits">
+    Coordinate changes across files:
+
+    ```vim
+    " In config.h
+    mC
+    
+    " In main.c
+    mM
+    
+    " In utils.c
+    mU
+    
+    " Make coordinated changes
+    `C          " Update header
+    `M          " Update main
+    `U          " Update utils
+    ```
+  </Tab>
+</Tabs>
+
+## Advanced techniques
+
+<Accordion title="Preserving marks">
+
+Use the lockmarks command to prevent mark updates:
+
+```vim
+" Execute command without updating marks
+:lockmarks {command}
+
+" Example: Delete lines without updating '[ and ']
+:lockmarks 10,20delete
+```
+
+Use keepjumps to avoid updating the jump list:
+
+```vim
+" Navigate without affecting jump list
+:keepjumps {command}
+
+" Example:
+:keepjumps normal gg
+```
+
+</Accordion>
+
+## Tips and best practices
+
+<Accordion title="Mark usage tips">
+
+### Choose meaningful mark names
+```vim
+" Consistent naming helps memory
+ma          " Start of section A
+mb          " Start of section B
+mt          " Top of file
+mm          " Main function/section
+```
+
+### Use marks with operators
+```vim
+" Operate from mark to cursor
+d`a         " Delete from mark 'a' to cursor
+y`b         " Yank from mark 'b' to cursor
+=`c         " Format from mark 'c' to cursor
+```
+
+### Combine with search
+```vim
+" Mark before searching
+ma
+/pattern<CR>
+" ... work ...
+`a          " Return to start
+```
+
+### Use automatic marks
+```vim
+" Jump to last edit
+`.
+
+" Jump to last exit position
+`"
+
+" Jump to last visual selection
+`<
+`>
+```
+
+### Map common operations
+```vim
+" Quick mark setting/jumping
+nnoremap <leader>m ma
+nnoremap <leader>j `a
+
+" Navigate change list
+nnoremap <leader>; g;
+nnoremap <leader>, g,
+```
+
+</Accordion>

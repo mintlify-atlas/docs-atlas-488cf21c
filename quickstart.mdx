@@ -1,80 +1,154 @@
 ---
 title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+description: "Get started with Vim in 5 minutes"
 ---
 
-## Get started in three steps
+## Starting Vim
 
-Get your documentation site running locally and make your first customization.
+To launch Vim, open your terminal and type:
 
-### Step 1: Set up your local environment
+```bash
+vim
+```
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+You'll see a welcome screen with the Vim version and some basic information. The cursor will be positioned at the top of an empty buffer.
+
+<Tip>
+To open Vim with a specific file, use `vim filename.txt`. If the file doesn't exist, Vim will create it when you save.
+</Tip>
+
+## Understanding modes
+
+Vim is a modal editor, which means it has different modes for different tasks. This is what makes Vim powerful and efficient once you understand how modes work.
+
+<Tabs>
+  <Tab title="Normal mode">
+    This is the default mode when you start Vim. In Normal mode, you navigate and manipulate text using keyboard commands. You can't type text directly in this mode.
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    Press `Esc` to return to Normal mode from any other mode.
+  </Tab>
+  
+  <Tab title="Insert mode">
+    This is where you actually type and edit text, similar to a regular text editor. 
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+    Enter Insert mode by pressing `i` from Normal mode.
+  </Tab>
+  
+  <Tab title="Visual mode">
+    This mode lets you select blocks of text for copying, cutting, or other operations.
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    Enter Visual mode by pressing `v` from Normal mode.
+  </Tab>
+  
+  <Tab title="Command-line mode">
+    This mode lets you execute commands like saving files, quitting Vim, or searching text.
+    
+    Enter Command-line mode by pressing `:` from Normal mode.
+  </Tab>
+</Tabs>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+<Note>
+The mode you're in is shown at the bottom left of the screen. If nothing is shown, you're in Normal mode.
+</Note>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+## Basic editing workflow
 
-### Step 3: Go live
+Let's walk through creating and editing your first file in Vim.
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+<Steps>
+  <Step title="Start Vim with a file">
+    Open your terminal and create a new file:
+    
+    ```bash
+    vim hello.txt
+    ```
+    
+    You'll see an empty buffer. Notice you're in Normal mode by default.
+  </Step>
+  
+  <Step title="Enter insert mode">
+    Press `i` to enter Insert mode. You should see `-- INSERT --` at the bottom of the screen.
+    
+    <Tip>
+    There are several ways to enter Insert mode:
+    - `i` — insert at cursor
+    - `a` — append after cursor
+    - `o` — open new line below
+    - `O` — open new line above
+    </Tip>
+  </Step>
+  
+  <Step title="Type some text">
+    Now you can type normally. Try typing:
+    
+    ```
+    Hello, Vim!
+    This is my first file.
+    ```
+    
+    Press `Enter` to create new lines as you would in any text editor.
+  </Step>
+  
+  <Step title="Save and exit">
+    First, press `Esc` to return to Normal mode. Then type:
+    
+    ```
+    :wq
+    ```
+    
+    Press `Enter` to execute the command. This writes (saves) the file and quits Vim.
+  </Step>
+</Steps>
+
+<Note>
+If you make a mistake and want to quit without saving, use `:q!` instead of `:wq`.
+</Note>
+
+## Essential commands
+
+Here are the most important commands to get you started with Vim:
+
+| Command | Description |
+|---------|-------------|
+| `i` | Enter Insert mode at cursor |
+| `a` | Enter Insert mode after cursor |
+| `Esc` | Return to Normal mode |
+| `:w` | Save (write) the file |
+| `:q` | Quit Vim |
+| `:wq` | Save and quit |
+| `:q!` | Quit without saving |
+| `h` `j` `k` `l` | Move left, down, up, right |
+| `x` | Delete character under cursor |
+| `dd` | Delete entire line |
+| `u` | Undo last change |
+| `Ctrl+r` | Redo |
+| `yy` | Copy (yank) line |
+| `p` | Paste after cursor |
+| `/text` | Search for "text" |
+| `n` | Jump to next search result |
+
+<Tip>
+Use `hjkl` instead of arrow keys to keep your hands on the home row. This might feel awkward at first, but it's much faster once you're used to it.
+</Tip>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
+Now that you know the basics, continue learning with these resources:
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="User guide" icon="book" href="/user-guide/basics">
+    Deep dive into Vim's features and workflows
+  </Card>
+  
+  <Card title="Tutorial" icon="graduation-cap" href="/tutorial">
+    Hands-on lessons to build your Vim skills
+  </Card>
+  
+  <Card title="Features" icon="sparkles" href="/features/syntax-highlighting">
+    Explore what makes Vim powerful
+  </Card>
+  
+  <Card title="Vim Script" icon="sliders" href="/vimscript/introduction">
+    Learn to customize Vim with scripting
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

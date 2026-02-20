@@ -1,0 +1,89 @@
+---
+title: What is Vim9 script
+description: Learn about Vim9 script, a new syntax for Vim that offers dramatically improved performance and better compatibility with modern programming languages.
+---
+
+Vim9 script is a new syntax for Vim script that was introduced with Vim 9.0. It provides dramatically improved performance through compilation and brings Vim script closer to commonly used programming languages like JavaScript and TypeScript.
+
+## Why Vim9 script?
+
+Vim9 script was created to address three main goals:
+
+### Faster execution
+
+The primary goal is to drastically improve performance. Vim9 script achieves this by compiling commands into instructions that can be efficiently executed. You can expect an increase in execution speed of 10 to 100 times compared to legacy Vim script.
+
+Legacy Vim script parses each line every time it's executed, which is inherently slow. Vim9 script compiles functions once, storing instructions that execute much more efficiently.
+
+### Better language design
+
+Vim9 script avoids Vim-specific constructs and moves closer to commonly used programming languages. This makes the syntax more familiar and easier to learn for developers coming from other languages.
+
+For example, in legacy Vim script you prefix function arguments with `a:`. No other language does this, so Vim9 drops it entirely.
+
+### Deprioritize built-in interfaces
+
+Rather than using built-in script language support (Python, Perl, Lua, etc.), Vim9 encourages you to:
+
+- Implement external tools in any language and communicate with them using jobs and channels
+- Use improved Vim script for the Vim side of the interface
+- Avoid confusion about plugins requiring specific language interpreters
+
+## When Vim9 syntax applies
+
+Vim9 script syntax and behavior apply in these contexts:
+
+- Functions defined with the `:def` command
+- Script files where the first command is `vim9script`
+- Autocommands defined in the above contexts
+- Commands prefixed with the `vim9cmd` modifier
+
+## How Vim9 works
+
+When you define a function with `:def`, Vim compiles it into a sequence of instructions. Each instruction has one or two parameters, and a stack stores intermediate results. Local variables are also on the stack, with space reserved during compilation.
+
+This is a fairly standard approach to compilation into an intermediate format, specialized for Vim. Each stack item is a typeval_T, and one instruction type is "execute Ex command" for commands that aren't compiled.
+
+## Compatibility with legacy script
+
+Vim9 script and legacy Vim script can coexist in the same environment:
+
+- You don't need to rewrite old scripts—they keep working as before
+- You can use `:def` functions for performance-critical code
+- You can mix Vim9 and legacy scripts in your configuration
+- When using `:function` in a Vim9 script file, legacy syntax applies
+
+## Getting started
+
+To start using Vim9 script, begin your script file with:
+
+```vim
+vim9script
+
+# Your Vim9 code here
+var count = 0
+count += 1
+```
+
+Or define a compiled function:
+
+```vim
+def MyFunction(arg: number): number
+  var local = 1
+  var todo = arg
+  const ADD = 88
+  while todo > 0
+    local += ADD
+    todo -= 1
+  endwhile
+  return local
+enddef
+```
+
+## Learn more
+
+Explore the following topics to learn more about Vim9 script:
+
+- [Vim9 syntax differences](/vim9/syntax) - Key syntax changes from legacy script
+- [Performance benefits](/vim9/performance) - Detailed benchmarks and performance insights
+- [Migrating to Vim9](/vim9/migration) - Guide for converting legacy scripts

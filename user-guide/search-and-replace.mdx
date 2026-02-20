@@ -1,0 +1,494 @@
+---
+title: Search and replace
+description: Master Vim's powerful search and substitution features
+---
+
+# Search and replace
+
+Vim provides powerful tools for finding and replacing text using patterns and regular expressions.
+
+## Simple search
+
+Basic search commands:
+
+<Tabs>
+  <Tab title="Forward search">
+    Search forward in file:
+    ```vim
+    /pattern      " Search for 'pattern'
+    /include      " Search for 'include'
+    ```
+    
+    Press `Enter` to execute the search.
+  </Tab>
+  
+  <Tab title="Backward search">
+    Search backward:
+    ```vim
+    ?pattern      " Search backward
+    ?function     " Find previous 'function'
+    ```
+  </Tab>
+  
+  <Tab title="Navigate matches">
+    | Command | Action |
+    |---------|--------|
+    | `n` | Next match (same direction) |
+    | `N` | Previous match (opposite direction) |
+    | `3n` | Jump to 3rd next match |
+  </Tab>
+</Tabs>
+
+<Note>
+  When typing the search, you can see matches if you have `:set incsearch` enabled.
+</Note>
+
+## Search under cursor
+
+Quickly search for word under cursor:
+
+<Tabs>
+  <Tab title="Exact match">
+    | Command | Action |
+    |---------|--------|
+    | `*` | Search forward for word under cursor |
+    | `#` | Search backward for word under cursor |
+    | `3*` | Jump to 3rd occurrence forward |
+  </Tab>
+  
+  <Tab title="Partial match">
+    | Command | Action |
+    |---------|--------|
+    | `g*` | Search forward (partial match) |
+    | `g#` | Search backward (partial match) |
+  </Tab>
+</Tabs>
+
+Example:
+```vim
+position cursor on "TheLongFunctionName"
+*        " Searches for whole word
+g*       " Matches "TheLongFunctionNameWithSuffix" too
+```
+
+## Search options
+
+<Tabs>
+  <Tab title="Case sensitivity">
+    ```vim
+    :set ignorecase      " Ignore case
+    :set noignorecase    " Case sensitive
+    :set smartcase       " Smart case (uppercase = sensitive)
+    ```
+    
+    With `smartcase`:
+    - `/word` matches "word", "Word", "WORD"
+    - `/Word` matches only "Word"
+  </Tab>
+  
+  <Tab title="Highlighting">
+    ```vim
+    :set hlsearch        " Highlight all matches
+    :set nohlsearch      " Don't highlight
+    :nohlsearch          " Clear current highlighting
+    ```
+  </Tab>
+  
+  <Tab title="Incremental search">
+    ```vim
+    :set incsearch       " Show match while typing
+    :set noincsearch     " Don't show while typing
+    ```
+  </Tab>
+  
+  <Tab title="Wrap around">
+    ```vim
+    :set wrapscan        " Wrap at end of file
+    :set nowrapscan      " Stop at end
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  Use `:noh` (short for `:nohlsearch`) to quickly clear search highlighting.
+</Tip>
+
+## Search patterns
+
+### Special characters
+
+<Tabs>
+  <Tab title="Line anchors">
+    | Pattern | Matches |
+    |---------|----------|
+    | `^include` | "include" at start of line |
+    | `was$` | "was" at end of line |
+    | `^the$` | Line containing only "the" |
+  </Tab>
+  
+  <Tab title="Word boundaries">
+    | Pattern | Matches |
+    |---------|----------|
+    | `\<the` | "the" at word start |
+    | `the\>` | "the" at word end |
+    | `\<the\>` | Whole word "the" only |
+  </Tab>
+  
+  <Tab title="Any character">
+    ```vim
+    c.m       " Matches 'cam', 'c9m', 'c m', etc.
+    ter.      " Matches 'term', 'ter!', etc.
+    ```
+    
+    Literal dot:
+    ```vim
+    ter\.     " Matches 'ter.' only
+    ```
+  </Tab>
+</Tabs>
+
+### Examples
+
+```vim
+/the          " Matches 'the', 'there', 'soothe'
+/\<the\>      " Matches only 'the'
+/^include     " Matches 'include' at line start
+/end$         " Matches 'end' at line end
+```
+
+<Note>
+  Characters like `.*[]^%/\?~$` have special meaning. Escape them with `\` to match literally.
+</Note>
+
+## Search history
+
+Recall previous searches:
+
+<Tabs>
+  <Tab title="Navigate history">
+    When typing `/`:
+    ```vim
+    <Up>      " Previous search
+    <Down>    " Next search
+    ```
+  </Tab>
+  
+  <Tab title="View history">
+    ```vim
+    :history search    " Show search history
+    :his /             " Shorthand
+    ```
+  </Tab>
+</Tabs>
+
+## Substitution basics
+
+The substitute command:
+
+```vim
+:s/old/new/           " Replace first on line
+:s/old/new/g          " Replace all on line
+:%s/old/new/g         " Replace all in file
+:%s/old/new/gc        " Replace with confirmation
+```
+
+### Substitution syntax
+
+```vim
+:[range]s/pattern/replacement/[flags]
+```
+
+<Tabs>
+  <Tab title="Range">
+    | Range | Meaning |
+    |-------|----------|
+    | `:s` | Current line only |
+    | `:%s` | All lines |
+    | `:10,20s` | Lines 10-20 |
+    | `:.,$s` | Current to end |
+    | `:'<,'>s` | Visual selection |
+  </Tab>
+  
+  <Tab title="Flags">
+    | Flag | Effect |
+    |------|--------|
+    | `g` | Replace all on line (global) |
+    | `c` | Ask for confirmation |
+    | `i` | Ignore case |
+    | `I` | Don't ignore case |
+    | `n` | Report count, don't replace |
+    | `e` | No error if not found |
+  </Tab>
+</Tabs>
+
+## Substitution examples
+
+<Tabs>
+  <Tab title="Basic">
+    ```vim
+    :s/old/new/              " First on line
+    :s/old/new/g             " All on line
+    :%s/old/new/g            " All in file
+    :1,10s/old/new/g         " Lines 1-10
+    ```
+  </Tab>
+  
+  <Tab title="With confirmation">
+    ```vim
+    :%s/old/new/gc
+    ```
+    
+    Prompts for each match:
+    ```
+    replace with new (y/n/a/q/l/^E/^Y)?
+    ```
+    
+    | Answer | Action |
+    |--------|--------|
+    | `y` | Yes, replace this |
+    | `n` | No, skip this |
+    | `a` | Replace all remaining |
+    | `q` | Quit substituting |
+    | `l` | Replace this and quit |
+    | `^E` | Scroll up |
+    | `^Y` | Scroll down |
+  </Tab>
+  
+  <Tab title="Word boundaries">
+    ```vim
+    :%s/\<four\>/4/g         " Replace whole word only
+    ```
+    
+    Without boundaries:
+    - "four" → "4"
+    - "fourteen" → "4teen" (wrong!)
+    
+    With boundaries:
+    - "four" → "4"
+    - "fourteen" → "fourteen" (correct)
+  </Tab>
+</Tabs>
+
+## Advanced substitution
+
+<Tabs>
+  <Tab title="Alternate delimiter">
+    Use different separator:
+    ```vim
+    :s+one/two+one or two+
+    :s#/usr/local#/opt#
+    ```
+    
+    Useful when pattern contains slashes.
+  </Tab>
+  
+  <Tab title="Case variants">
+    ```vim
+    :%s/old/new/gi           " Ignore case
+    :%s/old/new/gI           " Don't ignore case
+    ```
+  </Tab>
+  
+  <Tab title="Count matches">
+    ```vim
+    :%s/pattern//gn          " Count without replacing
+    ```
+  </Tab>
+</Tabs>
+
+## Using ranges
+
+<Tabs>
+  <Tab title="Line numbers">
+    ```vim
+    :5s/old/new/             " Line 5
+    :5,10s/old/new/g         " Lines 5-10
+    :5,$s/old/new/g          " Line 5 to end
+    ```
+  </Tab>
+  
+  <Tab title="Patterns as range">
+    ```vim
+    :/Chapter/,/Chapter/s/grey/gray/g
+    ```
+    
+    From one pattern to another:
+    ```vim
+    :?^Chapter?,/^Chapter/s/old/new/g
+    ```
+    `?` searches backward, `/` searches forward.
+  </Tab>
+  
+  <Tab title="Marks">
+    ```vim
+    :'a,'bs/old/new/g        " Between marks a and b
+    ```
+  </Tab>
+  
+  <Tab title="Visual selection">
+    Select in Visual mode, then `:`:
+    ```vim
+    :'<,'>s/old/new/g        " In selection
+    ```
+  </Tab>
+</Tabs>
+
+## Global command
+
+Execute commands on matching lines:
+
+```vim
+:g/pattern/command
+```
+
+<Tabs>
+  <Tab title="Basic global">
+    ```vim
+    :g/TODO/d                " Delete lines with TODO
+    :g/^$/d                  " Delete empty lines
+    :g/debug/p               " Print lines with 'debug'
+    ```
+  </Tab>
+  
+  <Tab title="Global substitute">
+    ```vim
+    :g/^SECTION/s/colour/color/g
+    ```
+    
+    On lines starting with "SECTION", replace colour with color.
+  </Tab>
+  
+  <Tab title="Inverse global">
+    ```vim
+    :v/pattern/command       " Execute on non-matching lines
+    :g!/pattern/command      " Same as :v
+    ```
+    
+    Example:
+    ```vim
+    :v/^#/d                  " Delete non-comment lines
+    ```
+  </Tab>
+</Tabs>
+
+### Global command examples
+
+<Tabs>
+  <Tab title="Move matching lines">
+    ```vim
+    :g/TODO/move $           " Move TODO lines to end
+    :g/ERROR/move 0          " Move ERROR lines to start
+    ```
+  </Tab>
+  
+  <Tab title="Copy matching lines">
+    ```vim
+    :g/function/copy $       " Copy function lines to end
+    :g/^#include/t $         " Same (t = copy)
+    ```
+  </Tab>
+  
+  <Tab title="Execute normal commands">
+    ```vim
+    :g/TODO/normal! A !!!    " Append !!! to TODO lines
+    :g/^/normal! I// "       " Comment all lines
+    ```
+  </Tab>
+</Tabs>
+
+## Replace tricks
+
+<Tabs>
+  <Tab title="Swap words">
+    Swap "Last, First" to "First Last":
+    ```vim
+    :%s/\([^,]*\), \(.*\)/\2 \1/
+    ```
+    
+    - `\([^,]*\)` captures Last name
+    - `\(.*\)` captures First name
+    - `\2 \1` swaps them
+  </Tab>
+  
+  <Tab title="Multiple files">
+    Replace in multiple files:
+    
+    <Steps>
+      <Step title="Set up">
+        ```vim
+        :args *.cpp
+        ```
+      </Step>
+      
+      <Step title="Record macro">
+        ```vim
+        qq
+        :%s/GetResp/GetAnswer/ge
+        :wnext
+        q
+        ```
+      </Step>
+      
+      <Step title="Execute">
+        ```vim
+        999@q
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+  
+  <Tab title="Remove trailing spaces">
+    ```vim
+    :%s/\s\+$//              " Remove trailing whitespace
+    ```
+    
+    - `\s` matches whitespace
+    - `\+` one or more
+    - `$` end of line
+  </Tab>
+</Tabs>
+
+## Search and replace workflow
+
+Efficient workflow:
+
+<Steps>
+  <Step title="Search first">
+    ```vim
+    /pattern
+    ```
+    Verify the pattern matches correctly.
+  </Step>
+  
+  <Step title="Navigate matches">
+    ```vim
+    n        " Check each match
+    ```
+  </Step>
+  
+  <Step title="Substitute">
+    Once confirmed:
+    ```vim
+    :%s//replacement/g
+    ```
+    Empty pattern reuses last search.
+  </Step>
+</Steps>
+
+<Tip>
+  When you leave the pattern empty in `:s`, Vim uses the last search pattern. This saves typing!
+</Tip>
+
+## The & command
+
+Repeat last substitution:
+
+```vim
+:s/old/new/              " First substitution
+&                        " Repeat on current line
+g&                       " Repeat on all lines
+```
+
+<Note>
+  The `&` command is a shortcut for `:s` with the same pattern and replacement.
+</Note>

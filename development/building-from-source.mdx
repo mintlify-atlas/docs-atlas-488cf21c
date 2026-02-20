@@ -1,0 +1,213 @@
+---
+title: Building from source
+description: Learn how to build Vim from source code on different platforms
+---
+
+Building Vim from source gives you complete control over which features are included and allows you to use the latest development version. This guide covers the basics of building Vim on Unix, Windows, and macOS.
+
+## Why build from source?
+
+Building Vim from source allows you to:
+
+- Use the latest development features before official releases
+- Customize which features are included or excluded
+- Optimize the build for your specific system
+- Include support for scripting languages (Python, Perl, Ruby, Lua)
+- Build with GUI support or as a minimal console version
+- Debug issues and contribute to Vim development
+
+## System requirements
+
+Before building Vim, you'll need:
+
+- A C compiler (gcc, clang, or MSVC)
+- Make or compatible build tool
+- Git (optional, for cloning the repository)
+- Development libraries for optional features
+
+### Getting the source code
+
+You can obtain the Vim source code in two ways:
+
+<CodeGroup>
+
+```bash Git clone
+git clone https://github.com/vim/vim.git
+cd vim/src
+```
+
+```bash Download tarball
+curl -O https://github.com/vim/vim/archive/master.tar.gz
+tar -xzf master.tar.gz
+cd vim-master/src
+```
+
+</CodeGroup>
+
+## Quick start
+
+The basic build process varies by platform:
+
+<CardGroup cols={3}>
+  <Card title="Unix/Linux" icon="linux" href="/development/unix-build">
+    Build with make and configure
+  </Card>
+  <Card title="Windows" icon="windows" href="/development/windows-build">
+    Build with Visual Studio or MinGW
+  </Card>
+  <Card title="macOS" icon="apple" href="/development/macos-build">
+    Build with Xcode Command Line Tools
+  </Card>
+</CardGroup>
+
+## Common configuration options
+
+Vim's configure script (on Unix-like systems) accepts many options to customize your build. Here are some commonly used ones:
+
+### Feature sets
+
+```bash
+./configure --with-features=tiny    # Minimal features
+./configure --with-features=normal  # Standard features
+./configure --with-features=huge    # Maximum features (default)
+```
+
+### GUI support
+
+```bash
+./configure --enable-gui=gtk3       # GTK+ 3 GUI
+./configure --enable-gui=gtk2       # GTK+ 2 GUI
+./configure --enable-gui=motif      # Motif GUI
+./configure --disable-gui           # No GUI (terminal only)
+```
+
+### Language interfaces
+
+```bash
+./configure --enable-python3interp       # Python 3 support
+./configure --enable-rubyinterp          # Ruby support
+./configure --enable-perlinterp          # Perl support
+./configure --enable-luainterp           # Lua support
+./configure --enable-tclinterp           # Tcl support
+```
+
+### Other features
+
+```bash
+./configure --without-x                  # Disable X11
+./configure --enable-cscope              # Enable cscope
+./configure --disable-netbeans           # Disable NetBeans integration
+./configure --with-compiledby="Your Name" # Set compiled by string
+```
+
+## Feature.h customization
+
+For features that can't be configured via command-line options, you can edit the `feature.h` file before building. This file contains compile-time feature flags that control various aspects of Vim's behavior.
+
+```c src/feature.h
+/* Example: Enable right-to-left editing */
+#define FEAT_RIGHTLEFT
+
+/* Example: Disable Arabic support */
+#undef FEAT_ARABIC
+```
+
+<Note>
+Most users won't need to modify `feature.h`. The default settings work well for typical use cases.
+</Note>
+
+## Testing your build
+
+After building, you should run the test suite to ensure everything works correctly:
+
+```bash
+make test
+```
+
+A successful test run will end with the message `ALL DONE`. If you see `TEST FAILURE`, check the test output for details.
+
+## Installation
+
+Once built and tested, you can install Vim:
+
+<Steps>
+
+<Step title="Install Vim">
+Install to the default location (usually `/usr/local`):
+
+```bash
+sudo make install
+```
+</Step>
+
+<Step title="Custom installation location">
+To install to a different location, set the prefix before building:
+
+```bash
+./configure --prefix=/usr
+make
+sudo make install
+```
+</Step>
+
+<Step title="Partial installation">
+You can install specific components:
+
+```bash
+make installvimbin    # Only the executable
+make installruntime   # Only runtime files
+make installtools     # Only tools (like xxd)
+```
+</Step>
+
+</Steps>
+
+## Troubleshooting
+
+### Configure can't find libraries
+
+If configure can't find libraries for features you want:
+
+1. Install the development packages (often named with `-dev` or `-devel` suffix)
+2. Specify the location explicitly:
+
+```bash
+./configure --with-local-dir=/opt/local
+```
+
+### Compilation errors
+
+If you encounter compilation errors:
+
+1. Make sure you have all required development libraries
+2. Try a clean build:
+
+```bash
+make clean
+make
+```
+
+3. Check the `auto/config.log` file for details about configuration issues
+
+### Linking errors
+
+If you get linking errors:
+
+1. Check that all required libraries are installed
+2. Try setting environment variables:
+
+```bash
+export LIBS="-lm -lncurses"
+make
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Platform-specific guides" icon="book">
+    See the platform-specific guides for detailed instructions for your operating system.
+  </Card>
+  <Card title="Vim source structure" icon="folder-tree">
+    Learn about the Vim source code organization and how to navigate it.
+  </Card>
+</CardGroup>

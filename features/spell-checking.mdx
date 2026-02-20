@@ -1,0 +1,415 @@
+---
+title: Spell checking
+description: Use Vim's built-in spell checker to find and correct spelling errors
+---
+
+Vim provides on-the-fly spell checking that highlights misspelled words and offers suggestions for corrections.
+
+## Quick start
+
+Enable spell checking:
+
+```vim
+" Enable spell checking for US English
+set spell spelllang=en_us
+
+" Enable for British English
+set spell spelllang=en_gb
+
+" Multiple languages
+set spell spelllang=en_us,es
+```
+
+Toggle spell checking:
+
+```vim
+" Toggle spell on/off
+set spell!
+
+" Or explicitly
+set nospell
+```
+
+## Navigating spelling errors
+
+<CodeGroup>
+
+```vim Move to errors
+" Next misspelled word
+]s
+
+" Previous misspelled word
+[s
+
+" Next bad word (skip rare words)
+]S
+
+" Previous bad word
+[S
+```
+
+```vim Find rare words
+" Next rare word
+]r
+
+" Previous rare word
+[r
+```
+
+</CodeGroup>
+
+## Correcting words
+
+<Tabs>
+  <Tab title="Suggestions">
+    Get spelling suggestions:
+
+    ```vim
+    " Show suggestions for word under cursor
+    z=
+    
+    " Choose from numbered list
+    1z=         " Use first suggestion
+    2z=         " Use second suggestion
+    
+    " In insert mode
+    <Ctrl-X>s   " Show suggestions
+    <Ctrl-N>    " Next suggestion
+    <Ctrl-P>    " Previous suggestion
+    ```
+  </Tab>
+  <Tab title="Add to dictionary">
+    Mark words as correct:
+
+    ```vim
+    " Add word as good
+    zg
+    
+    " Add word to internal word list
+    zG
+    
+    " Add word to specific spellfile
+    2zg         " Add to second spellfile
+    ```
+  </Tab>
+  <Tab title="Mark as wrong">
+    Mark words as incorrect:
+
+    ```vim
+    " Mark word as bad
+    zw
+    
+    " Mark word as bad (internal)
+    zW
+    
+    " Undo zg or zw
+    zug
+    zuw
+    
+    " Undo zG or zW
+    zuG
+    zuW
+    ```
+  </Tab>
+</Tabs>
+
+## Spell file management
+
+<Accordion title="Managing custom dictionaries">
+
+Configure spell files:
+
+```vim
+" Set spell file location
+set spellfile=~/.vim/spell/en.utf-8.add
+
+" Use multiple spell files
+set spellfile=~/.vim/spell/en.utf-8.add,~/.vim/spell/project.utf-8.add
+```
+
+Edit and compile spell files:
+
+```vim
+" Edit spell file
+:edit ~/.vim/spell/en.utf-8.add
+" Add words, one per line
+" Save file
+
+" Compile spell file
+:mkspell! ~/.vim/spell/en.utf-8.add
+
+" Or automatically compile on save
+autocmd BufWritePost */spell/*.add silent! :mkspell! %
+```
+
+</Accordion>
+
+## Highlight groups
+
+Spelling errors are highlighted with these groups:
+
+<CodeGroup>
+
+```vim Highlight groups
+" Word not recognized
+SpellBad
+
+" Word not capitalized
+SpellCap
+
+" Rare word
+SpellRare
+
+" Wrong spelling for selected region
+SpellLocal
+```
+
+```vim Customize highlighting
+" Set custom spell colors
+highlight SpellBad   guibg=Red     guifg=White
+highlight SpellCap   guibg=Blue    guifg=White
+highlight SpellRare  guibg=Magenta guifg=White
+highlight SpellLocal guibg=Cyan    guifg=Black
+
+" Use underline instead of background
+highlight SpellBad gui=underline guisp=Red
+```
+
+</CodeGroup>
+
+## Language-specific settings
+
+<Tabs>
+  <Tab title="English variants">
+    ```vim
+    " US English
+    set spelllang=en_us
+    
+    " British English
+    set spelllang=en_gb
+    
+    " Canadian English
+    set spelllang=en_ca
+    
+    " Australian English
+    set spelllang=en_au
+    ```
+  </Tab>
+  <Tab title="Multiple languages">
+    ```vim
+    " English and Spanish
+    set spelllang=en_us,es
+    
+    " English and French
+    set spelllang=en,fr
+    
+    " Regional variants
+    set spelllang=en_us,es_mx
+    ```
+  </Tab>
+  <Tab title="Special cases">
+    ```vim
+    " German variants
+    set spelllang=de_de      " New and old spelling
+    set spelllang=de_20      " New spelling only
+    set spelllang=de_19      " Old spelling only
+    
+    " CJK support
+    set spelllang=en,cjk     " Don't mark CJK as error
+    ```
+  </Tab>
+</Tabs>
+
+## Spell options
+
+<Accordion title="Customize spell checking behavior">
+
+```vim
+" Capitalization check
+set spellcapcheck=[.?!]\_[\])'\"\ \t]\+
+
+" Spell suggestion options
+set spellsuggest=best,10        " Show 10 best suggestions
+set spellsuggest=fast           " Fast suggestions
+set spellsuggest=double         " Better suggestions (slower)
+
+" Spell checking options
+set spelloptions=camel          " Check CamelCase words
+set spelloptions+=noplainbuffer " Don't check plain text
+```
+
+</Accordion>
+
+## Syntax integration
+
+Control spell checking in specific syntax regions:
+
+<Accordion title="Configure syntax spell checking">
+
+In syntax files, you can control where spell checking applies:
+
+```vim
+" Check spelling in comments
+syn region Comment contains=@Spell
+
+" Don't check spelling in strings
+syn region String contains=@NoSpell
+
+" In your vimrc for specific filetypes
+autocmd FileType python setlocal spell spelllang=en_us
+autocmd FileType markdown setlocal spell spelllang=en_us
+autocmd FileType gitcommit setlocal spell spelllang=en_us
+```
+
+</Accordion>
+
+## Practical examples
+
+<Tabs>
+  <Tab title="Document writing">
+    Setup for writing documents:
+
+    ```vim
+    " In your vimrc or ftplugin
+    autocmd FileType markdown,text setlocal spell spelllang=en_us
+    autocmd FileType markdown,text setlocal spellcapcheck=[.?!]\_[\])'\"\ \t]\+
+    
+    " Quick spell toggle
+    nnoremap <leader>s :set spell!<CR>
+    ```
+  </Tab>
+  <Tab title="Code comments">
+    Check spelling only in comments:
+
+    ```vim
+    " For most programming languages
+    autocmd FileType c,cpp,python,java setlocal spell spelllang=en_us
+    
+    " Set syntax to check only comments
+    " (most syntax files already do this)
+    ```
+  </Tab>
+  <Tab title="Git commits">
+    Spell check commit messages:
+
+    ```vim
+    " In ~/.vim/ftplugin/gitcommit.vim
+    setlocal spell spelllang=en_us
+    setlocal spellcapcheck=
+    
+    " Or in vimrc
+    autocmd FileType gitcommit setlocal spell
+    ```
+  </Tab>
+  <Tab title="Project dictionaries">
+    Use project-specific word lists:
+
+    ```vim
+    " Add project words to local spell file
+    setlocal spellfile=~/.vim/spell/en.utf-8.add,./.vim/project.add
+    
+    " Or automate with autocmd
+    autocmd BufRead,BufNewFile ~/projects/myproject/* 
+      \ setlocal spellfile=~/projects/myproject/.vim/spell.add
+    ```
+  </Tab>
+</Tabs>
+
+## Commands
+
+<CodeGroup>
+
+```vim Word list commands
+" Add word as good
+:spellgood word
+:spellgood! word    " To internal list
+
+" Add word as wrong
+:spellwrong word
+:spellwrong! word   " To internal list
+
+" Add word as rare
+:spellrare word
+:spellrare! word    " To internal list
+
+" Undo spell word
+:spellundo word
+:spellundo! word    " From internal list
+```
+
+```vim Utility commands
+" Show spell info
+:spellinfo
+
+" Dump all words
+:spelldump
+:spelldump!         " With word count
+
+" Repeat last z= substitution
+:spellrepall
+```
+
+```vim Create spell files
+" Create spell file from word lists
+:mkspell en /path/to/en_US.dic
+
+" Create from multiple sources
+:mkspell ~/.vim/spell/en /tmp/en_US /tmp/en_CA
+
+" Create ASCII-only version
+:mkspell! -ascii en /tmp/en_US
+```
+
+</CodeGroup>
+
+## Tips and best practices
+
+<Accordion title="Spell checking tips">
+
+### Auto-enable for file types
+```vim
+" Enable spell checking automatically
+autocmd FileType markdown,text,gitcommit setlocal spell
+
+" Set language based on file
+autocmd BufRead,BufNewFile *.es.md setlocal spelllang=es
+```
+
+### Quick toggles
+```vim
+" Toggle spell checking
+nnoremap <leader>s :set spell!<CR>
+
+" Cycle through suggestions
+nnoremap <leader>z z=
+
+" Quick fix with first suggestion
+nnoremap <leader>f 1z=
+```
+
+### Visual mode spelling
+```vim
+" Add visual selection as word
+vnoremap <leader>g :spellgood <C-r>"<CR>
+
+" Mark as bad
+vnoremap <leader>w :spellwrong <C-r>"<CR>
+```
+
+### Region-specific highlighting
+```vim
+" Highlight only SpellBad, not rare/local
+highlight SpellRare   guifg=NONE guibg=NONE
+highlight SpellLocal  guifg=NONE guibg=NONE
+```
+
+### Performance
+```vim
+" Use faster but less accurate suggestions
+set spellsuggest=fast
+
+" Limit number of suggestions
+set spellsuggest=best,5
+```
+
+</Accordion>

@@ -1,0 +1,374 @@
+---
+title: Testing procedures
+description: Learn how to write and run tests for Vim to ensure code quality and prevent regressions
+---
+
+All new functionality should be tested and bug fixes should be tested for regressions. Tests ensure that your changes work correctly and won't break in the future.
+
+## Why write tests
+
+Testing is a critical part of contributing to Vim:
+
+- **New features**: Every new feature must include tests that verify it works as expected
+- **Bug fixes**: Tests should fail before the fix and pass after the fix, preventing regressions
+- **Documentation**: Tests serve as executable documentation of how features work
+- **Continuous Integration**: Pull requests automatically run tests to catch problems early
+
+## Test location
+
+All tests are located in the `src/testdir` directory. You can find hundreds of existing tests there to use as examples.
+
+## Getting help
+
+Vim includes comprehensive documentation on testing:
+
+```vim
+:help testing
+```
+
+This covers:
+
+- How to write tests
+- Available testing functions
+- How to run tests
+- Testing best practices
+
+## Writing tests
+
+Look through recent patches for examples of how to write tests. Tests in Vim are written as Vim script files in the `src/testdir` directory.
+
+### Test file naming
+
+Test files follow the naming convention:
+
+```
+test_<feature>.vim
+```
+
+For example:
+
+- `test_signs.vim` - Tests for sign functionality
+- `test_spell.vim` - Tests for spell checking
+- `test_filetype.vim` - Tests for filetype detection
+
+### Test structure
+
+Tests typically:
+
+1. Set up a test environment
+2. Execute the functionality being tested
+3. Assert that the results match expectations
+4. Clean up any created resources
+
+### Example test pattern
+
+```vim
+" Test for feature X
+func Test_feature_x()
+  " Setup
+  new
+  
+  " Execute
+  call SomeFunction()
+  
+  " Assert
+  call assert_equal(expected, actual)
+  
+  " Cleanup
+  bwipe!
+endfunc
+```
+
+## Running tests
+
+You can run the entire test suite or individual tests.
+
+### Run all tests
+
+From the `src` directory:
+
+```bash
+make test
+```
+
+### Run a specific test
+
+To run a single test file:
+
+```bash
+make test_signs
+```
+
+Or run Vim directly:
+
+```bash
+../vim -u NONE -S runtest.vim test_signs.vim
+```
+
+### Run tests in parallel
+
+For faster test execution:
+
+```bash
+make testclean test
+```
+
+## Continuous Integration
+
+When you create a pull request on GitHub, the following happens automatically:
+
+1. **Automated tests run**: The entire test suite runs on multiple platforms
+2. **Results reported**: You'll see whether tests pass or fail
+3. **Coverage tracked**: Code coverage is calculated (you can ignore coverage warnings, they're noisy)
+4. **Style checks**: `test_codestyle.vim` checks for style violations
+
+This is why creating a pull request is recommended even for simple changes - it catches problems early.
+
+## Code style testing
+
+The test suite includes `src/testdir/test_codestyle.vim`, which automatically checks for common style violations:
+
+- Space before Tab
+- Trailing white space
+- Double semicolon
+- Incorrect curly brace placement
+- Missing white space after `if`/`while`/`for`
+
+**Your contribution must pass these style checks.** Review the [coding style guidelines](/development/coding-style) to avoid violations.
+
+## Testing best practices
+
+### Test behavior, not implementation
+
+Focus on testing what the code does, not how it does it. This makes tests more resilient to refactoring.
+
+### Make tests deterministic
+
+Tests should produce the same results every time they run. Avoid:
+
+- Depending on timing
+- Relying on external state
+- Using random values without seeding
+
+### Keep tests focused
+
+Each test should verify one specific piece of functionality. This makes it easier to identify what broke when a test fails.
+
+### Use descriptive test names
+
+Test function names should clearly describe what they test:
+
+```vim
+" Good
+func Test_sign_place_basic()
+func Test_sign_place_with_priority()
+func Test_sign_unplace_all()
+
+" Less clear
+func Test_signs_1()
+func Test_signs_2()
+```
+
+### Include edge cases
+
+Test boundary conditions and error cases:
+
+- Empty input
+- Maximum values
+- Invalid input
+- Null/undefined values
+
+### Clean up after tests
+
+Always restore Vim to a clean state:
+
+```vim
+func Test_my_feature()
+  new
+  " Test code here
+  bwipe!  " Clean up the buffer
+endfunc
+```
+
+## Testing for bug fixes
+
+When fixing a bug, your test should:
+
+1. **Reproduce the bug**: First, write a test that demonstrates the bug
+2. **Verify it fails**: Confirm the test fails without your fix
+3. **Apply the fix**: Implement your bug fix
+4. **Verify it passes**: Confirm the test now passes
+
+This ensures:
+
+- The bug is actually fixed
+- The bug won't come back (regression prevention)
+- Other developers understand what the bug was
+
+### Example bug fix test
+
+```vim
+" Test for fixing issue #12345: Sign priority not respected
+func Test_sign_priority_respected()
+  " This test would have failed before the fix
+  new
+  sign define high priority=100
+  sign define low priority=10
+  sign place 1 name=low line=1
+  sign place 2 name=high line=1
+  
+  " High priority sign should be displayed
+  let signs = sign_getplaced()[0].signs
+  call assert_equal('high', signs[0].name)
+  
+  bwipe!
+endfunc
+```
+
+## Testing new features
+
+When adding a new feature, write tests that cover:
+
+1. **Basic functionality**: Does it work in the simple case?
+2. **Parameters and options**: Do all parameters work correctly?
+3. **Edge cases**: What happens with unusual input?
+4. **Error handling**: Does it fail gracefully?
+5. **Integration**: Does it work with related features?
+
+### Example feature test
+
+```vim
+" Test for new sign numhl feature
+func Test_sign_numhl_basic()
+  " Test basic number highlighting
+  new
+  sign define test numhl=ErrorMsg
+  sign place 1 name=test line=1
+  
+  let sign = sign_getplaced()[0].signs[0]
+  call assert_equal('ErrorMsg', sign.numhl)
+  
+  bwipe!
+endfunc
+
+func Test_sign_numhl_invalid()
+  " Test error handling for invalid highlight
+  call assert_fails('sign define test numhl=InvalidHL', 'E411')
+endfunc
+```
+
+## Filetype tests
+
+When contributing new filetype detection or syntax files, add tests to verify they work correctly.
+
+### Adding a filetype test
+
+Add your test to `src/testdir/test_filetype.vim`. Keep it similar to other filetype tests:
+
+```vim
+func Test_myfiletype_detection()
+  filetype on
+  
+  " Test by filename
+  call writefile(['# MyLang file'], 'test.mylang')
+  split test.mylang
+  call assert_equal('mylang', &filetype)
+  bwipe!
+  
+  " Test by content
+  call writefile(['#!/usr/bin/mylang'], 'test')
+  split test
+  call assert_equal('mylang', &filetype)
+  bwipe!
+  
+  call delete('test.mylang')
+  call delete('test')
+  filetype off
+endfunc
+```
+
+## Test-driven development
+
+Consider writing tests before implementing features:
+
+<Steps>
+  <Step title="Write the test first">
+    Write a test that describes the desired functionality. It will fail because the feature doesn't exist yet.
+  </Step>
+
+  <Step title="Run the test">
+    Verify the test fails for the right reason (feature not implemented, not a test bug).
+  </Step>
+
+  <Step title="Implement the feature">
+    Write the minimum code needed to make the test pass.
+  </Step>
+
+  <Step title="Run the test again">
+    Verify the test now passes.
+  </Step>
+
+  <Step title="Refactor">
+    Improve the code while keeping tests passing.
+  </Step>
+</Steps>
+
+This approach ensures:
+
+- Features are testable
+- Requirements are clear
+- You don't write unnecessary code
+
+## Debugging test failures
+
+When a test fails:
+
+1. **Read the error message**: It often tells you exactly what's wrong
+2. **Run the test in isolation**: Other tests might interfere
+3. **Add debug output**: Use `echom` to see intermediate values
+4. **Check test assumptions**: Verify your expectations are correct
+5. **Look at recent changes**: Did something else break your test?
+
+### Viewing test output
+
+Test output is saved in `src/testdir/messages`:
+
+```bash
+cat src/testdir/messages
+```
+
+## Platform-specific testing
+
+Vim runs on many platforms. Tests should work everywhere:
+
+- Use path functions instead of hardcoded slashes
+- Don't assume case-sensitive filenames
+- Be aware of platform-specific features
+- Use `has()` to check for feature availability
+
+```vim
+func Test_platform_aware()
+  if has('unix')
+    " Unix-specific test
+  elseif has('win32')
+    " Windows-specific test
+  endif
+endfunc
+```
+
+## Getting feedback
+
+If you're unsure whether your tests are adequate:
+
+- Look at recent patches for similar features
+- Ask on the [vim-dev mailing list](http://www.vim.org/maillist.php#vim-dev)
+- Submit your pull request - reviewers will provide feedback
+- Check CI results - they reveal platform-specific issues
+
+## Remember
+
+- Always add tests for new functionality
+- Always add tests for bug fixes
+- Look through recent patches for examples
+- Use `:help testing` for detailed documentation
+- Let CI catch problems before merge

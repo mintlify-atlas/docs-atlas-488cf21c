@@ -1,0 +1,369 @@
+---
+title: Macros
+description: Record and replay command sequences to automate repetitive tasks
+---
+
+Macros in Vim allow you to record a sequence of commands and replay them, making it easy to automate repetitive editing tasks.
+
+## Recording macros
+
+Start recording into a register:
+
+```vim
+q{register}
+```
+
+Type your commands, then stop recording:
+
+```vim
+q
+```
+
+## Playing macros
+
+Execute a recorded macro:
+
+```vim
+@{register}
+```
+
+Repeat the last played macro:
+
+```vim
+@@
+```
+
+Execute a macro multiple times:
+
+```vim
+10@a
+```
+
+## Basic example
+
+<Accordion title="Create a numbered list">
+
+1. Start with the first entry:
+   ```
+   1. First item
+   ```
+
+2. Record a macro in register 'a':
+   ```vim
+   qa          " Start recording
+   Y           " Yank the line
+   p           " Put below
+   <Ctrl-A>    " Increment the number
+   q           " Stop recording
+   ```
+
+3. Replay to create more items:
+   ```vim
+   @a          " Once
+   10@a        " Ten times
+   ```
+
+Result:
+```
+1. First item
+2. First item
+3. First item
+...
+```
+
+</Accordion>
+
+## Practical examples
+
+<Tabs>
+  <Tab title="Format data">
+    Transform a list of words into a formatted structure:
+
+    ```vim
+    " Start with:
+    apple
+    banana
+    cherry
+    
+    " Record macro:
+    qa
+    I"          " Insert quote at start
+    A",         " Append quote and comma
+    j           " Move to next line
+    q
+    
+    " Execute:
+    @a          " First line
+    @@          " Second line
+    100@a       " Remaining lines
+    
+    " Result:
+    "apple",
+    "banana",
+    "cherry",
+    ```
+  </Tab>
+  <Tab title="Edit multiple lines">
+    Add text to multiple lines:
+
+    ```vim
+    " Start with:
+    function1
+    function2
+    function3
+    
+    " Record macro:
+    qa
+    I    "          " Add indentation and quote
+    A",            " Add quote and comma
+    j              " Next line
+    q
+    
+    " Execute on all lines:
+    100@a
+    
+    " Result:
+        "function1",
+        "function2",
+        "function3",
+    ```
+  </Tab>
+  <Tab title="Process columns">
+    Extract and transform column data:
+
+    ```vim
+    " Start with:
+    John,Doe,30
+    Jane,Smith,25
+    
+    " Record macro to extract last name:
+    qa
+    0              " Start of line
+    f,             " Find first comma
+    l              " Move right
+    vf,            " Select to next comma
+    h              " Back one
+    y              " Yank
+    o<Esc>         " New line
+    p              " Paste
+    k              " Back up
+    j              " Next line
+    q
+    
+    " Execute:
+    @a
+    @@
+    ```
+  </Tab>
+</Tabs>
+
+## Advanced techniques
+
+<Accordion title="Recursive macros">
+
+Create a macro that calls itself to process all remaining lines:
+
+```vim
+" Clear register a first
+:let @a=''
+
+" Record recursive macro
+qa
+{commands}
+@a          " Call itself
+q
+
+" Start execution (will run until error)
+@a
+```
+
+Example - add quotes to all lines:
+```vim
+qq              " Clear register q
+qq
+I"<Esc>        " Insert quote at start
+A"<Esc>        " Append quote at end
+j0             " Next line, column 0
+@q             " Recursive call
+q
+
+" Execute (stops at end of file)
+@q
+```
+
+</Accordion>
+
+## Editing macros
+
+View and edit recorded macros:
+
+<CodeGroup>
+
+```vim View macro contents
+" Show register contents
+:reg a
+
+" Or show all registers
+:reg
+```
+
+```vim Edit a macro
+" Put macro into buffer
+:put a
+
+" Edit the text
+{make changes}
+
+" Yank back into register
+"add
+```
+
+```vim Edit in command line
+" Put register into command line for editing
+:let @a='
+
+" Type Ctrl-R a to insert current contents
+" Edit as needed
+" Press Enter to save
+```
+
+</CodeGroup>
+
+## Useful macro patterns
+
+<Tabs>
+  <Tab title="Append text">
+    ```vim
+    " Macro to append text to each line
+    qa
+    A; // TODO<Esc>
+    j
+    q
+    
+    " Execute on multiple lines
+    10@a
+    ```
+  </Tab>
+  <Tab title="Surround text">
+    ```vim
+    " Surround word with quotes
+    qa
+    bi"<Esc>       " Insert before word
+    ea"<Esc>       " Append after word
+    w              " Next word
+    q
+    
+    " Process multiple words
+    100@a
+    ```
+  </Tab>
+  <Tab title="Delete patterns">
+    ```vim
+    " Delete all lines matching a pattern
+    qa
+    /pattern<CR>   " Search for pattern
+    dd             " Delete line
+    q
+    
+    " Repeat (stops when pattern not found)
+    100@a
+    ```
+  </Tab>
+  <Tab title="Normalize spacing">
+    ```vim
+    " Fix spacing around operators
+    qa
+    :s/\s*=\s*/ = /g<CR>
+    j
+    q
+    
+    " Execute on range
+    :10,50normal @a
+    ```
+  </Tab>
+</Tabs>
+
+## Tips and best practices
+
+<Accordion title="Macro tips">
+
+### Use named registers
+Choose descriptive register names:
+- Use 'q' for quick, disposable macros
+- Use 'a', 'b', 'c' for specific tasks
+- Uppercase registers append instead of overwriting
+
+### Keep macros simple
+- Break complex tasks into multiple macros
+- Use shorter macros for easier debugging
+- Test on a small sample first
+
+### Handle edge cases
+```vim
+" Start from known position
+qa
+0              " Go to start of line
+{commands}
+q
+
+" Use search with error handling
+qa
+try
+  /pattern<CR>
+  {commands}
+catch
+  " Stop on error
+endtry
+q
+```
+
+### Combine with visual mode
+```vim
+" Record macro for visual selection
+qa
+vi"{commands}<Esc>
+q
+
+" Execute on each occurrence
+100@a
+```
+
+</Accordion>
+
+## Macro limitations
+
+<Accordion title="Things to watch for">
+
+- Macros stop on errors
+- Can't be easily debugged
+- May break if file structure changes
+- Don't work inside mappings by default
+- Recording can't capture all interactive features
+
+For more complex automation, consider:
+- Vim scripts
+- Functions
+- Commands with Ex commands
+
+</Accordion>
+
+## Executing across files
+
+Run macros on multiple files:
+
+```vim
+" Record macro as usual
+qa
+{commands}
+:w<CR>         " Save file in macro
+q
+
+" Execute on file list
+:args *.txt
+:argdo normal @a
+```
+
+Or use bufdo:
+```vim
+:bufdo normal @a
+```

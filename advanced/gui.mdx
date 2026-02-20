@@ -1,0 +1,409 @@
+---
+title: GUI (GVim) features
+description: Learn about Vim's graphical user interface features including GVim, window management, fonts, and GUI-specific options
+---
+
+Vim's GUI (GVim) provides a graphical interface with menus, scrollbars, and mouse support. This guide covers how to use and configure GVim effectively.
+
+## Starting the GUI
+
+You can start GVim in several ways:
+
+```bash
+# Start GVim directly
+gvim [options] [files...]
+
+# Start Vim in GUI mode
+vim -g [options] [files...]
+```
+
+<Note>
+The GUI version requires compilation with GUI support. Check with `:version` to see if your build includes GUI features.
+</Note>
+
+### GUI initialization files
+
+GVim uses special initialization files that are sourced after your regular `vimrc`:
+
+- Unix: `~/.gvimrc` or `~/.vim/gvimrc`
+- Windows: `$HOME/_gvimrc` or `$HOME/vimfiles/gvimrc`
+- Using `-U` flag: You can specify a custom gvimrc file
+
+The `$MYGVIMRC` environment variable stores the path to your gvimrc file.
+
+<Tip>
+Put GUI-specific settings like fonts and window size in your gvimrc file to keep them separate from terminal settings.
+</Tip>
+
+## Window positioning and size
+
+### Setting window position
+
+You can control where the GVim window appears on your screen:
+
+```vim
+" Display current window position
+:winpos
+
+" Set window position (X, Y coordinates in pixels)
+:winpos 100 50
+
+" In gvimrc, position on startup
+autocmd GUIEnter * winpos 100 50
+```
+
+### Setting window size
+
+```vim
+" Set window size using lines and columns (recommended)
+:set lines=50 columns=120
+
+" Alternative using :winsize command
+:winsize 120 50
+```
+
+<Note>
+If you get fewer lines than expected, check the `'guiheadroom'` option. Vim assumes extra space for window decorations.
+</Note>
+
+## Scrollbars
+
+Control scrollbar visibility with the `'guioptions'` setting:
+
+```vim
+" Show right scrollbar
+set guioptions+=r
+
+" Show left scrollbar
+set guioptions+=l
+
+" Show bottom scrollbar
+set guioptions+=b
+
+" Remove all scrollbars
+set guioptions-=r
+set guioptions-=l
+set guioptions-=b
+```
+
+### Scrollbar behavior
+
+- **Vertical scrollbars**: Show the fraction of buffer visible in the window
+- **Horizontal scrollbar**: Useful when `'nowrap'` is set for horizontal scrolling
+- **Split windows**: Each window gets its own vertical scrollbar
+
+<Tip>
+The horizontal scrollbar only appears when you disable line wrapping with `:set nowrap`.
+</Tip>
+
+## Mouse control
+
+The GUI enables full mouse support automatically by setting `'mouse=a'`.
+
+### Mouse behavior modes
+
+Use the `:behave` command to set mouse and selection behavior:
+
+```vim
+" Windows-style behavior
+:behave mswin
+
+" Xterm-style behavior
+:behave xterm
+```
+
+This affects:
+- `'selectmode'`: Whether to use Select or Visual mode
+- `'mousemodel'`: What mouse buttons do (popup vs extend)
+- `'keymodel'`: Shift key behavior with selection
+
+### Mouse operations
+
+| Action | Result |
+|--------|--------|
+| Left click | Position cursor |
+| Left drag | Start or extend Visual selection |
+| Middle click | Paste |
+| Right click | Extend selection (extend mode) or popup menu (popup mode) |
+| Shift+Left click | Extend selection (popup mode) |
+| Ctrl+Left click | Jump to tag under cursor |
+| Shift+Right click | Search backward for word |
+
+<Note>
+The `'mousefocus'` option makes keyboard focus follow the mouse pointer between windows.
+</Note>
+
+### Drag and drop
+
+You can drag files into GVim:
+
+- **Normal drop**: Opens files
+- **Shift+drop**: Changes to the dropped file's directory
+- **Ctrl+drop**: Always splits a new window for the file
+
+## Menus
+
+### Menu bar control
+
+```vim
+" Show menu bar
+set guioptions+=m
+
+" Hide menu bar
+set guioptions-=m
+
+" Toggle menu bar visibility
+set guioptions^=m
+```
+
+### Creating custom menus
+
+Add your own menu items in your gvimrc:
+
+```vim
+" Create a menu with priority
+:menu 80.100 Custom.Save\ All :wall<CR>
+:menu 80.200 Custom.Close\ All :qall<CR>
+
+" Add separator
+:menu 80.300 Custom.-Sep- :
+
+" Menu with submenu
+:menu Edit.Big\ Changes.Delete\ All\ Spaces :%s/[ \t]//g<CR>
+```
+
+<Tip>
+Use `&` before a character to create a keyboard shortcut. For example, `&File` creates Alt+F as the shortcut.
+</Tip>
+
+### Menu for all modes
+
+```vim
+" Create menu for all modes
+:amenu File.Save :w<CR>
+```
+
+## Toolbar
+
+The toolbar provides quick access to common commands:
+
+```vim
+" Show toolbar
+set guioptions+=T
+
+" Hide toolbar
+set guioptions-=T
+
+" Set toolbar appearance (icons, text, or both)
+set toolbar=icons,text
+```
+
+### Creating toolbar buttons
+
+```vim
+" Add custom toolbar button with icon
+:amenu icon=/path/to/icon.png ToolBar.Save :w<CR>
+
+" Use built-in icon by name
+:amenu ToolBar.Save :w<CR>
+```
+
+## Fonts
+
+### Setting fonts
+
+Font configuration varies by platform:
+
+#### GTK (Linux)
+
+```vim
+" Simple font specification
+set guifont=Monospace\ 11
+set guifont=DejaVu\ Sans\ Mono\ 12
+```
+
+#### Windows
+
+```vim
+" Font with height
+set guifont=Consolas:h11
+
+" Font with multiple options
+set guifont=Courier_New:h10:w6:b
+
+" Options:
+" h{size} - height in points
+" w{size} - width in points
+" b - bold
+" i - italic
+" cCHARSET - character set
+set guifont=Courier_New:h12:cDEFAULT
+```
+
+#### macOS
+
+```vim
+set guifont=Monaco:h12
+set guifont=Menlo:h14
+```
+
+<Tip>
+Use `:set guifont=*` to open a font selector dialog where you can choose fonts interactively.
+</Tip>
+
+### Font dialog
+
+```vim
+" Open font selection dialog
+:set guifont=*
+
+" After selecting, check the setting
+:set guifont?
+```
+
+### Wide fonts for double-width characters
+
+For Asian languages, you may need separate fonts for wide characters:
+
+```vim
+" Set font for double-width characters
+set guifont=Consolas:h11
+set guifontwide=NSimSun:h11
+```
+
+<Warning>
+The wide font must be exactly twice as wide as the regular font, with the same height.
+</Warning>
+
+## Colors and appearance
+
+### Background color
+
+```vim
+" Set GUI background
+highlight Normal guibg=grey90 guifg=black
+
+" Different colors for different modes
+highlight Normal guibg=#ffffff guifg=#000000
+highlight Visual guibg=#add8e6
+```
+
+### Cursor appearance
+
+```vim
+" Set cursor color
+set guicursor=n-v-c:block-Cursor
+set guicursor+=i:ver25-Cursor
+set guicursor+=r:hor20-Cursor
+```
+
+## Platform-specific features
+
+### X11 (Linux/Unix)
+
+```vim
+" Get X window information
+:!xwininfo -id $WINDOWID
+:execute '!xprop -id ' .. v:windowid
+```
+
+<Note>
+Some features like Input Method Editors (IME/XIM) work better in the GUI than in terminal mode.
+</Note>
+
+### Windows integration
+
+```vim
+" MDI mode (embedded in parent application)
+vim -P "Parent Title" file.txt
+```
+
+## GUI options reference
+
+Common `'guioptions'` flags:
+
+| Flag | Description |
+|------|-------------|
+| `a` | Auto-select: Visual mode puts text in clipboard |
+| `A` | Auto-select in modeless mode |
+| `c` | Use console dialogs instead of popups |
+| `i` | Use Vim icon |
+| `m` | Show menu bar |
+| `T` | Show toolbar |
+| `r` | Right scrollbar always present |
+| `l` | Left scrollbar always present |
+| `b` | Bottom scrollbar |
+| `v` | Vertical button layout for dialogs |
+
+Example configuration:
+
+```vim
+" Minimal GUI (no menu, toolbar, or scrollbars)
+set guioptions=
+
+" Menu and right scrollbar only
+set guioptions=mr
+
+" Everything enabled
+set guioptions=aegimrLtT
+```
+
+## Clipboard integration
+
+The GUI provides better clipboard integration:
+
+```vim
+" Copy to system clipboard
+"+y
+
+" Paste from system clipboard
+"+p
+
+" Configure clipboard behavior
+set clipboard=unnamed      " Use * register
+set clipboard=unnamedplus  " Use + register
+```
+
+## Performance tips
+
+<Tip>
+The GUI can be faster than terminal Vim for some operations because it doesn't depend on terminal escape sequences.
+</Tip>
+
+- Disable menu/toolbar if not needed to reduce startup time
+- Use `:set guioptions-=a` if auto-select causes performance issues
+- Consider using a terminal font designed for programming
+
+## Troubleshooting
+
+### GVim doesn't start
+
+Check if GUI support is compiled in:
+
+```vim
+:version
+" Look for +GUI or +gui_gtk, +gui_win32, etc.
+```
+
+### Font issues
+
+```vim
+" If font doesn't work, try setting it explicitly
+set guifont=*
+" Select a font, then check what was set
+set guifont?
+" Use that exact string in your gvimrc
+```
+
+### IME/Input method problems
+
+For better input method support:
+
+```vim
+" On Linux with iBus, start GVim in foreground
+gvim -f
+```
+
+<Warning>
+Some input methods may not work correctly with GVim. If you experience issues, try starting GVim with the `-f` flag.
+</Warning>

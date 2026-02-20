@@ -1,0 +1,505 @@
+---
+title: Building on Windows
+description: Complete guide to building Vim from source on Windows using Visual Studio, MSYS2, or MinGW
+---
+
+Building Vim on Windows can be done using several different toolchains. This guide covers the most common methods: Visual Studio (MSVC), MSYS2 with MinGW, and standalone MinGW.
+
+<Note>
+The recommended way to get Vim on Windows is using the pre-built installers from https://github.com/vim/vim-win32-installer. Only build from source if you need custom features or want to contribute to development.
+</Note>
+
+## Method 1: Visual Studio (recommended)
+
+Visual Studio provides the most straightforward build process on Windows.
+
+### Prerequisites
+
+<Steps>
+
+<Step title="Install Visual Studio">
+Download and install Visual Studio 2022 Community Edition (free):
+
+1. Search for "Visual Studio 2022 Community Edition"
+2. Download and run the installer
+3. Select "Desktop development with C++"
+4. Check "Windows 10 SDK" or "Windows 11 SDK"
+
+<Note>
+Vim requires Visual Studio 2015 or later. Visual Studio 2019 and 2022 are systematically tested and recommended.
+</Note>
+</Step>
+
+<Step title="Get the source code">
+Clone the Vim repository:
+
+```bash
+git clone https://github.com/vim/vim.git
+cd vim\src
+```
+</Step>
+
+<Step title="Set up build environment">
+Run the appropriate batch file for your Visual Studio version:
+
+```bash x64 build
+# For VS2022
+msvc-latest.bat x64
+
+# For VS2019
+msvc2019.bat x64
+
+# For VS2017
+msvc2017.bat x64
+```
+
+```bash x86 build
+# For VS2022
+msvc-latest.bat x86
+
+# For VS2019
+msvc2019.bat x86
+```
+</Step>
+
+</Steps>
+
+### Building Vim
+
+<CodeGroup>
+
+```bash Console version
+nmake -f Make_mvc.mak
+```
+
+```bash GUI version (gvim)
+nmake -f Make_mvc.mak GUI=yes
+```
+
+```bash With OLE support
+nmake -f Make_mvc.mak GUI=yes OLE=yes
+```
+
+```bash 64-bit with all features
+nmake -f Make_mvc.mak GUI=yes OLE=yes ARCH=x64
+```
+
+</CodeGroup>
+
+<Info>
+The 32-bit build is recommended even on 64-bit systems for better compatibility. Build 64-bit only if you need to edit files larger than 2 GB.
+</Info>
+
+### Adding language support
+
+You can add support for various scripting languages:
+
+#### Python 3 support
+
+```bash
+nmake -f Make_mvc.mak \
+    PYTHON3=C:\Python311 \
+    DYNAMIC_PYTHON3=yes \
+    PYTHON3_VER=311
+```
+
+#### Perl support
+
+```bash
+nmake -f Make_mvc.mak \
+    PERL=C:\Strawberry\perl \
+    DYNAMIC_PERL=yes \
+    PERL_VER=534
+```
+
+#### Ruby support
+
+```bash
+nmake -f Make_mvc.mak \
+    RUBY=C:\Ruby32 \
+    DYNAMIC_RUBY=yes \
+    RUBY_VER=32 \
+    RUBY_API_VER_LONG=3.2.0
+```
+
+#### Lua support
+
+```bash
+nmake -f Make_mvc.mak \
+    LUA=C:\lua54 \
+    DYNAMIC_LUA=yes \
+    LUA_VER=54
+```
+
+#### Tcl support
+
+```bash
+nmake -f Make_mvc.mak \
+    TCL=C:\Tcl \
+    DYNAMIC_TCL=yes \
+    TCL_VER=86 \
+    TCL_VER_LONG=8.6
+```
+
+### DirectX/DirectWrite support
+
+For better text rendering with DirectWrite:
+
+```bash
+nmake -f Make_mvc.mak DIRECTX=yes
+```
+
+For color emoji support (requires Windows SDK 8.1 or later):
+
+```bash
+nmake -f Make_mvc.mak DIRECTX=yes COLOR_EMOJI=yes
+```
+
+## Method 2: MSYS2 with MinGW
+
+MSYS2 provides a Unix-like build environment on Windows.
+
+### Installing MSYS2
+
+<Steps>
+
+<Step title="Download and install MSYS2">
+Go to https://www.msys2.org and download the installer:
+
+- `msys2-x86_64-YYYYMMDD.exe` for 64-bit Windows
+- `msys2-i686-YYYYMMDD.exe` for 32-bit Windows
+
+Run the installer and follow the instructions.
+</Step>
+
+<Step title="Update MSYS2">
+Open MSYS2 MSYS terminal and run:
+
+```bash
+pacman -Syu
+```
+
+Restart the terminal, then run:
+
+```bash
+pacman -Su
+```
+</Step>
+
+<Step title="Install build tools">
+Install the required packages:
+
+```bash
+# Base development tools
+pacman -S base-devel git
+
+# For 32-bit builds
+pacman -S mingw-w64-i686-toolchain
+
+# For 64-bit builds
+pacman -S mingw-w64-x86_64-toolchain
+
+# Or use pacboy for both
+pacboy -S base-devel: toolchain:m
+```
+</Step>
+
+</Steps>
+
+### Building with MSYS2
+
+<Steps>
+
+<Step title="Open the correct MSYS2 terminal">
+From the Start Menu, select:
+
+- "MSYS2 MinGW 32-bit" for 32-bit Vim
+- "MSYS2 MinGW 64-bit" for 64-bit Vim
+</Step>
+
+<Step title="Clone and build">
+```bash
+git clone https://github.com/vim/vim.git
+cd vim/src
+
+# Console version
+make -f Make_ming.mak
+
+# GUI version
+make -f Make_ming.mak GUI=yes
+
+# Debug build
+make -f Make_ming.mak GUI=no DEBUG=yes
+```
+</Step>
+
+</Steps>
+
+### Building with Clang on MSYS2
+
+You can also use Clang instead of GCC:
+
+```bash
+# Install Clang
+pacman -S mingw-w64-clang-x86_64-clang
+
+# Build with Clang
+export CC=clang
+export CXX=clang++
+
+make -f Make_ming.mak GUI=yes XPM=no
+```
+
+### Address Sanitizer support
+
+For debugging with ASAN:
+
+```bash
+export CC=clang
+export CXX=clang++
+
+make -f Make_ming.mak DEBUG=yes ASAN=yes
+```
+
+## Method 3: Standalone MinGW
+
+You can use MinGW without MSYS2 from a regular Windows Command Prompt.
+
+### Installing MinGW-w64
+
+<Steps>
+
+<Step title="Download MinGW-w64">
+Get the compiler from http://mingw-w64.org or use the MSYS2 distribution.
+</Step>
+
+<Step title="Add to PATH">
+Add the MinGW bin directory to your PATH:
+
+```bash
+# For 32-bit from MSYS2
+set PATH=C:\msys64\mingw32\bin;C:\msys64\usr\bin;%PATH%
+
+# For 64-bit from MSYS2
+set PATH=C:\msys64\mingw64\bin;C:\msys64\usr\bin;%PATH%
+```
+</Step>
+
+<Step title="Build Vim">
+From a Command Prompt:
+
+```bash
+cd vim\src
+
+# For 64-bit
+mingw32-make -f Make_ming.mak ARCH=x86-64
+
+# For 32-bit
+mingw32-make -f Make_ming.mak ARCH=i686
+```
+</Step>
+
+</Steps>
+
+<Note>
+The ARCH parameter is necessary if you don't have the sed command in your PATH.
+</Note>
+
+## Method 4: Cygwin
+
+Cygwin provides a complete Unix environment on Windows.
+
+```bash
+# Use the Cygwin-specific makefile
+make -f Make_cyg.mak
+```
+
+For a Windows application (not a Cygwin application), you can use the Unix Makefile with appropriate settings.
+
+## Adding features
+
+### IME support (Far-East Windows)
+
+For Input Method Editor support:
+
+```bash
+nmake -f Make_mvc.mak GUI=yes IME=yes
+```
+
+### Encryption with libsodium
+
+For enhanced encryption support:
+
+#### With MSVC
+
+```bash
+# Download libsodium from https://download.libsodium.org/libsodium/releases/
+# Extract and specify path
+nmake -f Make_mvc.mak SODIUM=C:\path\to\libsodium
+```
+
+#### With MSYS2
+
+```bash
+# Install via pacman
+pacman -S mingw-w64-x86_64-libsodium  # For 64-bit
+pacman -S mingw-w64-i686-libsodium    # For 32-bit
+
+# Build with libsodium
+make -f Make_ming.mak SODIUM=yes
+```
+
+## Installing after building
+
+After successfully building Vim, you need to set up the runtime files:
+
+<Steps>
+
+<Step title="Create vim92 directory">
+If you got the sources via git (not zip), create the runtime directory:
+
+```bash
+cd ..
+mkdir vim92
+xcopy /s runtime vim92
+```
+</Step>
+
+<Step title="Copy binaries">
+Copy the built executables:
+
+```bash
+copy src\*.exe vim92
+copy src\tee\tee.exe vim92
+copy src\xxd\xxd.exe vim92
+```
+</Step>
+
+<Step title="Copy GvimExt (optional)">
+For the "Edit with Vim" context menu, build both 32-bit and 64-bit versions:
+
+```bash
+# Build 32-bit
+nmake -f Make_mvc.mak GUI=yes
+mkdir vim92\GvimExt32
+copy src\GvimExt\gvimext.dll vim92\GvimExt32
+
+# Clean and build 64-bit
+nmake -f Make_mvc.mak clean
+nmake -f Make_mvc.mak GUI=yes ARCH=x64
+mkdir vim92\GvimExt64
+copy src\GvimExt\gvimext.dll vim92\GvimExt64
+```
+</Step>
+
+<Step title="Install gettext/iconv DLLs (optional)">
+For message translation support, download from:
+https://github.com/mlocati/gettext-iconv-windows/releases
+
+Copy the appropriate DLLs to:
+- `vim92\` (must match vim.exe bitness)
+- `vim92\GvimExt32\` (32-bit DLLs)
+- `vim92\GvimExt64\` (64-bit DLLs)
+</Step>
+
+<Step title="Run installer">
+Move the vim92 directory to where you want Vim installed (e.g., `C:\Program Files\vim`), then run:
+
+```bash
+cd vim92
+install.exe
+```
+
+Follow the prompts to configure shortcuts, PATH, and other options.
+</Step>
+
+</Steps>
+
+## Troubleshooting
+
+### UCRT vs MSVCRT issues
+
+If you get `undefined reference to __imp___iob_func` errors:
+
+```bash
+# Build without XPM support
+make -f Make_ming.mak XPM=no
+```
+
+Or use a MinGW version that targets MSVCRT instead of UCRT.
+
+### Missing Python DLL
+
+If Vim can't find the Python DLL at runtime:
+
+1. Copy the Python DLL to the same directory as vim.exe
+2. Or add Python's directory to your PATH
+3. Or specify the DLL name explicitly:
+
+```bash
+nmake -f Make_mvc.mak \
+    PYTHON3=C:\Python311 \
+    DYNAMIC_PYTHON3=yes \
+    PYTHON3_VER=311 \
+    DYNAMIC_PYTHON3_DLL=python311.dll
+```
+
+### Large executable size
+
+If the executable is too large, use UPX to compress it:
+
+```bash
+# Download UPX from https://upx.github.io/
+upx --best vim.exe
+```
+
+<Note>
+UPX doesn't support 64-bit executables. For 64-bit builds, the executable will be larger.
+</Note>
+
+### Visual Studio can't find SDK
+
+If you have multiple Visual Studio versions or custom installation:
+
+1. Edit the `msvc-latest.bat` (or appropriate batch file)
+2. Update the paths to match your installation
+3. Run the modified batch file
+
+## Cross-compiling
+
+### From Linux to Windows
+
+You can cross-compile for Windows from Linux:
+
+```bash
+# Install MinGW cross-compiler
+sudo apt install mingw-w64
+
+# Edit Make_cyg_ming.mak
+# Set CROSS = yes
+# Set CROSS_COMPILE = x86_64-w64-mingw32-
+
+make -f Make_ming.mak gvim.exe
+```
+
+### ARM64 support
+
+For Windows on ARM64:
+
+```bash
+# Use VS2017 or later with ARM64 compiler
+vcvarsall.bat x64_arm64
+
+nmake -f Make_mvc.mak GUI=yes
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Debugging on Windows" icon="bug">
+    Learn how to debug Vim on Windows with Visual Studio.
+  </Card>
+  <Card title="Creating Windows installer" icon="box">
+    Package your custom Vim build into an installer.
+  </Card>
+</CardGroup>

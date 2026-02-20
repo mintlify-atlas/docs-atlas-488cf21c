@@ -1,0 +1,379 @@
+---
+title: Runtime files structure
+description: Understand Vim's runtime directory organization and file types
+---
+
+Vim's `runtime/` directory contains support files that extend Vim's functionality without modifying the core source code. These files define syntax highlighting, filetype plugins, color schemes, documentation, and more.
+
+## Runtime directory layout
+
+The runtime directory contains 20 subdirectories, each serving a specific purpose:
+
+```
+runtime/
+├── autoload/          # Auto-loaded functions
+├── colors/            # Color scheme definitions
+├── compiler/          # Compiler plugins
+├── doc/               # Help documentation (~155 .txt files)
+├── ftplugin/          # Filetype-specific plugins
+├── indent/            # Indentation rules per filetype
+├── keymap/            # Keyboard mapping definitions
+├── lang/              # Translated messages
+├── macros/            # Useful macro collections
+├── pack/              # Package manager directory
+├── plugin/            # Global plugins
+├── print/             # Printing resource files
+├── spell/             # Spell checking dictionaries
+├── syntax/            # Syntax highlighting definitions
+├── tools/             # Utility scripts
+├── tutor/             # Interactive tutorials
+├── bitmaps/           # GUI bitmaps and icons
+├── icons/             # Additional icon files
+└── import/            # Vim9 script imports
+```
+
+## Key runtime directories
+
+### syntax/
+
+Contains syntax highlighting definitions for hundreds of languages and file formats. Each file defines:
+
+- Keywords and syntax patterns
+- Highlight group assignments
+- Language-specific options
+- Related filetype detection
+
+**Example files:**
+- `python.vim` - Python syntax highlighting
+- `javascript.vim` - JavaScript syntax highlighting
+- `c.vim` - C language syntax highlighting
+- `vim.vim` - Vimscript syntax highlighting
+
+**Structure:**
+```vim
+" Basic syntax definition example
+syn keyword pythonKeyword if else elif for while
+syn match pythonComment "#.*$"
+hi def link pythonKeyword Keyword
+hi def link pythonComment Comment
+```
+
+### ftplugin/
+
+Filetype plugins provide language-specific settings and mappings. These files are automatically loaded when editing files of a specific type.
+
+**Example files:**
+- `python.vim` - Python-specific settings (runtime/ftplugin/python.vim:1)
+- `javascript.vim` - JavaScript settings
+- `markdown.vim` - Markdown settings
+- `c.vim` - C language settings
+
+**Purpose:**
+- Set buffer-local options
+- Define local mappings and commands
+- Set format options
+- Configure folding
+
+### indent/
+
+Indentation scripts define how Vim automatically indents code for different languages.
+
+**Features:**
+- Language-specific indentation rules
+- Context-aware indenting
+- Integration with 'autoindent' and 'smartindent'
+
+**Example:** `python.vim` handles Python's whitespace-significant indentation
+
+### colors/
+
+Color scheme definitions that set highlight groups for syntax elements.
+
+**Popular schemes:**
+- `default.vim` - Default Vim colors
+- `desert.vim` - Desert color scheme
+- `evening.vim` - Dark color scheme
+- `morning.vim` - Light color scheme
+
+**Usage:**
+```vim
+:colorscheme desert
+```
+
+### autoload/
+
+Contains functions that are automatically loaded on-demand to reduce startup time.
+
+**Organization:**
+- Functions grouped by namespace
+- Subdirectories for complex plugins
+- Lazy loading mechanism
+
+**Example structure:**
+```
+autoload/
+├── dist/              # Distribution functions
+├── xml/               # XML utilities
+└── *.vim              # Auto-loaded function files
+```
+
+**Function naming:**
+```vim
+" File: autoload/mylib.vim
+function! mylib#hello()
+  echo "Hello from autoload!"
+endfunction
+```
+
+### plugin/
+
+Global plugins loaded at Vim startup. These provide features available in all buffers.
+
+**Standard plugins:**
+- `matchparen.vim` - Highlight matching parentheses
+- `netrw.vim` - File browser
+- `gzip.vim` - Edit compressed files
+- `tarPlugin.vim` - Browse tar archives
+
+**Purpose:**
+- Add global commands
+- Set up autocommands
+- Define global mappings
+
+### compiler/
+
+Compiler plugins that configure `:make` and error format parsing for different build tools.
+
+**Example files:**
+- `gcc.vim` - GNU C Compiler
+- `javac.vim` - Java compiler
+- `eslint.vim` - JavaScript linter
+- `rustc.vim` - Rust compiler
+
+**Usage:**
+```vim
+:compiler gcc
+:make
+```
+
+### doc/
+
+Comprehensive help documentation (~155 text files).
+
+**Main help files:**
+- `help.txt` - How to use the help system
+- `usr_01.txt` through `usr_90.txt` - User manual
+- `reference.txt` - Command reference
+- `options.txt` - All options documented
+- `eval.txt` - Expression evaluation and scripting
+- `develop.txt` - Development information
+
+**Access help:**
+```vim
+:help topic
+:help 'option'
+:help :command
+:help function()
+```
+
+### spell/
+
+Spell checking dictionaries and word lists for various languages.
+
+**Organization:**
+- Language-specific dictionary files (`.spl` format)
+- Suggestion files for corrections
+- Word lists and affix files
+
+**Supported languages:** English, German, French, Spanish, and many more
+
+### pack/
+
+Package manager directory for organizing third-party plugins.
+
+**Structure:**
+```
+pack/
+├── {package-name}/
+│   ├── start/        # Auto-loaded plugins
+│   └── opt/          # Optional plugins (load with :packadd)
+```
+
+**Example:**
+```
+pack/
+├── mypackages/
+│   ├── start/
+│   │   └── vim-airline/
+│   └── opt/
+│       └── vim-debug/
+```
+
+### tutor/
+
+Interactive tutorials for learning Vim.
+
+**Files:**
+- `tutor` - Main English tutorial
+- `tutor.{lang}` - Translated versions
+- Tutorial covers basic editing, commands, and navigation
+
+**Access:**
+```bash
+vim -c :Tutor
+# or
+vimtutor
+```
+
+### keymap/
+
+Keyboard layouts for typing in different languages and character sets.
+
+**Purpose:**
+- Input method support
+- Non-Latin character input
+- Special keyboard layouts
+
+**Usage:**
+```vim
+:set keymap=russian-jcukenwin
+```
+
+### lang/
+
+Translated user interface messages for different languages.
+
+**Structure:**
+- Message catalogs for menus
+- Translated UI strings
+- Localization support
+
+### macros/
+
+Useful macro collections and example scripts.
+
+**Notable macros:**
+- `less.sh` - Use Vim as a pager
+- `editexisting.vim` - Switch to existing instance
+- Various utility scripts
+
+### tools/
+
+Utility scripts for Vim development and maintenance.
+
+**Common tools:**
+- Conversion utilities
+- Development helpers
+- Testing tools
+
+## Runtime file loading order
+
+When you start Vim or open a file, runtime files are loaded in this order:
+
+1. **plugin/** - Global plugins loaded at startup
+2. **ftdetect/** - Filetype detection scripts (from packages)
+3. **filetype.vim** - Filetype detection rules
+4. **syntax/syntax.vim** - Syntax enabling
+5. **syntax/{filetype}.vim** - Filetype-specific syntax
+6. **ftplugin/{filetype}.vim** - Filetype plugins
+7. **indent/{filetype}.vim** - Indentation rules
+8. **after/plugin/** - Plugin overrides
+9. **after/ftplugin/{filetype}.vim** - Filetype overrides
+
+## Runtime path (runtimepath)
+
+Vim searches multiple directories for runtime files in the `'runtimepath'` option:
+
+```vim
+:set runtimepath?
+```
+
+**Typical paths:**
+1. `~/.vim/` - User-specific runtime files
+2. `$VIM/vimfiles/` - System-wide user additions
+3. `$VIMRUNTIME/` - Distribution runtime files
+4. `$VIM/vimfiles/after/` - System overrides
+5. `~/.vim/after/` - User overrides
+
+## Creating custom runtime files
+
+### Custom syntax file
+
+Create `~/.vim/syntax/mylang.vim`:
+
+```vim
+" Vim syntax file
+" Language: My Language
+" Maintainer: Your Name
+
+if exists("b:current_syntax")
+  finish
+endif
+
+syn keyword mylangKeyword function return if else
+syn region mylangString start='"' end='"'
+syn match mylangComment '//.*$'
+
+hi def link mylangKeyword Keyword
+hi def link mylangString String
+hi def link mylangComment Comment
+
+let b:current_syntax = "mylang"
+```
+
+### Custom ftplugin
+
+Create `~/.vim/ftplugin/python.vim`:
+
+```vim
+" Buffer-local settings for Python
+setlocal expandtab
+setlocal tabstop=4
+setlocal shiftwidth=4
+setlocal textwidth=79
+
+" Buffer-local mapping
+nnoremap <buffer> <F5> :w<CR>:!python %<CR>
+```
+
+### Custom color scheme
+
+Create `~/.vim/colors/myscheme.vim`:
+
+```vim
+" Vim color scheme
+set background=dark
+highlight clear
+if exists("syntax_on")
+  syntax reset
+endif
+let g:colors_name = "myscheme"
+
+hi Normal guifg=#ffffff guibg=#000000
+hi Comment guifg=#808080
+" ... more highlight definitions
+```
+
+## Configuration files
+
+Additional important runtime files:
+
+| File | Purpose |
+|------|----------|
+| filetype.vim | Filetype detection rules (runtime/filetype.vim:1) |
+| scripts.vim | Script-based filetype detection (runtime/scripts.vim:1) |
+| menu.vim | GUI menu definitions (runtime/menu.vim:1) |
+| defaults.vim | Default settings (runtime/defaults.vim:1) |
+| optwin.vim | Options window (runtime/optwin.vim:1) |
+| bugreport.vim | Bug report helper (runtime/bugreport.vim:1) |
+
+## Next steps
+
+- Learn about [architecture overview](./architecture-overview) to understand how runtime files integrate
+- Explore [source code organization](./source-structure) for core implementation
+- Read `:help runtimepath` for detailed runtime path information
+- See `:help write-plugin` for plugin development guide
+
+<Tip>
+You can view all runtime files Vim loaded with `:scriptnames` and profile script loading time with `:profile start profile.log | profile file * | profile func *`
+</Tip>

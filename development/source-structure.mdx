@@ -1,0 +1,247 @@
+---
+title: Source code organization
+description: Navigate Vim's source code structure and understand file organization
+---
+
+Vim's source code is organized into approximately 168 C source files, each focused on a specific functional area. Understanding this organization helps you navigate the codebase and find the right files for your work.
+
+## Directory layout
+
+The Vim source tree is organized as follows:
+
+```
+vim/
+├── src/               # Core source code (~168 .c files, headers)
+├── runtime/           # Runtime support files (syntax, plugins, docs)
+├── READMEdir/         # Various README files
+├── nsis/              # Windows installer scripts
+├── pixmaps/           # Icon files
+└── Makefile           # Top-level build configuration
+```
+
+## Source directory (src/)
+
+The `src/` directory contains all core Vim implementation code:
+
+### Main entry point
+
+- **main.c**: Program entry point, main loop, and initialization
+- **version.c**: Version information and feature compilation
+
+### Core subdirectories
+
+```
+src/
+├── proto/            # Function prototypes (.pro files)
+├── testdir/          # Test suite and test scripts
+├── po/               # Translation files (gettext .po)
+├── auto/             # Auto-generated configuration files
+├── libvterm/         # Terminal emulator library
+├── xdiff/            # Diff algorithm library
+├── xxd/              # Hex dump utility source
+├── GvimExt/          # Windows shell extension
+└── *.c, *.h          # Main source and header files
+```
+
+### Function prototype files
+
+The `proto/` directory contains auto-generated function prototypes:
+
+- One `.pro` file per `.c` source file
+- Used for function declarations across modules
+- Generated during the build process
+- Examples: `buffer.pro`, `window.pro`, `syntax.pro`
+
+## Core source files by category
+
+### Buffer and file management
+
+| File | Purpose |
+|------|----------|
+| buffer.c | Buffer manipulation and lifecycle (src/buffer.c:1) |
+| bufwrite.c | Writing buffers to files (src/bufwrite.c:1) |
+| memline.c | Buffer line storage in memory (src/memline.c:1) |
+| memfile.c | Swap file management (src/memfile.c:1) |
+| fileio.c | File reading and writing (src/fileio.c:1) |
+| filepath.c | File path operations (src/filepath.c:1) |
+| findfile.c | File searching in 'path' (src/findfile.c:1) |
+
+### Window and display
+
+| File | Purpose |
+|------|----------|
+| window.c | Split window management (src/window.c:1) |
+| screen.c | Low-level screen functions (src/screen.c:1) |
+| drawscreen.c | Screen drawing coordination (src/drawscreen.c:1) |
+| drawline.c | Window line rendering (src/drawline.c:1) |
+| move.c | Cursor movement operations (src/move.c:1) |
+
+### Text editing operations
+
+| File | Purpose |
+|------|----------|
+| edit.c | Insert mode implementation (src/edit.c:1) |
+| normal.c | Normal mode commands (src/normal.c:1) |
+| ops.c | Operators (d, y, p, etc.) (src/ops.c:1) |
+| change.c | Text modification operations (src/change.c:1) |
+| indent.c | Text indentation (src/indent.c:1) |
+| cindent.c | C and Lisp indentation (src/cindent.c:1) |
+| textformat.c | Text formatting (src/textformat.c:1) |
+| textobject.c | Text object selection (src/textobject.c:1) |
+| textprop.c | Text properties (src/textprop.c:1) |
+
+### Syntax and highlighting
+
+| File | Purpose |
+|------|----------|
+| syntax.c | Syntax highlighting engine (src/syntax.c:1) |
+| highlight.c | Highlight groups and colors (src/highlight.c:1) |
+| spell.c | Spell checking core (src/spell.c:1) |
+| spellfile.c | Spell file handling (src/spellfile.c:1) |
+| spellsuggest.c | Spell correction suggestions (src/spellsuggest.c:1) |
+
+### Command processing
+
+| File | Purpose |
+|------|----------|
+| ex_docmd.c | Ex command execution (src/ex_docmd.c:1) |
+| ex_cmds.c | Ex command implementations (src/ex_cmds.c:1) |
+| ex_cmds.h | Ex command definitions table (src/ex_cmds.h:1) |
+| ex_getln.c | Command-line editing (src/ex_getln.c:1) |
+| ex_eval.c | Ex command evaluation (src/ex_eval.c:1) |
+| cmdexpand.c | Command-line completion (src/cmdexpand.c:1) |
+| cmdhist.c | Command-line history (src/cmdhist.c:1) |
+| usercmd.c | User-defined commands (src/usercmd.c:1) |
+
+### Scripting and evaluation
+
+| File | Purpose |
+|------|----------|
+| eval.c | Expression evaluation (src/eval.c:1) |
+| evalfunc.c | Built-in functions (src/evalfunc.c:1) |
+| evalvars.c | Variable handling (src/evalvars.c:1) |
+| evalbuffer.c | Buffer-related functions (src/evalbuffer.c:1) |
+| evalwindow.c | Window-related functions (src/evalwindow.c:1) |
+| userfunc.c | User-defined functions (src/userfunc.c:1) |
+| scriptfile.c | Script sourcing (src/scriptfile.c:1) |
+
+### Vim9 script engine
+
+| File | Purpose |
+|------|----------|
+| vim9compile.c | Vim9script compiler (src/vim9compile.c:1) |
+| vim9execute.c | Vim9script execution (src/vim9execute.c:1) |
+| vim9expr.c | Vim9script expressions (src/vim9expr.c:1) |
+| vim9class.c | Vim9script classes/objects (src/vim9class.c:1) |
+| vim9type.c | Vim9script type system (src/vim9type.c:1) |
+| vim9instr.c | Vim9script instructions (src/vim9instr.c:1) |
+| vim9script.c | Vim9script support (src/vim9script.c:1) |
+
+### Regular expressions and search
+
+| File | Purpose |
+|------|----------|
+| regexp.c | Regexp engine interface (src/regexp.c:1) |
+| regexp_bt.c | Backtracking implementation (src/regexp_bt.c:1) |
+| regexp_nfa.c | NFA regexp implementation (src/regexp_nfa.c:1) |
+| search.c | Search operations (src/search.c:1) |
+
+### Options and configuration
+
+| File | Purpose |
+|------|----------|
+| option.c | Option handling (src/option.c:1) |
+| optionstr.c | String option processing (src/optionstr.c:1) |
+| optiondefs.h | Option definitions (src/optiondefs.h:1) |
+
+### Input and mapping
+
+| File | Purpose |
+|------|----------|
+| getchar.c | Character input and key mapping (src/getchar.c:1) |
+| map.c | Key mapping and abbreviations (src/map.c:1) |
+| mouse.c | Mouse handling (src/mouse.c:1) |
+
+### GUI implementation
+
+| File | Purpose |
+|------|----------|
+| gui.c | Core GUI functionality (src/gui.c:1) |
+| gui_gtk.c | GTK+ GUI implementation (src/gui_gtk.c:1) |
+| gui_gtk_x11.c | GTK+ X11 integration (src/gui_gtk_x11.c:1) |
+| gui_w32.c | Windows GUI implementation (src/gui_w32.c:1) |
+| gui_x11.c | X11 GUI implementation (src/gui_x11.c:1) |
+| gui_haiku.cc | Haiku GUI implementation (src/gui_haiku.cc:1) |
+
+### Platform-specific code
+
+| File | Purpose |
+|------|----------|
+| os_unix.c | Unix/Linux system interface (src/os_unix.c:1) |
+| os_win32.c | Windows system interface (src/os_win32.c:1) |
+| os_mswin.c | Windows-specific features (src/os_mswin.c:1) |
+| os_mac_conv.c | macOS encoding conversion (src/os_mac_conv.c:1) |
+| os_vms.c | VMS system interface (src/os_vms.c:1) |
+
+### Other important files
+
+| File | Purpose |
+|------|----------|
+| alloc.c | Memory management (src/alloc.c:1) |
+| autocmd.c | Autocommands (src/autocmd.c:1) |
+| mark.c | Marks and jumps (src/mark.c:1) |
+| register.c | Register management (src/register.c:1) |
+| undo.c | Undo/redo system (src/undo.c:1) |
+| fold.c | Code folding (src/fold.c:1) |
+| quickfix.c | Quickfix/location lists (src/quickfix.c:1) |
+| tag.c | Tag navigation (src/tag.c:1) |
+| diff.c | Diff mode (src/diff.c:1) |
+| session.c | Session management (src/session.c:1) |
+| viminfo.c | viminfo file handling (src/viminfo.c:1) |
+| term.c | Terminal handling (src/term.c:1) |
+| channel.c | Channel/job support (src/channel.c:1) |
+| job.c | Job control (src/job.c:1) |
+| terminal.c | Terminal emulator (src/terminal.c:1) |
+
+## Key header files
+
+| File | Purpose |
+|------|----------|
+| vim.h | Main header with core definitions (src/vim.h:1) |
+| structs.h | Data structure definitions (src/structs.h:1) |
+| globals.h | Global variable declarations (src/globals.h:1) |
+| feature.h | Feature compile-time flags (src/feature.h:1) |
+| vim9.h | Vim9script definitions (src/vim9.h:1) |
+| option.h | Option-related definitions (src/option.h:1) |
+| errors.h | Error message definitions (src/errors.h:1) |
+| proto.h | Includes all .pro files (src/proto.h:1) |
+
+## Build and configuration
+
+| File | Purpose |
+|------|----------|
+| Makefile | Main Unix/Linux build file (src/Makefile:1) |
+| Make_mvc.mak | MSVC Windows build file (src/Make_mvc.mak:1) |
+| Make_cyg_ming.mak | Cygwin/MinGW build file (src/Make_cyg_ming.mak:1) |
+| configure.ac | Autoconf configuration (src/configure.ac:1) |
+| config.h.in | Configuration template (src/config.h.in:1) |
+
+## Navigation tips
+
+To effectively navigate the Vim source code:
+
+1. **Generate tags**: Run `:make tags` in the src/ directory to create a tags file
+2. **Jump to definition**: Use `CTRL-]` on a function/variable name to jump to its definition
+3. **Jump back**: Use `CTRL-T` or `CTRL-O` to return
+4. **Open file**: Use `gf` on a filename to open it
+5. **Search for pattern**: Use `:vimgrep` or external tools like ripgrep
+
+<Tip>
+The `src/README.md` file contains a comprehensive guide to getting started with Vim source code navigation and includes a detailed file reference.
+</Tip>
+
+## Next steps
+
+- Learn about [architecture overview](./architecture-overview) to understand system design
+- Explore [runtime files structure](./runtime-files) for plugin and syntax development
+- Read the [debugging guide](http://vimdoc.sourceforge.net/htmldoc/develop.html) for development tips

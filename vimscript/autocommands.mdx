@@ -1,0 +1,309 @@
+---
+title: Autocommands
+description: Learn how to execute commands automatically in response to events in Vim.
+---
+
+Autocommands allow you to execute commands automatically when certain events occur, such as opening a file, writing a buffer, or entering a window.
+
+## Defining autocommands
+
+Use the `:autocmd` command to define an autocommand:
+
+```vim
+autocmd BufWritePre * call DateInsert()
+```
+
+The general syntax is:
+
+```vim
+autocmd [group] {event} {pattern} [++nested] {command}
+```
+
+<ParamField path="group" type="optional">
+  Group name for organizing related autocommands
+</ParamField>
+
+<ParamField path="event" type="required">
+  The event that triggers the command (e.g., BufRead, BufWrite)
+</ParamField>
+
+<ParamField path="pattern" type="required">
+  File pattern to match (e.g., *.txt, *.c)
+</ParamField>
+
+<ParamField path="++nested" type="optional">
+  Allow nested autocommands
+</ParamField>
+
+<ParamField path="command" type="required">
+  The command to execute
+</ParamField>
+
+## Common events
+
+### File reading events
+
+<ParamField path="BufNewFile" type="event">
+  Starting to edit a file that doesn't exist
+</ParamField>
+
+<ParamField path="BufReadPre" type="event">
+  Before reading a file into a buffer
+</ParamField>
+
+<ParamField path="BufRead" type="event">
+  After reading a file into a buffer
+</ParamField>
+
+<ParamField path="BufReadPost" type="event">
+  After reading a file into a buffer, after modelines
+</ParamField>
+
+```vim
+autocmd BufReadPost *.txt set filetype=text
+autocmd BufNewFile *.c 0read ~/templates/skeleton.c
+```
+
+### File writing events
+
+<ParamField path="BufWritePre" type="event">
+  Before writing the whole buffer to a file
+</ParamField>
+
+<ParamField path="BufWritePost" type="event">
+  After writing the whole buffer to a file
+</ParamField>
+
+<ParamField path="FileWritePre" type="event">
+  Before writing part of a buffer to a file
+</ParamField>
+
+<ParamField path="FileWritePost" type="event">
+  After writing part of a buffer to a file
+</ParamField>
+
+```vim
+autocmd BufWritePre * call Cleanup()
+autocmd BufWritePost *.c !ctags -R .
+```
+
+### Buffer events
+
+<ParamField path="BufEnter" type="event">
+  After entering a buffer
+</ParamField>
+
+<ParamField path="BufLeave" type="event">
+  Before leaving to another buffer
+</ParamField>
+
+<ParamField path="BufWinEnter" type="event">
+  After a buffer is displayed in a window
+</ParamField>
+
+<ParamField path="BufWinLeave" type="event">
+  Before a buffer is removed from a window
+</ParamField>
+
+```vim
+autocmd BufEnter *.py set expandtab
+autocmd BufLeave * let b:saved_view = winsaveview()
+```
+
+### File type events
+
+<ParamField path="FileType" type="event">
+  When the 'filetype' option has been set
+</ParamField>
+
+<ParamField path="Syntax" type="event">
+  When the 'syntax' option has been set
+</ParamField>
+
+```vim
+autocmd FileType python setlocal expandtab shiftwidth=4
+autocmd FileType javascript setlocal tabstop=2 shiftwidth=2
+autocmd Syntax c runtime! syntax/doxygen.vim
+```
+
+## File patterns
+
+Patterns support wildcards:
+
+```vim
+*           Match any characters
+?           Match any single character
+[abc]       Match a, b, or c
+{ab,cd}     Match ab or cd
+```
+
+Examples:
+
+```vim
+autocmd BufRead *.txt,*.md setlocal spell
+autocmd BufRead /home/user/* setlocal backup
+autocmd BufRead *.{c,h} setlocal cindent
+```
+
+## Autocommand groups
+
+Group related autocommands together:
+
+```vim
+augroup filetype_python
+  autocmd!
+  autocmd FileType python setlocal expandtab
+  autocmd FileType python setlocal shiftwidth=4
+  autocmd FileType python nnoremap <buffer> <F5> :!python %<CR>
+augroup END
+```
+
+The `autocmd!` command removes all autocommands in the group, preventing duplicates when sourcing the file again.
+
+## Removing autocommands
+
+Remove specific autocommands:
+
+```vim
+autocmd! BufWritePre *
+```
+
+Remove all autocommands for an event:
+
+```vim
+autocmd! BufWritePre
+```
+
+Remove all autocommands in a group:
+
+```vim
+autocmd! mygroup
+```
+
+## Listing autocommands
+
+List all autocommands:
+
+```vim
+autocmd
+```
+
+List autocommands for a specific event:
+
+```vim
+autocmd BufRead
+```
+
+List autocommands for a pattern:
+
+```vim
+autocmd * *.c
+```
+
+## Special patterns
+
+<ParamField path="<buffer>" type="pattern">
+  Match only in the current buffer
+</ParamField>
+
+<ParamField path="<buffer=N>" type="pattern">
+  Match only in buffer number N
+</ParamField>
+
+```vim
+autocmd BufEnter <buffer> echo "This buffer!"
+autocmd BufRead <buffer=5> echo "Buffer 5"
+```
+
+## Nested autocommands
+
+By default, autocommands don't trigger other autocommands. Use `++nested` to allow nesting:
+
+```vim
+autocmd FileChangedShell * ++nested edit
+```
+
+## Executing autocommands manually
+
+Trigger autocommands manually:
+
+```vim
+doautocmd BufRead
+doautocmd FileType python
+```
+
+Execute for all buffers:
+
+```vim
+doautoall BufRead
+```
+
+## Autocommand variables
+
+Special variables available in autocommands:
+
+<ParamField path="<afile>" type="variable">
+  The file name for which the event was triggered
+</ParamField>
+
+<ParamField path="<abuf>" type="variable">
+  The buffer number for which the event was triggered
+</ParamField>
+
+<ParamField path="<amatch>" type="variable">
+  The pattern that matched
+</ParamField>
+
+<ParamField path="<sfile>" type="variable">
+  The name of the script file being sourced
+</ParamField>
+
+```vim
+autocmd BufRead * echo "Reading file:" expand('<afile>')
+autocmd BufEnter * echo "Entering buffer:" expand('<abuf>')
+```
+
+## Common autocommand patterns
+
+### Restore cursor position
+
+```vim
+autocmd BufReadPost *
+  \ if line("'\"") > 1 && line("'\"") <= line("$") |
+  \   exe "normal! g'\""
+  \ endif
+```
+
+### Auto-save on focus lost
+
+```vim
+autocmd FocusLost * silent! wall
+```
+
+### Create parent directories when writing
+
+```vim
+autocmd BufWritePre * call mkdir(expand('<afile>:p:h'), 'p')
+```
+
+### Source vimrc after saving
+
+```vim
+autocmd BufWritePost $MYVIMRC source $MYVIMRC
+```
+
+## Best practices
+
+1. Always use autocommand groups
+2. Use `autocmd!` to clear the group before defining autocommands
+3. Keep commands short - call functions for complex logic
+4. Use buffer-local settings when appropriate
+5. Be careful with expensive operations in frequent events
+
+```vim
+augroup myconfig
+  autocmd!
+  autocmd FileType python call SetupPython()
+  autocmd BufWritePre * call TrimWhitespace()
+augroup END
+```

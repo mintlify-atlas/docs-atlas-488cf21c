@@ -1,0 +1,420 @@
+---
+title: Registers
+description: Use Vim's registers to store and manipulate text, numbers, and commands
+---
+
+Registers are storage locations in Vim where you can store text, macros, and other data. Understanding registers enables powerful editing workflows.
+
+## Types of registers
+
+Vim has ten types of registers:
+
+<Tabs>
+  <Tab title="Unnamed">
+    The unnamed register `""` contains:
+    - Text from the last delete, change, or yank
+    - Acts as the default for put operations
+
+    ```vim
+    " Yank without specifying register (goes to "")
+    yy
+    
+    " Put from unnamed register
+    p
+    ```
+  </Tab>
+  <Tab title="Numbered">
+    Numbered registers `"0` through `"9`:
+    - `"0` contains the last yank
+    - `"1` through `"9` contain last 9 deletes
+
+    ```vim
+    " Access last yank
+    "0p
+    
+    " Access previous delete
+    "1p
+    
+    " Cycle through delete history
+    "1p    " First deleted text
+    u      " Undo
+    "2p    " Second deleted text
+    ```
+  </Tab>
+  <Tab title="Named">
+    Named registers `"a` through `"z`:
+    - Explicitly store text for later use
+    - Uppercase appends to register
+
+    ```vim
+    " Yank to register 'a'
+    "ayy
+    
+    " Put from register 'a'
+    "ap
+    
+    " Append to register 'a'
+    "Ayy
+    ```
+  </Tab>
+  <Tab title="Special">
+    Special registers:
+    - `"_` - Black hole (delete without saving)
+    - `"+` - System clipboard
+    - `"*` - X11 primary selection
+    - `".` - Last inserted text
+    - `"%` - Current filename
+    - `":` - Last Ex command
+    - `"/` - Last search pattern
+
+    ```vim
+    " Delete without affecting registers
+    "_dd
+    
+    " Yank to system clipboard
+    "+yy
+    
+    " Paste from system clipboard
+    "+p
+    ```
+  </Tab>
+</Tabs>
+
+## Viewing registers
+
+Inspect register contents:
+
+```vim
+" Show all registers
+:reg
+
+" Show specific registers
+:reg a b c
+
+" Show numbered registers
+:reg 0-9
+```
+
+## Basic operations
+
+<CodeGroup>
+
+```vim Yanking to registers
+" Yank line to register a
+"ayy
+
+" Yank word to register b
+"byw
+
+" Yank visual selection to register c
+"cy
+
+" Yank to clipboard
+"+yy
+```
+
+```vim Putting from registers
+" Put from register a after cursor
+"ap
+
+" Put from register a before cursor
+"aP
+
+" Put from last yank
+"0p
+
+" Put from clipboard
+"+p
+```
+
+```vim Deleting to registers
+" Delete line to register a
+"add
+
+" Delete word to register b
+"bdw
+
+" Delete without saving
+"_dd
+```
+
+</CodeGroup>
+
+## Practical examples
+
+<Tabs>
+  <Tab title="Swap text">
+    Use registers to swap text blocks:
+
+    ```vim
+    " Method 1: Using two registers
+    "ayy        " Yank first line to 'a'
+    j          " Move down
+    "byy        " Yank second line to 'b'
+    k          " Move up
+    "bp         " Put 'b'
+    j          " Move down
+    "ap         " Put 'a'
+    
+    " Method 2: Using delete and put
+    dd         " Delete first line
+    p          " Put after second line
+    ```
+  </Tab>
+  <Tab title="Collect text">
+    Collect multiple lines into one register:
+
+    ```vim
+    " Start with empty register
+    qaq        " Clear register 'a'
+    
+    " Collect lines (uppercase appends)
+    "Ayy        " Append first line
+    /pattern<CR>
+    "Ayy        " Append found line
+    /another<CR>
+    "Ayy        " Append another line
+    
+    " Put all collected lines
+    "ap
+    ```
+  </Tab>
+  <Tab title="Multiple clipboards">
+    Use named registers as multiple clipboards:
+
+    ```vim
+    " Copy different sections
+    "ayy        " Copy to 'a'
+    /function<CR>
+    "byy        " Copy to 'b'
+    /import<CR>
+    "cyy        " Copy to 'c'
+    
+    " Paste where needed
+    "ap         " Paste from 'a'
+    "bp         " Paste from 'b'
+    "cp         " Paste from 'c'
+    ```
+  </Tab>
+  <Tab title="Save patterns">
+    Store and reuse search patterns:
+
+    ```vim
+    " Save a search pattern
+    :let @/ = 'pattern'
+    
+    " Perform the search
+    n
+    
+    " Save for later
+    :let @a = @/
+    
+    " Restore later
+    :let @/ = @a
+    ```
+  </Tab>
+</Tabs>
+
+## Clipboard integration
+
+<Accordion title="Using system clipboard">
+
+Work with the system clipboard:
+
+```vim
+" Check if clipboard is available
+:echo has('clipboard')
+
+" Yank to clipboard
+"+yy
+"+y{motion}
+{Visual}"+y
+
+" Put from clipboard
+"+p
+"+P
+
+" Use clipboard as default
+set clipboard=unnamedplus    " Linux
+set clipboard=unnamed        " macOS
+```
+
+Use the `*` register for X11 primary selection:
+```vim
+" Yank to primary selection
+"*yy
+
+" Put from primary selection (middle mouse button)
+"*p
+```
+
+</Accordion>
+
+## Expression register
+
+The expression register `"=` evaluates expressions:
+
+<CodeGroup>
+
+```vim Insert calculations
+" In insert mode
+<Ctrl-R>=2+2<CR>      " Inserts: 4
+<Ctrl-R>=system('date')<CR>
+```
+
+```vim Paste expression results
+" In normal mode
+"=2*10<CR>p           " Puts: 20
+"=expand('%')<CR>p    " Puts: current filename
+```
+
+```vim Use in commands
+" Search for current word
+:let @/=expand('<cword>')
+
+" Replace with expression
+:s/old/\=@a/g         " Replace with register 'a' contents
+```
+
+</CodeGroup>
+
+## Reading registers in commands
+
+Access register contents in Ex commands:
+
+```vim
+" Read register into command line
+<Ctrl-R>a              " Insert register 'a' contents
+<Ctrl-R><Ctrl-R>a      " Insert literally
+
+" Use in substitution
+:s/pattern/<Ctrl-R>a/g
+
+" Use in command
+:echo @a               " Display register 'a'
+:let text = @a         " Assign to variable
+```
+
+## Setting registers
+
+Set register contents programmatically:
+
+```vim
+" Set register in command line
+:let @a = 'text'
+:let @a = @a . ' more'    " Append
+
+" Set from visual selection
+:let @a = @*              " Copy from selection
+
+" Set from expression
+:let @a = strftime('%Y-%m-%d')
+
+" Clear register
+:let @a = ''
+```
+
+## Special use cases
+
+<Tabs>
+  <Tab title="Last command">
+    The `:` register stores the last Ex command:
+
+    ```vim
+    " Show last command
+    :echo @:
+    
+    " Repeat last command
+    @:
+    
+    " Edit and execute
+    :let @a = @:
+    " Edit @a
+    :@a
+    ```
+  </Tab>
+  <Tab title="Last search">
+    The `/` register stores the last search pattern:
+
+    ```vim
+    " Show last search
+    :echo @/
+    
+    " Change search pattern
+    :let @/ = 'newpattern'
+    
+    " Clear search highlighting
+    :let @/ = ''
+    ```
+  </Tab>
+  <Tab title="Current file">
+    The `%` register contains the current filename:
+
+    ```vim
+    " Insert filename
+    <Ctrl-R>%
+    
+    " Use in command
+    :echo @%
+    
+    " Get full path
+    :echo expand(@%)
+    ```
+  </Tab>
+  <Tab title="Last inserted">
+    The `.` register contains last inserted text:
+
+    ```vim
+    " Repeat last insertion
+    ".p
+    
+    " View what was inserted
+    :echo @.
+    ```
+  </Tab>
+</Tabs>
+
+## Tips and tricks
+
+<Accordion title="Register best practices">
+
+### Protect your yanks
+```vim
+" Delete without affecting unnamed register
+"_dd
+
+" Use black hole register
+"_d{motion}
+```
+
+### Quick access to yanked text
+```vim
+" Last yank is always in register 0
+"0p          " Even after deleting
+```
+
+### Build complex text
+```vim
+" Start fresh
+:let @a = ''
+
+" Build up text
+:let @a .= 'line1\n'
+:let @a .= 'line2\n'
+
+" Use it
+"ap
+```
+
+### Map register operations
+```vim
+" Quick access to specific registers
+nnoremap <leader>a "ap
+nnoremap <leader>b "bp
+
+" Copy to clipboard
+nnoremap <leader>y "+y
+nnoremap <leader>p "+p
+```
+
+</Accordion>

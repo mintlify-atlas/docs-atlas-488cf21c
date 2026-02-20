@@ -1,0 +1,542 @@
+---
+title: Visual mode
+description: Learn how to select and manipulate text using Vim's Visual mode
+---
+
+# Visual mode
+
+Visual mode lets you select text and then operate on it. This is more intuitive than operator-motion for many operations.
+
+## Starting Visual mode
+
+There are three types of Visual mode:
+
+<Tabs>
+  <Tab title="Character-wise">
+    Select individual characters:
+    ```vim
+    v    " Start character-wise visual mode
+    ```
+    Move the cursor to select text character by character.
+  </Tab>
+  
+  <Tab title="Line-wise">
+    Select entire lines:
+    ```vim
+    V    " Start line-wise visual mode
+    ```
+    Selected text always includes whole lines.
+  </Tab>
+  
+  <Tab title="Block-wise">
+    Select rectangular blocks:
+    ```vim
+    Ctrl-V    " Start block-wise visual mode
+    ```
+    Select columns of text across multiple lines.
+  </Tab>
+</Tabs>
+
+<Note>
+  Press `Esc` to exit Visual mode without doing anything.
+</Note>
+
+## Basic Visual mode workflow
+
+<Steps>
+  <Step title="Start selection">
+    Press `v` to start Visual mode
+  </Step>
+  
+  <Step title="Select text">
+    Use movement commands to extend selection:
+    ```vim
+    w     " Select to next word
+    $     " Select to end of line
+    3j    " Select 3 lines down
+    ```
+  </Step>
+  
+  <Step title="Operate on selection">
+    Type an operator:
+    ```vim
+    d     " Delete selection
+    y     " Yank (copy) selection
+    c     " Change selection
+    ```
+  </Step>
+</Steps>
+
+## Selecting text
+
+### Character-wise selection
+
+Example workflow:
+
+```vim
+This is an examination sample of visual mode
+           ^^^^^^^^^^^
+           
+v          " Start visual mode
+e          " Select to end of word
+l          " Include one more character
+l
+l
+l
+d          " Delete selection
+```
+
+Result:
+```
+This is an example of visual mode
+```
+
+<Tip>
+  You can immediately see what you're about to operate on, making Visual mode very intuitive.
+</Tip>
+
+### Line-wise selection
+
+Select complete lines:
+
+<Steps>
+  <Step title="Start">
+    ```vim
+    V    " Start line-wise visual mode
+    ```
+    The entire current line is highlighted.
+  </Step>
+  
+  <Step title="Extend">
+    ```vim
+    j    " Include next line
+    2j   " Include 2 more lines
+    k    " Exclude last line
+    ```
+  </Step>
+  
+  <Step title="Operate">
+    ```vim
+    d    " Delete all selected lines
+    ```
+  </Step>
+</Steps>
+
+### Block-wise selection
+
+Select rectangular regions:
+
+<Tabs>
+  <Tab title="Basic selection">
+    Example table:
+    ```
+    name        Q1    Q2    Q3
+    pierre      123   455   234
+    john        0     90    39
+    steve       392   63    334
+    ```
+    
+    To select the Q2 column:
+    <Steps>
+      <Step title="Position">
+        Move cursor to 'Q' in "Q2"
+      </Step>
+      
+      <Step title="Start block">
+        ```vim
+        Ctrl-V
+        ```
+      </Step>
+      
+      <Step title="Select down and right">
+        ```vim
+        3j    " Move down 3 lines
+        w     " Move to end of column
+        ```
+      </Step>
+      
+      <Step title="Delete">
+        ```vim
+        d     " Delete column
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+  
+  <Tab title="Special $ behavior">
+    When you use `$` in block mode:
+    ```vim
+    Ctrl-V
+    3j     " Select 3 lines down
+    $      " Extend to end of each line
+    ```
+    All lines extend to their end, even if different lengths.
+  </Tab>
+</Tabs>
+
+## Visual mode operators
+
+Once text is selected:
+
+<Tabs>
+  <Tab title="Delete & change">
+    | Key | Action |
+    |-----|--------|
+    | `d` | Delete selection |
+    | `c` | Change selection (delete and insert) |
+    | `x` | Delete selection |
+    | `X` | Delete lines |
+    | `D` | Delete to end of line |
+    | `C` | Change to end of line |
+  </Tab>
+  
+  <Tab title="Yank & put">
+    | Key | Action |
+    |-----|--------|
+    | `y` | Yank (copy) selection |
+    | `Y` | Yank lines |
+    | `p` | Put after (replaces selection) |
+    | `P` | Put before |
+  </Tab>
+  
+  <Tab title="Case changes">
+    | Key | Action |
+    |-----|--------|
+    | `~` | Toggle case |
+    | `U` | Make uppercase |
+    | `u` | Make lowercase |
+  </Tab>
+  
+  <Tab title="Shift & format">
+    | Key | Action |
+    |-----|--------|
+    | `>` | Indent right |
+    | `<` | Indent left |
+    | `=` | Auto-indent |
+    | `gq` | Format text |
+  </Tab>
+</Tabs>
+
+## Moving the selection
+
+Adjust selection endpoints:
+
+<Tabs>
+  <Tab title="Toggle end">
+    ```vim
+    o    " Move to other end of selection
+    ```
+    
+    Example:
+    ```
+    [Start]----cursor
+           |
+           selected text
+           |
+    [End]------------
+    
+    After 'o':
+    [Start]----------
+           |
+           selected text
+           |
+    [End]------cursor
+    ```
+  </Tab>
+  
+  <Tab title="Block corners">
+    In block mode:
+    ```vim
+    o     " Move to diagonally opposite corner
+    O     " Move to other corner on same line
+    ```
+  </Tab>
+</Tabs>
+
+## Reselecting
+
+<Tabs>
+  <Tab title="Last selection">
+    ```vim
+    gv    " Reselect last visual selection
+    ```
+  </Tab>
+  
+  <Tab title="Selection marks">
+    After exiting Visual mode:
+    ```vim
+    '<    " Jump to start of last selection
+    '>    " Jump to end of last selection
+    ```
+  </Tab>
+</Tabs>
+
+## Text objects in Visual mode
+
+Select semantic units:
+
+<Tabs>
+  <Tab title="Extend selection">
+    In Visual mode, text objects extend selection:
+    ```vim
+    v     " Start visual mode
+    aw    " Select a word
+    as    " Extend to sentence
+    ap    " Extend to paragraph
+    ```
+  </Tab>
+  
+  <Tab title="Quick selection">
+    Common patterns:
+    ```vim
+    viw   " Visually select inner word
+    vi"   " Select inside quotes
+    vi{   " Select inside braces
+    vit   " Select inside HTML tag
+    vap   " Select around paragraph
+    ```
+  </Tab>
+</Tabs>
+
+## Block mode operations
+
+### Inserting text
+
+Insert on multiple lines:
+
+<Steps>
+  <Step title="Select block">
+    ```vim
+    Ctrl-V
+    3j     " Select 4 lines
+    ```
+  </Step>
+  
+  <Step title="Insert">
+    ```vim
+    I      " Enter insert at start of block
+    ```
+  </Step>
+  
+  <Step title="Type text">
+    Type text (appears on first line only)
+  </Step>
+  
+  <Step title="Apply to all">
+    ```vim
+    Esc    " Text appears on all selected lines
+    ```
+  </Step>
+</Steps>
+
+Example:
+```
+Before:
+include one
+include two
+include three
+
+After Ctrl-V, 2j, I, main.<Esc>:
+include main.one
+include main.two
+include main.three
+```
+
+### Appending text
+
+```vim
+Ctrl-V    " Block selection
+3j$       " Select to end of lines
+A XXX     " Append to each line
+Esc       " Apply
+```
+
+Result:
+```
+This is a long line XXX
+short XXX
+Any other long line XXX
+```
+
+### Changing blocks
+
+<Tabs>
+  <Tab title="Change">
+    ```vim
+    Ctrl-V
+    3j
+    c         " Change block
+    ```
+    Type new text, then `Esc`. Text replaces block on all lines.
+  </Tab>
+  
+  <Tab title="Change to end">
+    ```vim
+    Ctrl-V
+    3j
+    C         " Change to end of line
+    ```
+    Deletes from block start to end of each line.
+  </Tab>
+</Tabs>
+
+### Filling with character
+
+```vim
+Ctrl-V
+3j
+5l
+r*        " Replace block with '*'
+```
+
+Before:
+```
+This is some text
+more text here
+and more text
+```
+
+After:
+```
+This ****** text
+more ****** here
+and ******* text
+```
+
+## Shifting blocks
+
+Indent or unindent:
+
+<Tabs>
+  <Tab title="Indent">
+    ```vim
+    v        " Select text
+    >        " Indent right
+    ```
+    
+    Or in one motion:
+    ```vim
+    v3j>     " Select 3 lines and indent
+    ```
+  </Tab>
+  
+  <Tab title="Unindent">
+    ```vim
+    v
+    <        " Indent left
+    ```
+  </Tab>
+  
+  <Tab title="Repeat">
+    After shifting, reselect and repeat:
+    ```vim
+    gv       " Reselect
+    >        " Indent again
+    ```
+    
+    Or use dot command:
+    ```vim
+    .        " Repeat last change
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  Set `shiftwidth` to control indent size:
+  ```vim
+  :set shiftwidth=4
+  ```
+</Tip>
+
+## Joining lines
+
+Join selected lines:
+
+```vim
+V        " Select lines
+3j       " Select 3 more
+J        " Join into one line
+```
+
+Or without changing spaces:
+```vim
+gJ       " Join without modifying whitespace
+```
+
+## Visual mode tricks
+
+<Tabs>
+  <Tab title="Search in selection">
+    After selecting text:
+    ```vim
+    :s/old/new/g     " Replace in selection
+    ```
+    Vim automatically adds `'<,'>` range.
+  </Tab>
+  
+  <Tab title="Sort selection">
+    ```vim
+    v
+    3j
+    :sort            " Sort selected lines
+    ```
+  </Tab>
+  
+  <Tab title="Execute on selection">
+    ```vim
+    v
+    3j
+    :normal A;       " Append ';' to each line
+    ```
+  </Tab>
+</Tabs>
+
+## Count with Visual mode
+
+Count selected items:
+
+```vim
+v        " Select text
+3j       " Select some lines
+g Ctrl-G " Show count
+```
+
+Output:
+```
+Selected 4 of 100 Lines; 50 of 500 Words; 300 of 3000 Bytes
+```
+
+<Note>
+  `g Ctrl-G` in normal mode shows position. In Visual mode, it counts selection.
+</Note>
+
+## Visual mode patterns
+
+<Tabs>
+  <Tab title="Change inside">
+    ```vim
+    vi"c     " Change inside quotes
+    vi(c     " Change inside parentheses
+    vitc     " Change inside HTML tag
+    ```
+  </Tab>
+  
+  <Tab title="Select and repeat">
+    ```vim
+    viw      " Select word
+    y        " Yank
+    ...      " Move elsewhere
+    viw      " Select another word
+    p        " Replace with yanked text
+    ```
+  </Tab>
+  
+  <Tab title="Block comment">
+    ```vim
+    Ctrl-V
+    5j       " Select column
+    I//      " Insert comment
+    Esc      " Apply to all lines
+    ```
+  </Tab>
+</Tabs>

@@ -1,0 +1,214 @@
+---
+title: Options overview
+description: Learn about Vim's options system and how to configure it
+---
+
+Vim has a comprehensive options system that controls its behavior. Options come in three types: boolean (on/off), number (numeric values), and string (text values).
+
+## Setting options
+
+You can set options using the `:set` command. The syntax varies depending on the option type.
+
+### Boolean options
+
+Boolean options are either on or off:
+
+```vim
+:set number          " Turn on
+:set nonumber        " Turn off
+:set number!         " Toggle
+:set invnumber       " Toggle (alternative)
+```
+
+### Number options
+
+Number options take numeric values:
+
+```vim
+:set tabstop=4       " Set to 4
+:set tabstop+=2      " Add 2 (now 6)
+:set tabstop-=1      " Subtract 1 (now 5)
+```
+
+### String options
+
+String options take text values:
+
+```vim
+:set fileformat=unix     " Set to unix
+:set path+=/usr/include  " Append to list
+:set path-=/tmp          " Remove from list
+```
+
+## Viewing options
+
+You can check current option values:
+
+```vim
+:set                 " Show all modified options
+:set all             " Show all options
+:set number?         " Show value of 'number'
+:set tabstop?        " Show value of 'tabstop'
+```
+
+## Resetting options
+
+You can reset options to their default values:
+
+```vim
+:set number&         " Reset to default
+:set number&vi       " Reset to Vi default
+:set number&vim      " Reset to Vim default
+:set all&            " Reset all options to defaults
+```
+
+## Option scope
+
+Options have different scopes:
+
+<Info>
+**Global options** apply to all buffers and windows (e.g., `background`, `history`).
+
+**Window-local options** apply to specific windows (e.g., `number`, `wrap`).
+
+**Buffer-local options** apply to specific buffers (e.g., `tabstop`, `filetype`).
+</Info>
+
+### Setting local vs global
+
+You can control whether you're setting the local or global value:
+
+```vim
+:set tabstop=4           " Set both local and global
+:setlocal tabstop=4      " Set only local value
+:setglobal tabstop=4     " Set only global value
+```
+
+### Viewing scope
+
+```vim
+:set tabstop?            " Show effective value
+:setlocal tabstop?       " Show local value
+:setglobal tabstop?      " Show global value
+```
+
+## Global-local options
+
+Some options are global but can have buffer or window-specific local values. When you set a local value, that buffer or window uses it instead of the global value.
+
+Example with `makeprg`:
+
+```vim
+:set makeprg=gmake           " Set global value
+:setlocal makeprg=perlmake   " Set local override for Perl files
+:setlocal makeprg=           " Clear local value (use global again)
+```
+
+## Option modifiers
+
+You can use special characters when setting options:
+
+| Syntax | Description | Example |
+|--------|-------------|----------|
+| `option=value` | Set to value | `:set ts=4` |
+| `option+=value` | Add/append value | `:set path+=/usr/include` |
+| `option^=value` | Prepend value | `:set path^=./include` |
+| `option-=value` | Remove/subtract value | `:set path-=/tmp` |
+| `option&` | Reset to default | `:set ts&` |
+| `option?` | Query value | `:set ts?` |
+
+## Environment variables
+
+You can use environment variables in string options:
+
+```vim
+:set path=/usr/$INCLUDE,$HOME/include,.
+:set term=$TERM.new
+```
+
+## Using backslashes
+
+To include spaces or special characters in option values, use backslashes:
+
+```vim
+:set makeprg=make\ file        " Results in "make file"
+:set tags=tags\ /usr/tags      " Results in two entries
+:set titlestring=hi\|there     " Include pipe character
+```
+
+## Options browser
+
+You can open an interactive options browser:
+
+```vim
+:options
+```
+
+This opens a window where you can:
+- Browse options by category
+- See short descriptions
+- View and modify values
+- Access help for each option
+
+## Finding where options were set
+
+When `verbose` is set, Vim shows where an option was last modified:
+
+```vim
+:verbose set shiftwidth?
+```
+
+Output:
+```
+  shiftwidth=4
+    Last set from ~/.vimrc line 42
+```
+
+## Common patterns
+
+Here are some common option-setting patterns:
+
+### Check if option exists
+
+```vim
+if exists('&termguicolors')
+  set termguicolors
+endif
+```
+
+### Toggle option
+
+```vim
+nnoremap <leader>n :set number!<CR>
+```
+
+### Conditional setting
+
+```vim
+if &term == "xterm"
+  set background=dark
+endif
+```
+
+### Save and restore
+
+```vim
+let save_ignorecase = &ignorecase
+set noignorecase
+" ... do something ...
+let &ignorecase = save_ignorecase
+```
+
+## Next steps
+
+<CardGroup cols={3}>
+  <Card title="Editing options" href="/reference/editing-options" icon="pencil">
+    Options that control text editing behavior
+  </Card>
+  <Card title="Display options" href="/reference/display-options" icon="eye">
+    Options that control how text appears
+  </Card>
+  <Card title="Programming options" href="/reference/programming-options" icon="code">
+    Options for coding and development
+  </Card>
+</CardGroup>

@@ -1,0 +1,389 @@
+---
+title: Insert mode commands
+description: Complete reference for Vim insert mode commands
+---
+
+Insert mode is where you type text into your document. While in insert mode, most keys insert their corresponding character, but special key combinations provide additional functionality.
+
+## Entering insert mode
+
+| Command | Description |
+|---------|-------------|
+| `i` | Insert before cursor |
+| `a` | Append after cursor |
+| `I` | Insert at start of line |
+| `A` | Append at end of line |
+| `o` | Open line below |
+| `O` | Open line above |
+| `s` | Substitute character |
+| `S` | Substitute line |
+| `c{motion}` | Change text |
+
+## Exiting insert mode
+
+| Command | Description |
+|---------|-------------|
+| `<Esc>` | Exit insert mode |
+| `<C-[>` | Exit insert mode (alternative) |
+| `<C-c>` | Exit insert mode (doesn't trigger autocmds) |
+
+## Special keys
+
+### Basic editing
+
+<AccordionGroup>
+  <Accordion title="<C-h> or <BS> - Delete character before cursor">
+    Delete the character before the cursor (backspace).
+
+    ```vim
+    <C-h>          " Same as backspace
+    <BS>           " Delete previous character
+    ```
+
+    <Note>
+    Behavior depends on the 'backspace' option. Set it to allow backspacing over autoindent, line breaks, and insert start:
+    ```vim
+    :set backspace=indent,eol,start
+    ```
+    </Note>
+  </Accordion>
+
+  <Accordion title="<Del> - Delete character under cursor">
+    Delete the character under the cursor.
+
+    ```vim
+    <Del>          " Delete character under cursor
+    ```
+  </Accordion>
+
+  <Accordion title="<C-w> - Delete word before cursor">
+    Delete the word before the cursor.
+
+    ```vim
+    <C-w>          " Delete word backward
+    ```
+
+    Example:
+    ```
+    Hello world|    (cursor at |)
+    <C-w>
+    Hello |         (deleted 'world')
+    ```
+  </Accordion>
+
+  <Accordion title="<C-u> - Delete to start of line">
+    Delete all characters from the cursor to the start of the line.
+
+    ```vim
+    <C-u>          " Delete to line start
+    ```
+
+    Example:
+    ```
+    Hello world|    (cursor at |)
+    <C-u>
+    |               (deleted 'Hello world')
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Indentation
+
+| Command | Description |
+|---------|-------------|
+| `<C-t>` | Insert one shiftwidth of indent |
+| `<C-d>` | Delete one shiftwidth of indent |
+| `0<C-d>` | Delete all indent in current line |
+| `^<C-d>` | Delete all indent, restore in next line |
+
+### Special insertions
+
+<AccordionGroup>
+  <Accordion title="<C-r>{register} - Insert register contents">
+    Insert the contents of a register.
+
+    <ParamField path="register" type="string">
+      The register to insert from:
+      - `"` - Unnamed register (last yank/delete)
+      - `0-9` - Numbered registers
+      - `a-z` - Named registers
+      - `+` - System clipboard
+      - `*` - Selection clipboard
+      - `/` - Last search pattern
+      - `:` - Last command
+    </ParamField>
+
+    Examples:
+    ```vim
+    <C-r>a         " Insert from register a
+    <C-r>+         " Insert from system clipboard
+    <C-r>/         " Insert last search pattern
+    ```
+  </Accordion>
+
+  <Accordion title="<C-r><C-r>{register} - Insert literally">
+    Insert register contents literally, without auto-indent or other processing.
+
+    ```vim
+    <C-r><C-r>a    " Insert register a literally
+    ```
+  </Accordion>
+
+  <Accordion title="<C-r>= - Insert expression result">
+    Evaluate an expression and insert the result.
+
+    <ResponseField name="result" type="string">
+      The evaluated expression result is inserted at the cursor.
+    </ResponseField>
+
+    Examples:
+    ```vim
+    <C-r>=2+2<CR>          " Insert '4'
+    <C-r>=system('date')<CR>  " Insert date command output
+    <C-r>=@a<CR>           " Insert value of register a
+    ```
+  </Accordion>
+
+  <Accordion title="<C-a> - Insert previously inserted text">
+    Insert the text that was previously inserted in insert mode.
+
+    ```vim
+    <C-a>          " Insert last inserted text
+    ```
+  </Accordion>
+
+  <Accordion title="<C-@> - Insert previous text and exit">
+    Insert previously inserted text and exit insert mode.
+
+    ```vim
+    <C-@>          " Insert and exit
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Special characters
+
+<AccordionGroup>
+  <Accordion title="<C-v> - Insert next character literally">
+    Insert the next character literally, bypassing its normal meaning.
+
+    ```vim
+    <C-v><Tab>     " Insert a real tab character
+    <C-v><Esc>     " Insert escape character
+    <C-v>065       " Insert character with decimal value 65 ('A')
+    <C-v>x41       " Insert character with hex value 41 ('A')
+    <C-v>o101      " Insert character with octal value 101 ('A')
+    ```
+
+    <Note>
+    On Windows, if `<C-v>` is mapped to paste, use `<C-q>` instead.
+    </Note>
+  </Accordion>
+
+  <Accordion title="<C-k>{char1}{char2} - Insert digraph">
+    Insert a special character using a two-character digraph.
+
+    Common digraphs:
+    ```vim
+    <C-k>a:        " Insert ä
+    <C-k>o:        " Insert ö
+    <C-k>ss        " Insert ß
+    <C-k>Co        " Insert ©
+    <C-k><<        " Insert «
+    ```
+
+    See `:help digraphs` for the full list.
+  </Accordion>
+</AccordionGroup>
+
+## Completion
+
+Insert mode provides several types of completion.
+
+### Basic completion
+
+| Command | Description |
+|---------|-------------|
+| `<C-n>` | Next completion match |
+| `<C-p>` | Previous completion match |
+
+### Advanced completion (CTRL-X submode)
+
+<AccordionGroup>
+  <Accordion title="<C-x><C-l> - Line completion">
+    Complete whole lines.
+
+    ```vim
+    <C-x><C-l>     " Complete whole line
+    ```
+  </Accordion>
+
+  <Accordion title="<C-x><C-n> - Keyword completion (forward)">
+    Complete keywords from current file, searching forward.
+
+    ```vim
+    <C-x><C-n>     " Complete keyword forward
+    ```
+  </Accordion>
+
+  <Accordion title="<C-x><C-p> - Keyword completion (backward)">
+    Complete keywords from current file, searching backward.
+
+    ```vim
+    <C-x><C-p>     " Complete keyword backward
+    ```
+  </Accordion>
+
+  <Accordion title="<C-x><C-f> - Filename completion">
+    Complete filenames.
+
+    ```vim
+    <C-x><C-f>     " Complete filename
+    ```
+
+    Example:
+    ```vim
+    /home/user/doc<C-x><C-f>    " Complete to /home/user/documents/
+    ```
+  </Accordion>
+
+  <Accordion title="<C-x><C-k> - Dictionary completion">
+    Complete words from 'dictionary' option.
+
+    ```vim
+    <C-x><C-k>     " Complete from dictionary
+    ```
+
+    Set dictionary:
+    ```vim
+    :set dictionary=/usr/share/dict/words
+    ```
+  </Accordion>
+
+  <Accordion title="<C-x><C-t> - Thesaurus completion">
+    Complete words from 'thesaurus' option.
+
+    ```vim
+    <C-x><C-t>     " Complete from thesaurus
+    ```
+  </Accordion>
+
+  <Accordion title="<C-x><C-i> - Include file completion">
+    Complete keywords from current and included files.
+
+    ```vim
+    <C-x><C-i>     " Complete from includes
+    ```
+  </Accordion>
+
+  <Accordion title="<C-x><C-]> - Tag completion">
+    Complete tags.
+
+    ```vim
+    <C-x><C-]>     " Complete tag
+    ```
+  </Accordion>
+
+  <Accordion title="<C-x><C-o> - Omni completion">
+    Language-specific intelligent completion.
+
+    ```vim
+    <C-x><C-o>     " Omni complete
+    ```
+
+    Requires 'omnifunc' to be set for the filetype.
+  </Accordion>
+
+  <Accordion title="<C-x>s - Spelling suggestions">
+    Suggest correct spelling for word.
+
+    ```vim
+    <C-x>s         " Spelling suggestions
+    ```
+
+    Requires 'spell' to be enabled:
+    ```vim
+    :set spell
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Completion menu navigation
+
+When the completion menu is displayed:
+
+| Command | Description |
+|---------|-------------|
+| `<C-n>` | Select next match |
+| `<C-p>` | Select previous match |
+| `<C-y>` | Accept selected match |
+| `<C-e>` | Cancel completion |
+| `<CR>` | Accept selected match |
+| `<Up>` | Select previous match |
+| `<Down>` | Select next match |
+
+## Navigation in insert mode
+
+These keys allow limited navigation without leaving insert mode:
+
+| Command | Description |
+|---------|-------------|
+| `<Left>` | Move cursor left |
+| `<Right>` | Move cursor right |
+| `<Up>` | Move cursor up |
+| `<Down>` | Move cursor down |
+| `<Home>` | Move to start of line |
+| `<End>` | Move to end of line |
+| `<PageUp>` | Move one page up |
+| `<PageDown>` | Move one page down |
+| `<C-Home>` | Move to start of file |
+| `<C-End>` | Move to end of file |
+
+## Execute one normal mode command
+
+<Accordion title="<C-o> - Execute one normal command">
+  Execute a single normal mode command and return to insert mode.
+
+  ```vim
+  <C-o>          " Execute one normal command
+  ```
+
+  Examples:
+  ```vim
+  <C-o>d$        " Delete to end of line
+  <C-o>yy        " Yank current line
+  <C-o>zz        " Center screen
+  <C-o>:w<CR>    " Save file
+  ```
+</Accordion>
+
+## Undo breaks
+
+<Accordion title="<C-g>u - Break undo sequence">
+  Create a break in the undo sequence. This allows you to undo insertions in smaller chunks.
+
+  ```vim
+  <C-g>u         " Break undo sequence
+  ```
+
+  Example mapping:
+  ```vim
+  inoremap <C-h> <C-g>u<C-h>    " Make each backspace undoable
+  inoremap <CR> <C-]><C-g>u<CR>  " Break undo at line breaks
+  ```
+</Accordion>
+
+## Insert mode options
+
+Common options that affect insert mode:
+
+```vim
+set textwidth=80       " Auto-wrap at 80 characters
+set expandtab          " Use spaces instead of tabs
+set tabstop=4          " Tab width
+set shiftwidth=4       " Indent width
+set softtabstop=4      " Backspace over tab-width spaces
+set autoindent         " Copy indent from current line
+set smartindent        " Smart autoindenting
+set backspace=indent,eol,start  " Allow backspacing over everything
+```

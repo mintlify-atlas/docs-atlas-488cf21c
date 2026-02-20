@@ -1,0 +1,240 @@
+---
+title: Expressions and operators
+description: Learn about expressions, operators, and precedence in Vim script.
+---
+
+Vim expressions allow you to perform calculations, comparisons, and logic operations. You can use expressions in commands, mappings, and scripts.
+
+## Expression syntax
+
+Expression syntax from least to most significant:
+
+```vim
+expr2 ? expr1 : expr1        " if-then-else (ternary)
+expr3 || expr3               " logical OR
+expr4 && expr4               " logical AND
+expr5 == expr5               " equal, not equal, greater/less than
+expr6 << expr6               " bitwise shift
+expr7 + expr7                " addition, subtraction, concatenation
+expr8 * expr8                " multiplication, division, modulo
+! expr9                      " logical NOT
+- expr9                      " unary minus
++ expr9                      " unary plus
+```
+
+## Arithmetic operators
+
+Basic mathematical operations:
+
+<ParamField path="+" type="operator">
+  Addition for numbers, concatenation for Lists/Tuples/Blobs
+</ParamField>
+
+<ParamField path="-" type="operator">
+  Subtraction
+</ParamField>
+
+<ParamField path="*" type="operator">
+  Multiplication
+</ParamField>
+
+<ParamField path="/" type="operator">
+  Division
+</ParamField>
+
+<ParamField path="%" type="operator">
+  Modulo (remainder)
+</ParamField>
+
+```vim
+echo 10 + 5 * 2     " 20
+echo (10 + 5) * 2   " 30
+echo 17 % 5         " 2
+```
+
+## String concatenation
+
+Concatenate strings with `..`:
+
+```vim
+echo "Hello" .. " " .. "world"   " Hello world
+let name = "Peter"
+echo "Name: " .. name             " Name: Peter
+```
+
+Use interpolated strings in Vim9 script:
+
+```vim
+vim9script
+let count = 5
+echo $"The count is {count}"     " The count is 5
+```
+
+## Comparison operators
+
+Compare values with these operators:
+
+<ParamField path="==" type="operator">
+  Equal to
+</ParamField>
+
+<ParamField path="!=" type="operator">
+  Not equal to
+</ParamField>
+
+<ParamField path=">" type="operator">
+  Greater than
+</ParamField>
+
+<ParamField path=">=" type="operator">
+  Greater than or equal to
+</ParamField>
+
+<ParamField path="<" type="operator">
+  Less than
+</ParamField>
+
+<ParamField path="<=" type="operator">
+  Less than or equal to
+</ParamField>
+
+<ParamField path="=~" type="operator">
+  Matches pattern
+</ParamField>
+
+<ParamField path="!~" type="operator">
+  Does not match pattern
+</ParamField>
+
+```vim
+if &term == "xterm"
+  echo "Running in xterm"
+endif
+
+if str =~ " "
+  echo "str contains a space"
+endif
+```
+
+### Case sensitivity
+
+Add `?` to ignore case or `#` to match case:
+
+```vim
+"abc" ==# "Abc"   " 0 (case matters)
+"abc" ==? "Abc"   " 1 (ignoring case)
+"abc" == "Abc"    " depends on 'ignorecase'
+```
+
+## Logical operators
+
+<ParamField path="&&" type="operator">
+  Logical AND - both sides must be true
+</ParamField>
+
+<ParamField path="||" type="operator">
+  Logical OR - at least one side must be true
+</ParamField>
+
+<ParamField path="!" type="operator">
+  Logical NOT - inverts the boolean value
+</ParamField>
+
+```vim
+if &nu || &list && &shell == "csh"
+  " &nu is true OR (&list AND &shell equals "csh")
+endif
+
+if !empty(mylist)
+  echo "List is not empty"
+endif
+```
+
+## Ternary operator
+
+Conditional expression with `? :`:
+
+```vim
+let result = condition ? value_if_true : value_if_false
+let status = lnum == 1 ? "top" : lnum == 1000 ? "last" : lnum
+```
+
+## Falsy operator
+
+Provide a default value with `??`:
+
+```vim
+echo name ?? "No name given"
+echo GetValue() ?? 0
+```
+
+Falsy values are: zero, empty string, empty List, empty Dictionary, and empty Blob.
+
+## Bitwise operators
+
+Perform bitwise operations:
+
+<ParamField path="<<" type="operator">
+  Bitwise left shift
+</ParamField>
+
+<ParamField path=">>" type="operator">
+  Bitwise right shift
+</ParamField>
+
+```vim
+let shifted = 4 << 2    " 16 (binary: 100 becomes 10000)
+let result = 16 >> 2    " 4  (binary: 10000 becomes 100)
+```
+
+For bitwise AND, OR, and XOR, use functions:
+
+```vim
+let result = and(12, 10)   " bitwise AND
+let result = or(12, 10)    " bitwise OR  
+let result = xor(12, 10)   " bitwise XOR
+let result = invert(12)    " bitwise invert
+```
+
+## Identity operators
+
+Check if two variables reference the same object:
+
+<ParamField path="is" type="operator">
+  Same List, Dictionary, or Blob instance
+</ParamField>
+
+<ParamField path="isnot" type="operator">
+  Different List, Dictionary, or Blob instance
+</ParamField>
+
+```vim
+let alist = [1, 2, 3]
+let blist = [1, 2, 3]
+let clist = alist
+
+echo alist == blist    " 1 (equal values)
+echo alist is blist    " 0 (different instances)
+echo alist is clist    " 1 (same instance)
+```
+
+## Operator precedence
+
+Operators are evaluated in this order (highest to lowest):
+
+1. `expr[index]`, `expr.key`, `expr(args)`, `(expr)`
+2. `!`, `-`, `+` (unary)
+3. `*`, `/`, `%`
+4. `+`, `-`, `.`, `..`
+5. `<<`, `>>`
+6. `==`, `!=`, `>`, `>=`, `<`, `<=`, `=~`, `!~`, `is`, `isnot`
+7. `&&`
+8. `||`
+9. `? :`
+
+Use parentheses to override precedence:
+
+```vim
+echo 2 + 3 * 4        " 14
+echo (2 + 3) * 4      " 20
+```

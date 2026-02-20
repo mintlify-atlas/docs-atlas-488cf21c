@@ -1,0 +1,200 @@
+---
+title: Variables and types
+description: Learn about Vim script variables, types, and type inference in both legacy and Vim9 script.
+---
+
+Vim script supports various data types and variable scopes. Variables can be declared and typed either explicitly or through type inference.
+
+## Variable types
+
+Vim script includes eleven basic types:
+
+### Number
+
+A 32 or 64 bit signed number. The number of bits is available in `v:numbersize`.
+
+```vim
+let count = 123
+let hex = 0x10
+let octal = 0o177
+let binary = 0b1011
+```
+
+### Float
+
+A floating point number.
+
+```vim
+let pi = 3.14159
+let scientific = 1.15e-6
+let negative = -1.1e3
+```
+
+### String
+
+A NUL terminated string of 8-bit unsigned characters (bytes).
+
+```vim
+let message = "Hello, world!"
+let single = 'Peter''s string'
+```
+
+Double-quoted strings support escape sequences like `\t`, `\n`, `\r`, and `\e`.
+
+### List
+
+An ordered sequence of items. Items can be accessed by their index number.
+
+```vim
+let mylist = [1, 2, 3, 'four']
+let nested = [[1, 2], [3, 4]]
+let item = mylist[0]  " first item: 1
+let last = mylist[-1] " last item: 'four'
+```
+
+### Tuple
+
+An ordered immutable sequence of items. Similar to a List but cannot be modified.
+
+```vim
+let mytuple = (1, 2, 3, 'four')
+let single = (5,)  " single item tuple
+let item = mytuple[0]  " first item: 1
+```
+
+### Dictionary
+
+An associative, unordered array with key-value pairs.
+
+```vim
+let colors = {'blue': '#0000ff', 'red': '#ff0000'}
+let alt = #{blue: "#0000ff", red: "#ff0000"}
+let value = colors['blue']
+let value2 = colors.blue
+```
+
+### Funcref
+
+A reference to a function.
+
+```vim
+let Fn = function('MyFunc')
+let result = Fn()
+```
+
+### Special
+
+Special values: `v:false`, `v:true`, `v:none`, and `v:null`.
+
+```vim
+if v:true
+  echo "This is true"
+endif
+```
+
+### Job
+
+Used for a job, see `job_start()`.
+
+### Channel
+
+Used for a channel, see `ch_open()`.
+
+### Blob
+
+Binary Large Object. Stores any sequence of bytes.
+
+```vim
+let b = 0zFF00ED015DAF
+let empty = 0z
+```
+
+## Variable scopes
+
+You can prefix variables to control their scope:
+
+<ParamField path="g:name" type="global">
+  Global variable, accessible everywhere
+</ParamField>
+
+<ParamField path="b:name" type="buffer-local">
+  Variable local to a buffer
+</ParamField>
+
+<ParamField path="w:name" type="window-local">
+  Variable local to a window
+</ParamField>
+
+<ParamField path="t:name" type="tab-local">
+  Variable local to a tab page
+</ParamField>
+
+<ParamField path="l:name" type="function-local">
+  Variable local to a function
+</ParamField>
+
+<ParamField path="s:name" type="script-local">
+  Variable local to a script
+</ParamField>
+
+<ParamField path="a:name" type="argument">
+  Function argument
+</ParamField>
+
+<ParamField path="v:name" type="vim-variable">
+  Variable predefined by Vim
+</ParamField>
+
+## Declaring variables
+
+In Vim9 script, use `var` to declare variables:
+
+```vim
+vim9script
+var counter = 1
+var name: string
+var age: number = 42
+```
+
+In legacy script, use `let`:
+
+```vim
+let counter = 1
+let name = 'Peter'
+```
+
+## Type conversion
+
+Numbers and Strings convert automatically in legacy script:
+
+```vim
+" String to Number
+let num = "456" + 0  " 456
+
+" Number to String
+let str = 123 .. ""  " "123"
+```
+
+In Vim9 script, type checking is stricter and automatic conversions are limited.
+
+## Type checking
+
+Use the `type()` function to check a variable's type:
+
+```vim
+let result = type(myvar)
+" Returns: 0=Number, 1=String, 2=Funcref, 3=List, 4=Dictionary,
+"          5=Float, 6=Boolean, 7=None, 8=Job, 9=Channel, 10=Blob
+```
+
+## Constants
+
+In Vim9 script, use `const` or `final` for constants:
+
+```vim
+vim9script
+const MAX_SIZE = 100
+final mylist = [1, 2, 3]
+```
+
+The `const` keyword prevents reassignment entirely, while `final` allows modifying the contents of Lists and Dictionaries but not reassigning the variable.

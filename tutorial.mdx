@@ -1,0 +1,316 @@
+---
+title: "Tutorial"
+description: "Learn Vim basics hands-on with vimtutor, a 30-minute interactive tutorial"
+---
+
+## About vimtutor
+
+The Vim tutor is an interactive, hands-on tutorial that teaches you the most basic Vim functionality in about 30 minutes. Instead of reading documentation, you'll learn by doing — editing actual text files using Vim commands.
+
+<Note>
+  The tutor assumes no prior knowledge of Vim. If you've never used Vim before, this is the perfect place to start.
+</Note>
+
+## Starting vimtutor
+
+The easiest way to learn Vim is through the interactive tutor. Here's how to launch it on different systems:
+
+<Tabs>
+  <Tab title="Linux/Unix">
+    On Unix systems where Vim is properly installed, run:
+    
+    ```bash
+    vimtutor
+    ```
+    
+    For the GUI version:
+    
+    ```bash
+    gvimtutor
+    # or
+    vimtutor -g
+    ```
+  </Tab>
+  
+  <Tab title="Windows">
+    On Windows, you can find vimtutor in the Start menu:
+    
+    - Navigate to **Programs > Vim 9.1 > Vim tutor**
+    
+    Or run from the installation directory:
+    
+    ```bash
+    vimtutor.bat
+    ```
+  </Tab>
+  
+  <Tab title="macOS">
+    On macOS:
+    
+    ```bash
+    vimtutor
+    ```
+    
+    If you're using MacVim:
+    
+    ```bash
+    gvimtutor
+    ```
+  </Tab>
+  
+  <Tab title="OpenVMS">
+    On OpenVMS with a proper Vim installation:
+    
+    ```bash
+    @VIM:vimtutor
+    ```
+  </Tab>
+</Tabs>
+
+### Multiple chapters
+
+The vimtutor is provided in two chapters. After completing chapter 1, continue with chapter 2:
+
+```bash
+vimtutor -c 2
+```
+
+### Translated versions
+
+The tutor is available in multiple languages. Use the two-letter language code:
+
+<CodeGroup>
+
+```bash French
+vimtutor fr
+```
+
+```bash German
+vimtutor de
+```
+
+```bash Spanish
+vimtutor es
+```
+
+```bash Japanese
+vimtutor ja
+```
+
+```bash Chinese
+vimtutor zh
+```
+
+</CodeGroup>
+
+## Manual setup
+
+If the `vimtutor` command isn't available, you can set it up manually:
+
+<Steps>
+  <Step title="Copy the tutor file">
+    ```bash
+    vim --clean -c 'e $VIMRUNTIME/tutor/tutor1' -c 'w! TUTORCOPY' -c 'q'
+    ```
+    
+    This creates a file called `TUTORCOPY` in your current directory.
+    
+    For a translated version, append the language code:
+    
+    ```bash
+    vim --clean -c 'e $VIMRUNTIME/tutor/tutor1.fr' -c 'w! TUTORCOPY' -c 'q'
+    ```
+  </Step>
+  
+  <Step title="Open the copy in Vim">
+    ```bash
+    vim --clean TUTORCOPY
+    ```
+    
+    The `--clean` flag ensures Vim starts with default settings.
+  </Step>
+  
+  <Step title="Complete the tutorial">
+    Follow the instructions in the file. Make changes, practice commands, and learn by doing.
+  </Step>
+  
+  <Step title="Clean up">
+    After finishing, delete the copy:
+    
+    ```bash
+    rm TUTORCOPY
+    ```
+  </Step>
+</Steps>
+
+## What you'll learn
+
+The vimtutor covers essential Vim concepts and commands:
+
+<AccordionGroup>
+  <Accordion title="Basic movement">
+    - Moving the cursor with `h`, `j`, `k`, `l`
+    - Word-based movement with `w`, `e`, `b`
+    - Line movement with `0`, `$`, `^`
+    - Screen movement with `H`, `M`, `L`
+  </Accordion>
+  
+  <Accordion title="Editing modes">
+    - Normal mode for navigation and commands
+    - Insert mode for typing text
+    - Visual mode for selecting text
+    - Switching between modes with `i`, `a`, `v`, `Esc`
+  </Accordion>
+  
+  <Accordion title="Basic editing">
+    - Deleting text with `x`, `d`, `dd`
+    - Changing text with `c`, `cc`, `C`
+    - Undo with `u` and redo with `Ctrl-r`
+    - Copying (yanking) with `y` and pasting with `p`
+  </Accordion>
+  
+  <Accordion title="File operations">
+    - Opening files with `:e filename`
+    - Saving files with `:w`
+    - Quitting with `:q`
+    - Save and quit with `:wq` or `ZZ`
+  </Accordion>
+  
+  <Accordion title="Search and replace">
+    - Searching forward with `/pattern`
+    - Searching backward with `?pattern`
+    - Basic find and replace with `:s/old/new/g`
+    - Repeating searches with `n` and `N`
+  </Accordion>
+</AccordionGroup>
+
+## Interactive mode
+
+For those who prefer an alternative interactive learning experience, Vim also provides an interactive tutor mode:
+
+```vim
+:help vim-tutor-mode
+```
+
+Or start it directly from within Vim:
+
+```vim
+:Tutor
+```
+
+## Tips for success
+
+<CardGroup cols={2}>
+  <Card title="Practice regularly" icon="repeat">
+    Spend 10-15 minutes daily practicing commands. Muscle memory is key to Vim proficiency.
+  </Card>
+  
+  <Card title="Don't rush" icon="clock">
+    Take your time with each lesson. Understanding the concepts is more important than speed.
+  </Card>
+  
+  <Card title="Repeat lessons" icon="rotate-left">
+    Don't hesitate to repeat sections. Each time through reinforces the commands.
+  </Card>
+  
+  <Card title="Use clean settings" icon="broom">
+    Start with `vim --clean` to avoid configuration issues while learning.
+  </Card>
+</CardGroup>
+
+<Warning>
+  Vim has a learning curve. Don't get discouraged if it feels awkward at first. The investment in learning Vim pays off with significantly faster editing.
+</Warning>
+
+## After the tutorial
+
+Once you've completed vimtutor, continue your learning journey:
+
+<Steps>
+  <Step title="Read the user manual">
+    The user manual provides task-oriented explanations:
+    
+    ```vim
+    :help user-manual
+    ```
+  </Step>
+  
+  <Step title="Practice daily">
+    Use Vim for your regular editing tasks. The more you use it, the more natural it becomes.
+  </Step>
+  
+  <Step title="Explore advanced features">
+    Learn about registers, macros, marks, and other powerful features.
+  </Step>
+  
+  <Step title="Customize your setup">
+    Create a `.vimrc` file to customize Vim to your preferences.
+  </Step>
+</Steps>
+
+## Built-in help system
+
+Vim has comprehensive built-in documentation. Access it anytime:
+
+```vim
+:help
+```
+
+For specific topics:
+
+<CodeGroup>
+
+```vim Movement
+:help motion.txt
+```
+
+```vim Editing
+:help change.txt
+```
+
+```vim Windows
+:help windows.txt
+```
+
+```vim Options
+:help options.txt
+```
+
+</CodeGroup>
+
+<Tip>
+  Press `Ctrl-]` on any highlighted term in the help to jump to that topic. Press `Ctrl-o` to jump back.
+</Tip>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card
+    title="Quickstart"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Essential commands and quick reference guide.
+  </Card>
+  <Card
+    title="User guide"
+    icon="book"
+    href="/user-guide/basics"
+  >
+    Comprehensive guide from basics to advanced topics.
+  </Card>
+  <Card
+    title="Features"
+    icon="star"
+    href="/features/syntax-highlighting"
+  >
+    Explore Vim's powerful features in depth.
+  </Card>
+  <Card
+    title="Reference"
+    icon="book-bookmark"
+    href="/reference/ex-commands"
+  >
+    Complete command and option reference.
+  </Card>
+</CardGroup>

@@ -1,0 +1,475 @@
+---
+title: Building on macOS
+description: Complete guide to building Vim from source on macOS
+---
+
+Building Vim on macOS is straightforward using the standard Unix build process. This guide covers building both terminal and GUI versions of Vim on macOS.
+
+## Prerequisites
+
+Before building Vim on macOS, you need to install Xcode Command Line Tools.
+
+### Installing Command Line Tools
+
+<Steps>
+
+<Step title="Check if tools are installed">
+Open Terminal and run:
+
+```bash
+make --version
+```
+
+If the tools aren't installed, a dialog will appear prompting you to install them.
+</Step>
+
+<Step title="Install via command line">
+Alternatively, you can install directly:
+
+```bash
+xcode-select --install
+```
+</Step>
+
+<Step title="Verify installation">
+After installation completes, verify:
+
+```bash
+which gcc
+which make
+```
+
+Both commands should return paths to the tools.
+</Step>
+
+</Steps>
+
+<Note>
+You don't need to install the full Xcode IDE unless you plan to do macOS app development. The Command Line Tools are sufficient for building Vim.
+</Note>
+
+## Building the terminal version
+
+The standard Unix build process works on macOS:
+
+<Steps>
+
+<Step title="Get the source code">
+Clone the Vim repository using git:
+
+```bash
+git clone https://github.com/vim/vim.git
+cd vim/src
+```
+
+Or download a release tarball:
+
+```bash
+curl -LO https://github.com/vim/vim/archive/refs/tags/v9.0.0000.tar.gz
+tar -xzf v9.0.0000.tar.gz
+cd vim-9.0.0000/src
+```
+</Step>
+
+<Step title="Build Vim">
+Run make to configure and build:
+
+```bash
+make
+```
+
+This will automatically run configure with appropriate defaults for macOS.
+</Step>
+
+<Step title="Test the build">
+Run the test suite to verify everything works:
+
+```bash
+make test
+```
+
+A successful test run ends with `ALL DONE`.
+</Step>
+
+<Step title="Install Vim">
+Install to `/usr/local`:
+
+```bash
+sudo make install
+```
+</Step>
+
+</Steps>
+
+## Installing dependencies with Homebrew
+
+For additional features, you can install dependencies via Homebrew.
+
+### Installing Homebrew
+
+If you don't have Homebrew installed:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+### Common dependencies
+
+<CodeGroup>
+
+```bash Python 3 support
+brew install python3
+```
+
+```bash Lua support
+brew install lua
+```
+
+```bash Ruby support
+brew install ruby
+```
+
+```bash Perl support
+brew install perl
+```
+
+```bash libtool
+# If you get "glibtool: command not found"
+brew install libtool
+```
+
+</CodeGroup>
+
+## Building with custom features
+
+You can customize your Vim build by editing the Makefile or running configure manually.
+
+### Editing the Makefile
+
+Open `src/Makefile` and uncomment the features you want:
+
+```makefile src/Makefile
+# Python 3 support
+CONF_OPT_PYTHON3 = --enable-python3interp
+
+# Lua support
+CONF_OPT_LUA = --enable-luainterp
+
+# Ruby support
+CONF_OPT_RUBY = --enable-rubyinterp
+
+# Perl support
+CONF_OPT_PERL = --enable-perlinterp
+
+# Large feature set
+CONF_OPT_FEAT = --with-features=huge
+```
+
+Then reconfigure and build:
+
+```bash
+make reconfig
+```
+
+### Running configure manually
+
+For more control, run configure directly:
+
+```bash
+./configure --with-features=huge \
+            --enable-python3interp \
+            --enable-luainterp \
+            --enable-rubyinterp \
+            --enable-perlinterp \
+            --enable-cscope \
+            --prefix=/usr/local
+
+make
+sudo make install
+```
+
+## Building the GUI version with X11
+
+You can build a GUI version of Vim using X11, though this is rarely needed on modern macOS.
+
+<Warning>
+The X11 GUI (gvim with Athena widgets) may not work on recent macOS versions as Athena support has been removed. This section is kept for historical reference.
+</Warning>
+
+<Steps>
+
+<Step title="Install XQuartz">
+Download and install XQuartz from https://www.xquartz.org
+</Step>
+
+<Step title="Enable GUI in Makefile">
+Edit the Makefile and uncomment these lines:
+
+```makefile
+CONF_OPT_GUI = --enable-gui=gtk2
+CONF_OPT_DARWIN = --disable-darwin
+```
+
+Note: You'll need to install GTK+ 2 via Homebrew first:
+
+```bash
+brew install gtk+
+```
+</Step>
+
+<Step title="Clean and rebuild">
+```bash
+make distclean
+make
+sudo make install
+```
+</Step>
+
+</Steps>
+
+## macOS-specific configuration options
+
+Vim has special options for macOS builds:
+
+### Disabling Darwin features
+
+By default, Vim includes macOS-specific features. To build a pure Unix version:
+
+```bash
+./configure --disable-darwin
+make
+```
+
+This is useful if you want Vim to behave exactly like it does on other Unix systems.
+
+### Building for specific architectures
+
+You can build for specific CPU architectures:
+
+```bash
+# Intel only
+./configure --with-mac-arch=intel
+
+# Apple Silicon (ARM64) only
+./configure --with-mac-arch=arm64
+
+# Universal binary (both architectures)
+./configure --with-mac-arch=both
+```
+
+<Note>
+Universal binaries may not work when including language interfaces like Perl, Python, or Ruby, as these need to be available for both architectures.
+</Note>
+
+## Setting up language interfaces
+
+Here's how to build Vim with support for various scripting languages on macOS:
+
+### Python 3
+
+```bash
+# Using system Python 3
+./configure --enable-python3interp \
+            --with-python3-command=/usr/bin/python3
+
+# Or using Homebrew Python
+./configure --enable-python3interp \
+            --with-python3-command=/opt/homebrew/bin/python3
+```
+
+### Ruby
+
+```bash
+# Using system Ruby
+./configure --enable-rubyinterp
+
+# Or using Homebrew Ruby
+./configure --enable-rubyinterp \
+            --with-ruby-command=/opt/homebrew/bin/ruby
+```
+
+### Lua
+
+```bash
+# Install Lua via Homebrew first
+brew install lua
+
+# Configure with Lua support
+./configure --enable-luainterp \
+            --with-lua-prefix=/opt/homebrew
+```
+
+### Perl
+
+```bash
+./configure --enable-perlinterp
+```
+
+## Custom installation locations
+
+### Installing to /usr instead of /usr/local
+
+```bash
+./configure --prefix=/usr
+make
+sudo make install
+```
+
+<Warning>
+macOS System Integrity Protection (SIP) may prevent writing to `/usr/bin`. It's recommended to use `/usr/local` or install to a user directory.
+</Warning>
+
+### Installing to a user directory
+
+```bash
+./configure --prefix=$HOME/.local
+make
+make install
+
+# Add to your PATH in ~/.zshrc or ~/.bash_profile
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+## Troubleshooting
+
+### glibtool command not found
+
+If you get this error during the build:
+
+```bash
+make: glibtool: No such file or directory
+```
+
+Install libtool via Homebrew:
+
+```bash
+brew install libtool
+```
+
+### Python configuration issues
+
+If configure can't find Python:
+
+```bash
+# Find your Python 3 installation
+which python3
+
+# Check Python version and prefix
+python3 --version
+python3-config --prefix
+
+# Configure with explicit paths
+./configure --enable-python3interp \
+            --with-python3-command=$(which python3) \
+            --with-python3-config-dir=$(python3-config --configdir)
+```
+
+### Ruby configuration issues
+
+For Ruby interface errors:
+
+```bash
+# Check Ruby configuration
+ruby --version
+ruby -e 'puts RbConfig::CONFIG["rubyhdrdir"]'
+
+# Install Ruby via Homebrew if system Ruby has issues
+brew install ruby
+
+# Update your PATH to use Homebrew Ruby
+export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+```
+
+### Compilation warnings about precompiled headers
+
+If you see warnings about precompiled header files:
+
+```bash
+sudo fixPrecomps
+```
+
+Or edit the Makefile and add:
+
+```makefile
+CONF_OPT_DARWIN = --disable-darwin
+```
+
+### Missing X11 headers
+
+If building the X11 GUI and getting header not found errors:
+
+1. Make sure XQuartz is installed
+2. Log out and log back in (XQuartz sets up paths)
+3. Check that X11 headers are present:
+
+```bash
+ls /opt/X11/include/X11/
+```
+
+## Building on Apple Silicon (M1/M2)
+
+Vim builds natively on Apple Silicon:
+
+```bash
+# Build native ARM64 version
+./configure --with-mac-arch=arm64
+make
+sudo make install
+```
+
+### Rosetta 2 issues
+
+If you have issues with Intel binaries under Rosetta 2:
+
+```bash
+# Explicitly build for ARM64
+arch -arm64 ./configure
+arch -arm64 make
+```
+
+### Using Intel Homebrew packages
+
+If you need Intel versions of libraries:
+
+```bash
+# Install Intel Homebrew to /usr/local
+arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install packages
+arch -x86_64 /usr/local/bin/brew install python3
+
+# Build Intel version
+arch -x86_64 ./configure --with-mac-arch=intel
+arch -x86_64 make
+```
+
+## Using MacPorts
+
+As an alternative to Homebrew, you can use MacPorts:
+
+```bash
+# Install MacPorts from https://www.macports.org/
+
+# Install dependencies
+sudo port install python311 lua ruby
+
+# Build Vim
+./configure --enable-python3interp \
+            --enable-luainterp \
+            --enable-rubyinterp \
+            --with-python3-command=/opt/local/bin/python3.11
+
+make
+sudo make install
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Creating macOS app bundle" icon="cube">
+    Package Vim as a native macOS application.
+  </Card>
+  <Card title="Vim and Terminal.app" icon="terminal">
+    Configure Vim to work optimally with macOS Terminal.
+  </Card>
+</CardGroup>

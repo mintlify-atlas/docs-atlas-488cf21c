@@ -1,0 +1,398 @@
+---
+title: Search commands
+description: Complete reference for Vim search and navigation commands
+---
+
+Vim provides powerful search capabilities for navigating and finding text in your files. This reference covers all search-related commands and options.
+
+## Basic search
+
+### Forward search
+
+<Accordion title="/ - Search forward">
+  Search forward for a pattern from the cursor position.
+
+  ```vim
+  /{pattern}<CR>        " Search forward
+  /{pattern}/{offset}<CR>  " Search with offset
+  /<CR>                 " Repeat last search forward
+  ```
+
+  Examples:
+  ```vim
+  /function             " Find 'function'
+  /foo\|bar             " Find 'foo' or 'bar'
+  /\<word\>             " Find whole word 'word'
+  ```
+</Accordion>
+
+### Backward search
+
+<Accordion title="? - Search backward">
+  Search backward for a pattern from the cursor position.
+
+  ```vim
+  ?{pattern}<CR>        " Search backward
+  ?{pattern}?{offset}<CR>  " Search with offset
+  ?<CR>                 " Repeat last search backward
+  ```
+
+  Examples:
+  ```vim
+  ?function             " Find 'function' backward
+  ?\d\+                 " Find digits backward
+  ```
+</Accordion>
+
+## Repeat search
+
+| Command | Description |
+|---------|-------------|
+| `n` | Repeat search in same direction |
+| `N` | Repeat search in opposite direction |
+
+The direction depends on whether you used `/` or `?` for your original search.
+
+## Word search under cursor
+
+<AccordionGroup>
+  <Accordion title="* - Search word forward">
+    Search forward for the word under the cursor.
+
+    ```vim
+    *                     " Search forward for word
+    2*                    " Jump to 2nd occurrence
+    ```
+
+    The search uses word boundaries (`\<word\>`), so it matches whole words only.
+  </Accordion>
+
+  <Accordion title="# - Search word backward">
+    Search backward for the word under the cursor.
+
+    ```vim
+    #                     " Search backward for word
+    2#                    " Jump to 2nd occurrence backward
+    ```
+  </Accordion>
+
+  <Accordion title="g* - Search word forward (partial)">
+    Search forward for the word under cursor, but allow partial matches.
+
+    ```vim
+    g*                    " Search forward (no word boundaries)
+    ```
+
+    Example: If cursor is on "cat", `g*` will match "cat", "cats", "catalog", etc.
+  </Accordion>
+
+  <Accordion title="g# - Search word backward (partial)">
+    Search backward for the word under cursor, allowing partial matches.
+
+    ```vim
+    g#                    " Search backward (no word boundaries)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Search offsets
+
+Offsets position the cursor relative to the match:
+
+<ParamField path="[num]" type="offset">
+  Move [num] lines downward (in column 1)
+</ParamField>
+
+<ParamField path="+[num]" type="offset">
+  Move [num] lines downward (in column 1)
+</ParamField>
+
+<ParamField path="-[num]" type="offset">
+  Move [num] lines upward (in column 1)
+</ParamField>
+
+<ParamField path="e[+num]" type="offset">
+  Move [num] characters right of match end
+</ParamField>
+
+<ParamField path="e[-num]" type="offset">
+  Move [num] characters left of match end
+</ParamField>
+
+<ParamField path="s[+num]" type="offset">
+  Move [num] characters right of match start
+</ParamField>
+
+<ParamField path="s[-num]" type="offset">
+  Move [num] characters left of match start
+</ParamField>
+
+<ParamField path="b[+num]" type="offset">
+  Same as s[+num] (mnemonic: begin)
+</ParamField>
+
+### Offset examples
+
+```vim
+/pattern/+2           " Two lines below match
+/pattern/e            " At end of match
+/pattern/e+1          " One character after match end
+/pattern/s-2          " Two characters before match start
+/pattern/b            " At beginning of match
+```
+
+## Character search in line
+
+<AccordionGroup>
+  <Accordion title="f{char} - Find character forward">
+    Move to the next occurrence of {char} in the current line.
+
+    ```vim
+    f{char}               " Find next {char}
+    2f{char}              " Find 2nd occurrence
+    ```
+
+    Example:
+    ```vim
+    fx                    " Move to next 'x'
+    ```
+  </Accordion>
+
+  <Accordion title="F{char} - Find character backward">
+    Move to the previous occurrence of {char} in the current line.
+
+    ```vim
+    F{char}               " Find previous {char}
+    ```
+  </Accordion>
+
+  <Accordion title="t{char} - Till character forward">
+    Move to just before the next occurrence of {char}.
+
+    ```vim
+    t{char}               " Till next {char}
+    ```
+
+    Example:
+    ```vim
+    ctx                   " Change till 'x'
+    ```
+  </Accordion>
+
+  <Accordion title="T{char} - Till character backward">
+    Move to just after the previous occurrence of {char}.
+
+    ```vim
+    T{char}               " Till previous {char}
+    ```
+  </Accordion>
+
+  <Accordion title="; and , - Repeat character search">
+    Repeat the last f, t, F, or T command.
+
+    ```vim
+    ;                     " Repeat in same direction
+    ,                     " Repeat in opposite direction
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Search options
+
+### Highlighting
+
+```vim
+:set hlsearch         " Highlight all matches
+:set nohlsearch       " Don't highlight matches
+:nohlsearch           " Clear current highlighting
+```
+
+### Incremental search
+
+```vim
+:set incsearch        " Show matches as you type
+:set noincsearch      " Don't show matches while typing
+```
+
+### Wrapping
+
+```vim
+:set wrapscan         " Wrap around file ends (default)
+:set nowrapscan       " Stop at file ends
+```
+
+### Case sensitivity
+
+```vim
+:set ignorecase       " Ignore case in searches
+:set noignorecase     " Match case exactly
+:set smartcase        " Ignore case unless pattern has uppercase
+```
+
+<Note>
+`smartcase` only works when `ignorecase` is set. If your pattern contains any uppercase letter, the search becomes case-sensitive.
+</Note>
+
+## Search range limiting
+
+Limit search to specific line ranges:
+
+```vim
+/\%>10l\%<20lpattern  " Match only between lines 10-20
+/\%>50cpattern        " Match only after column 50
+/\%Vpattern           " Match only in visual selection
+```
+
+## Search commands in Ex mode
+
+### Substitute
+
+<Accordion title=":s - Substitute">
+  Search and replace text.
+
+  ```vim
+  :[range]s/{pattern}/{replacement}/[flags]
+  ```
+
+  <ParamField path="range" type="string">
+    Line range (e.g., `%` for entire file, `'<,'>` for visual selection)
+  </ParamField>
+
+  <ParamField path="pattern" type="string">
+    Regular expression to search for
+  </ParamField>
+
+  <ParamField path="replacement" type="string">
+    Text to replace with (can include capture groups `\1`, `\2`, etc.)
+  </ParamField>
+
+  <ParamField path="flags" type="string">
+    - `g` - Replace all occurrences in line
+    - `c` - Confirm each substitution
+    - `i` - Ignore case
+    - `I` - Don't ignore case
+    - `n` - Report matches without replacing
+    - `e` - Don't show error if pattern not found
+  </ParamField>
+
+  Examples:
+  ```vim
+  :s/foo/bar/           " Replace first 'foo' on current line
+  :s/foo/bar/g          " Replace all 'foo' on current line
+  :%s/foo/bar/g         " Replace all 'foo' in file
+  :%s/foo/bar/gc        " Replace all with confirmation
+  :1,10s/foo/bar/g      " Replace in lines 1-10
+  ```
+</Accordion>
+
+### Global
+
+<Accordion title=":g - Global command">
+  Execute a command on lines matching a pattern.
+
+  ```vim
+  :[range]g/{pattern}/{command}
+  :[range]g!/{pattern}/{command}    " Or :v (inverse)
+  ```
+
+  Examples:
+  ```vim
+  :g/TODO/d             " Delete all lines containing 'TODO'
+  :g/^$/d               " Delete all empty lines
+  :g/pattern/p          " Print matching lines
+  :g/foo/s/bar/baz/g    " On lines with 'foo', replace 'bar' with 'baz'
+  :v/pattern/d          " Delete lines NOT matching pattern
+  ```
+</Accordion>
+
+### Vimgrep
+
+<Accordion title=":vimgrep - Search in multiple files">
+  Search for a pattern in multiple files.
+
+  ```vim
+  :vimgrep /{pattern}/[flags] {files}
+  :vim /{pattern}/[flags] {files}
+  ```
+
+  Examples:
+  ```vim
+  :vimgrep /TODO/ **/*.js    " Search in all .js files
+  :vimgrep /function/ %      " Search in current file
+  :vimgrep /error/ **/*      " Search in all files recursively
+  ```
+
+  Navigate results:
+  ```vim
+  :cnext or :cn         " Next match
+  :cprevious or :cp     " Previous match
+  :copen                " Open quickfix window
+  :cclose               " Close quickfix window
+  ```
+</Accordion>
+
+## Search history
+
+Access previously used search patterns:
+
+```vim
+/                     " Then use ↑/↓ to browse history
+/<C-r>/               " Insert last search pattern
+:history /            " View search history
+q/                    " Open search history window
+```
+
+## Special search atoms
+
+### Position atoms
+
+| Atom | Description |
+|------|-------------|
+| `\<` | Start of word |
+| `\>` | End of word |
+| `^` | Start of line |
+| `$` | End of line |
+| `\%^` | Start of file |
+| `\%$` | End of file |
+| `\%#` | Cursor position |
+| `\%V` | Visual area |
+
+### Pattern examples
+
+```vim
+/\<vim\>              " Whole word 'vim'
+/^function            " 'function' at line start
+/);$                  " ');' at line end
+/\%^#!/               " Shebang at file start
+```
+
+## Clear search highlighting
+
+```vim
+:nohlsearch           " Clear highlighting (keep pattern)
+:noh                  " Short form
+:let @/=""            " Clear search pattern
+```
+
+<Note>
+`:nohlsearch` only clears highlighting temporarily. The next search or `n` command will re-enable it. Use `:set nohlsearch` to disable highlighting permanently.
+</Note>
+
+## Search count
+
+Show match count and current position:
+
+```vim
+:set shortmess-=S     " Show search count
+```
+
+After searching, you'll see something like `[1/5]` indicating you're on the 1st of 5 matches.
+
+## Pattern last used
+
+The last search pattern is stored in the `/` register:
+
+```vim
+:echo @/              " Show last search pattern
+:let @/="pattern"     " Set search pattern
+```

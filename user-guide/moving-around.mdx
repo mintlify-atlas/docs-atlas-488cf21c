@@ -1,0 +1,354 @@
+---
+title: Navigation commands
+description: Master cursor movement in Vim with character, word, line, and screen navigation commands
+---
+
+# Navigation commands
+
+Efficient navigation is key to productive Vim editing. This guide covers all the ways you can move around in your files.
+
+## Character movement
+
+The basic movement keys are:
+
+```
+     k
+   h   l
+     j
+```
+
+| Key | Movement |
+|-----|----------|
+| `h` | Left |
+| `j` | Down |
+| `k` | Up |
+| `l` | Right |
+
+<Note>
+  These keys are on the home row of your keyboard, making them faster to use than arrow keys.
+</Note>
+
+<Tip>
+  You can also use arrow keys, but using `hjkl` keeps your hands on the home row and is much faster once you're used to it.
+</Tip>
+
+## Word movement
+
+Move by words for faster navigation:
+
+<Tabs>
+  <Tab title="Forward">
+    | Command | Movement |
+    |---------|----------|
+    | `w` | Forward to start of next word |
+    | `W` | Forward to start of next WORD (space-separated) |
+    | `e` | Forward to end of word |
+    | `E` | Forward to end of WORD |
+  </Tab>
+  
+  <Tab title="Backward">
+    | Command | Movement |
+    |---------|----------|
+    | `b` | Backward to start of previous word |
+    | `B` | Backward to start of previous WORD |
+    | `ge` | Backward to end of previous word |
+    | `gE` | Backward to end of previous WORD |
+  </Tab>
+</Tabs>
+
+### Word vs WORD
+
+- A **word** ends at non-word characters like `.`, `-`, `)`
+- A **WORD** ends only at whitespace
+
+Example:
+```
+This is-a line, with special/separated/words (and some more).
+     w w w  w    w      w         w     w   w    w    w
+     W W W  W    W                            W         W
+```
+
+<Note>
+  Use lowercase commands (`w`, `b`, `e`) for programming. Use uppercase (`W`, `B`, `E`) for prose.
+</Note>
+
+## Line movement
+
+<Tabs>
+  <Tab title="Start/end">
+    | Command | Position |
+    |---------|----------|
+    | `0` | Start of line (column 0) |
+    | `^` | First non-blank character |
+    | `$` | End of line |
+    | `g_` | Last non-blank character |
+  </Tab>
+  
+  <Tab title="With count">
+    Add a count to move to end of different line:
+    ```vim
+    1$    " End of current line
+    2$    " End of next line
+    3$    " End of line after that
+    ```
+  </Tab>
+</Tabs>
+
+## Character search
+
+Find characters within a line:
+
+<Tabs>
+  <Tab title="Find">
+    Search forward for a character:
+    ```vim
+    fx    " Find next 'x'
+    3fx   " Find third 'x'
+    ```
+    
+    Search backward:
+    ```vim
+    Fx    " Find previous 'x'
+    ```
+  </Tab>
+  
+  <Tab title="Till">
+    Move until (before) a character:
+    ```vim
+    tx    " Move to just before next 'x'
+    Tx    " Move to just after previous 'x'
+    ```
+  </Tab>
+  
+  <Tab title="Repeat">
+    | Command | Action |
+    |---------|--------|
+    | `;` | Repeat last f, t, F, or T |
+    | `,` | Repeat in opposite direction |
+  </Tab>
+</Tabs>
+
+Example:
+```vim
+To err is human.  To really foul up you need a computer.
+   fh              fy
+   ↓               ↓
+To err is human.  To really foul up you need a computer.
+```
+
+## Line jumps
+
+<Tabs>
+  <Tab title="By number">
+    Jump to a specific line:
+    ```vim
+    :42      " Jump to line 42
+    42G      " Also jump to line 42
+    42gg     " Same as above
+    ```
+  </Tab>
+  
+  <Tab title="File positions">
+    | Command | Destination |
+    |---------|-------------|
+    | `gg` | First line of file |
+    | `G` | Last line of file |
+    | `50%` | Halfway through file |
+    | `90%` | Near end of file |
+  </Tab>
+  
+  <Tab title="Screen positions">
+    | Command | Position |
+    |---------|----------|
+    | `H` | Top (Home) of screen |
+    | `M` | Middle of screen |
+    | `L` | Bottom (Last) of screen |
+  </Tab>
+</Tabs>
+
+## Scrolling
+
+<Tabs>
+  <Tab title="Half screen">
+    | Command | Direction |
+    |---------|----------|
+    | `Ctrl-D` | Down half screen |
+    | `Ctrl-U` | Up half screen |
+  </Tab>
+  
+  <Tab title="Full screen">
+    | Command | Direction |
+    |---------|----------|
+    | `Ctrl-F` | Forward (down) one screen |
+    | `Ctrl-B` | Backward (up) one screen |
+  </Tab>
+  
+  <Tab title="One line">
+    | Command | Direction |
+    |---------|----------|
+    | `Ctrl-E` | Down one line |
+    | `Ctrl-Y` | Up one line |
+  </Tab>
+  
+  <Tab title="Reposition">
+    Center cursor on screen:
+    ```vim
+    zz    " Center cursor line
+    zt    " Cursor line at top
+    zb    " Cursor line at bottom
+    ```
+  </Tab>
+</Tabs>
+
+## Searching
+
+Search for text in your file:
+
+<Steps>
+  <Step title="Start search">
+    Type `/` followed by your search term:
+    ```vim
+    /include
+    ```
+  </Step>
+  
+  <Step title="Navigate matches">
+    | Command | Action |
+    |---------|--------|
+    | `n` | Next match |
+    | `N` | Previous match |
+    | `3n` | Third next match |
+  </Step>
+  
+  <Step title="Search backward">
+    Use `?` to search in reverse:
+    ```vim
+    ?function
+    ```
+  </Step>
+</Steps>
+
+<Tabs>
+  <Tab title="Quick search">
+    Search for word under cursor:
+    ```vim
+    *     " Search forward for word under cursor
+    #     " Search backward for word under cursor
+    g*    " Search for partial match forward
+    g#    " Search for partial match backward
+    ```
+  </Tab>
+  
+  <Tab title="Options">
+    ```vim
+    :set ignorecase    " Ignore case in searches
+    :set smartcase     " Case-sensitive if uppercase present
+    :set hlsearch      " Highlight all matches
+    :set incsearch     " Show match while typing
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  Use `:nohlsearch` to temporarily turn off search highlighting.
+</Tip>
+
+## Matching parentheses
+
+Jump to matching bracket:
+
+```vim
+%    " Jump between (, [, { and their matches
+```
+
+Example:
+```vim
+if (a == (b * c) / d)
+   ↔              ↔
+        ↔     ↔
+```
+
+## Current position
+
+Find where you are:
+
+<Tabs>
+  <Tab title="Show position">
+    ```vim
+    Ctrl-G    " Show file info and position
+    ```
+    Output:
+    ```
+    "usr_03.txt" line 233 of 650 --35%-- col 45-52
+    ```
+  </Tab>
+  
+  <Tab title="Line numbers">
+    ```vim
+    :set number       " Show line numbers
+    :set nonumber     " Hide line numbers
+    :set ruler        " Show position in status line
+    ```
+  </Tab>
+</Tabs>
+
+## Marks
+
+Bookmark positions in your file:
+
+<Steps>
+  <Step title="Set a mark">
+    ```vim
+    ma    " Set mark 'a' at cursor position
+    ```
+  </Step>
+  
+  <Step title="Jump to mark">
+    ```vim
+    `a    " Jump to mark 'a' (exact position)
+    'a    " Jump to line of mark 'a'
+    ```
+  </Step>
+  
+  <Step title="List marks">
+    ```vim
+    :marks    " Show all marks
+    ```
+  </Step>
+</Steps>
+
+<Tabs>
+  <Tab title="Special marks">
+    | Mark | Meaning |
+    |------|----------|
+    | `''` | Position before last jump |
+    | `'.` | Position of last change |
+    | `'^` | Position of last insert |
+    | `'[` | Start of last change |
+    | `']` | End of last change |
+  </Tab>
+  
+  <Tab title="Jump list">
+    Navigate your jump history:
+    ```vim
+    Ctrl-O    " Jump to older position
+    Ctrl-I    " Jump to newer position
+    :jumps    " Show jump list
+    ```
+  </Tab>
+</Tabs>
+
+## Combining movements
+
+Use counts with movements:
+
+```vim
+3w     " Move forward 3 words
+5j     " Move down 5 lines
+2f{    " Find second '{'
+10l    " Move 10 characters right
+```
+
+<Note>
+  Most navigation commands accept a count. This makes movement very efficient.
+</Note>
